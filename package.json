@@ -1,0 +1,9 @@
+{
+  "name": "mother-cupboard",
+  "private": true,
+  "packageManager": "pnpm@10.12.3",
+  "scripts": {
+    "mobile": "pnpm --filter mobile",
+    "backend": "pnpm --filter backend"
+  }
+}

@@ -1,0 +1,26 @@
+service: mother-cupboard-backend
+
+frameworkVersion: '3'
+
+provider:
+  name: aws
+  runtime: nodejs20.x
+  region: eu-west-1
+  stage: ${opt:stage, 'development'}
+  environment:
+    STAGE: ${self:provider.stage}
+    SENTRY_DSN: ${env:SENTRY_DSN, ''}
+
+functions:
+  suggestMeals:
+    handler: functions/suggest-meals/handler.handler
+    events:
+      - http:
+          path: /suggest-meals
+          method: post
+          cors: true
+
+plugins:
+  - serverless-plugin-typescript
+
+# Placeholder — fully configured in Epic 4 Story 4.1
