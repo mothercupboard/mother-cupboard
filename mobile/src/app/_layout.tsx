@@ -7,13 +7,14 @@ import {
   useFonts,
 } from '@expo-google-fonts/nunito';
 import * as Sentry from '@sentry/react-native';
-import { Slot } from 'expo-router';
+import { Slot, useRouter } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { PaperProvider } from 'react-native-paper';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { WarmHearthTheme } from '@/components/common/paper-theme';
+import { useOnboardingStore } from '@/features/onboarding/onboarding-store';
 
 Sentry.init({
   dsn: process.env.EXPO_PUBLIC_SENTRY_DSN,
@@ -25,6 +26,11 @@ Sentry.init({
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
+  const router = useRouter();
+  const ageGateAccepted = useOnboardingStore(s => s.ageGateAccepted);
+  const privacyDisclosureAccepted = useOnboardingStore(s => s.privacyDisclosureAccepted);
+  const hasNavigatedRef = useRef(false);
+
   const [fontsLoaded, fontError] = useFonts({
     Nunito_400Regular,
     Nunito_400Regular_Italic,
@@ -38,6 +44,22 @@ export default function RootLayout() {
       SplashScreen.hideAsync();
     }
   }, [fontsLoaded, fontError]);
+
+  // Initial route guard — runs once after fonts load
+  useEffect(() => {
+    if (!fontsLoaded && !fontError)
+      return;
+    if (hasNavigatedRef.current)
+      return;
+    hasNavigatedRef.current = true;
+
+    if (!ageGateAccepted) {
+      router.replace('/onboarding/age-gate');
+    }
+    else if (!privacyDisclosureAccepted) {
+      router.replace('/onboarding/privacy-disclosure');
+    }
+  }, [fontsLoaded, fontError, ageGateAccepted, privacyDisclosureAccepted, router]);
 
   if (!fontsLoaded && !fontError)
     return null;

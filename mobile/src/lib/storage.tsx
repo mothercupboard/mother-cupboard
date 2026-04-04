@@ -11,6 +11,6 @@ export async function setItem<T>(key: string, value: T) {
   storage.set(key, JSON.stringify(value));
 }
 
-export async function removeItem(key: string) {
+export function removeItem(key: string) {
   storage.remove(key);
 }
