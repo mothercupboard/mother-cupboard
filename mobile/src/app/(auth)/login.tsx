@@ -23,6 +23,15 @@ export default function LoginScreen() {
 
       <Text
         variant="bodyMedium"
+        style={styles.forgotLink}
+        onPress={() => router.push('/(auth)/forgot-password')}
+        accessibilityRole="link"
+      >
+        Forgot your password?
+      </Text>
+
+      <Text
+        variant="bodyMedium"
         style={styles.registerLink}
         onPress={() => router.replace('/(auth)/register')}
         accessibilityRole="link"
@@ -50,6 +59,11 @@ const styles = StyleSheet.create({
   subtext: {
     fontFamily: 'Nunito_400Regular',
     color: WarmHearthColors.textSecondary,
+  },
+  forgotLink: {
+    fontFamily: 'Nunito_400Regular',
+    color: WarmHearthColors.primary,
+    textAlign: 'center',
   },
   registerLink: {
     fontFamily: 'Nunito_400Regular',

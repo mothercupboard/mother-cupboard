@@ -2,6 +2,8 @@ import type { User } from '@supabase/supabase-js';
 
 import type { ApiResponse } from 'shared/types/api.types';
 
+import * as Linking from 'expo-linking';
+
 import { useAuthStore } from '@/features/auth/auth-store';
 import { useOnboardingStore } from '@/features/onboarding/onboarding-store';
 import { supabase } from '@/lib/supabase/client';
@@ -69,6 +71,29 @@ export async function signIn(email: string, password: string): Promise<ApiRespon
 export async function signOut(): Promise<void> {
   await supabase.auth.signOut();
   useAuthStore.getState().clearSession();
+}
+
+export async function requestPasswordReset(email: string): Promise<ApiResponse<null>> {
+  const redirectTo = Linking.createURL('reset-password');
+  const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo });
+  if (error) {
+    return {
+      data: null,
+      error: { code: 'RESET_FAILED', message: 'Failed to send reset email. Please try again.', retryable: true },
+    };
+  }
+  return { data: null, error: null };
+}
+
+export async function updatePassword(password: string): Promise<ApiResponse<null>> {
+  const { error } = await supabase.auth.updateUser({ password });
+  if (error) {
+    return {
+      data: null,
+      error: { code: 'UPDATE_FAILED', message: 'Failed to update password. Please try again.', retryable: true },
+    };
+  }
+  return { data: null, error: null };
 }
 
 export async function deleteAccount(): Promise<ApiResponse<null>> {

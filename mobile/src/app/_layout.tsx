@@ -7,6 +7,7 @@ import {
   useFonts,
 } from '@expo-google-fonts/nunito';
 import * as Sentry from '@sentry/react-native';
+import * as Linking from 'expo-linking';
 import { Slot, useRouter } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect, useRef, useState } from 'react';
@@ -35,7 +36,9 @@ export default function RootLayout() {
   const session = useAuthStore(s => s.session);
   const setSession = useAuthStore(s => s.setSession);
   const hasNavigatedRef = useRef(false);
+  const isResetLinkRef = useRef(false);
   const [sessionChecked, setSessionChecked] = useState(false);
+  const [urlChecked, setUrlChecked] = useState(false);
 
   const [fontsLoaded, fontError] = useFonts({
     Nunito_400Regular,
@@ -50,6 +53,19 @@ export default function RootLayout() {
       SplashScreen.hideAsync();
     }
   }, [fontsLoaded, fontError]);
+
+  // Check the initial URL — if the app was opened by a password-reset deep link,
+  // skip the login redirect so Expo Router can route to /(auth)/reset-password
+  useEffect(() => {
+    Linking.getInitialURL().then((url) => {
+      if (url) {
+        const { path } = Linking.parse(url);
+        if (path === 'reset-password')
+          isResetLinkRef.current = true;
+      }
+      setUrlChecked(true);
+    });
+  }, []);
 
   // Restore persisted session and keep store in sync with Supabase auth events
   useEffect(() => {
@@ -66,18 +82,22 @@ export default function RootLayout() {
     return () => subscription.unsubscribe();
   }, [setSession]);
 
-  // Route guard — runs once when fonts + session check both complete
+  // Route guard — runs once when fonts + session + URL checks all complete
   useEffect(() => {
     if (!fontsLoaded && !fontError)
       return;
     if (!sessionChecked)
+      return;
+    if (!urlChecked)
       return;
     if (hasNavigatedRef.current)
       return;
     hasNavigatedRef.current = true;
 
     if (session)
-      return; // Already authenticated — default route (tabs) renders
+      return; // Authenticated — default route (tabs) renders
+    if (isResetLinkRef.current)
+      return; // Password-reset deep link — Expo Router handles routing
     if (!ageGateAccepted) {
       router.replace('/onboarding/age-gate');
       return;
@@ -87,7 +107,7 @@ export default function RootLayout() {
       return;
     }
     router.replace('/(auth)/login');
-  }, [fontsLoaded, fontError, sessionChecked, session, ageGateAccepted, privacyDisclosureAccepted, router]);
+  }, [fontsLoaded, fontError, sessionChecked, urlChecked, session, ageGateAccepted, privacyDisclosureAccepted, router]);
 
   if (!fontsLoaded && !fontError)
     return null;
