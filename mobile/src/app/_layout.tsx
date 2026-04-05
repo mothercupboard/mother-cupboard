@@ -16,6 +16,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { WarmHearthTheme } from '@/components/common/paper-theme';
 import { useAuthStore } from '@/features/auth/auth-store';
 import { useOnboardingStore } from '@/features/onboarding/onboarding-store';
+import { DatabaseProvider } from '@/lib/database/provider';
 import { supabase } from '@/lib/supabase/client';
 
 Sentry.init({
@@ -94,7 +95,9 @@ export default function RootLayout() {
   return (
     <SafeAreaProvider>
       <PaperProvider theme={WarmHearthTheme}>
-        <Slot />
+        <DatabaseProvider>
+          <Slot />
+        </DatabaseProvider>
       </PaperProvider>
     </SafeAreaProvider>
   );

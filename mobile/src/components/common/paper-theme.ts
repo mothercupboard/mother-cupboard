@@ -19,6 +19,7 @@ export const WarmHearthColors = {
   success: '#6BAE75', // Sage Green — mark as cooked, positive feedback
   adventurous: '#7B3FA0', // Deep Plum — high adventurousness indicator
   shoppingList: '#4A5FA8', // Warm Indigo — shopping list accent
+  outline: '#C4B8B0', // Warm Taupe — borders, dividers
 } as const;
 
 const fontConfig = {
@@ -43,7 +44,7 @@ export const WarmHearthTheme: MD3Theme = {
     onSurfaceVariant: WarmHearthColors.textSecondary,
     error: WarmHearthColors.expiryUrgent,
     onError: '#FFFFFF',
-    outline: '#C4B8B0',
+    outline: WarmHearthColors.outline,
   },
   fonts: configureFonts({ config: fontConfig }),
   roundness: 12, // 12px border radius — card-forward per UX spec
