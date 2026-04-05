@@ -70,3 +70,18 @@ export async function signOut(): Promise<void> {
   await supabase.auth.signOut();
   useAuthStore.getState().clearSession();
 }
+
+export async function deleteAccount(): Promise<ApiResponse<null>> {
+  const { error } = await supabase.rpc('delete_account');
+  if (error) {
+    return {
+      data: null,
+      error: {
+        code: 'DELETE_FAILED',
+        message: 'Failed to delete your account. Please try again.',
+        retryable: true,
+      },
+    };
+  }
+  return { data: null, error: null };
+}

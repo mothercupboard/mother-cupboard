@@ -9,7 +9,6 @@ import 'tsx/cjs';
 import Env from './env';
 
 const EXPO_ACCOUNT_OWNER = 'mothercupboard';
-const EAS_PROJECT_ID = 'PLACEHOLDER_EAS_PROJECT_ID';
 
 const appIconBadgeConfig: AppIconBadgeConfig = {
   enabled: Env.EXPO_PUBLIC_APP_ENV !== 'production',
@@ -132,7 +131,6 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   ],
   extra: {
     eas: {
-      projectId: EAS_PROJECT_ID,
     },
   },
 });
