@@ -8,13 +8,13 @@ import z from 'zod';
 import { FormTextField } from '@/components/common/form-text-field';
 import { WarmHearthColors } from '@/components/common/paper-theme';
 import { useAuthStore } from '@/features/auth/auth-store';
-import { signUp } from '@/features/auth/auth.service';
+import { signIn } from '@/features/auth/auth.service';
 import { supabase } from '@/lib/supabase/client';
 
 const emailSchema = z.string().email('Please enter a valid email address');
-const passwordSchema = z.string().min(8, 'Password must be at least 8 characters');
+const passwordSchema = z.string().min(1, 'Password is required');
 
-export function RegisterForm() {
+export function LoginForm() {
   const setSession = useAuthStore(s => s.setSession);
   const [serverError, setServerError] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
@@ -23,7 +23,7 @@ export function RegisterForm() {
     defaultValues: { email: '', password: '' },
     onSubmit: async ({ value }) => {
       setServerError(null);
-      const result = await signUp(value.email, value.password);
+      const result = await signIn(value.email, value.password);
       if (result.error) {
         setServerError(result.error.message);
         return;
@@ -88,8 +88,8 @@ export function RegisterForm() {
             errors={field.state.meta.errors.map(String)}
             isTouched={field.state.meta.isTouched}
             secureTextEntry={!showPassword}
-            textContentType="newPassword"
-            accessibilityHint="Must be at least 8 characters"
+            textContentType="password"
+            accessibilityHint="Enter your password"
             rightIcon={(
               <TextInput.Icon
                 icon={showPassword ? 'eye-off' : 'eye'}
@@ -110,10 +110,10 @@ export function RegisterForm() {
             style={styles.submitButton}
             contentStyle={styles.buttonContent}
             labelStyle={styles.buttonLabel}
-            accessibilityLabel="Create account"
+            accessibilityLabel="Sign in"
             accessibilityRole="button"
           >
-            {isSubmitting ? 'Creating account…' : 'Create account'}
+            {isSubmitting ? 'Signing in…' : 'Sign in'}
           </Button>
         )}
       </form.Subscribe>

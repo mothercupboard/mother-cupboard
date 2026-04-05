@@ -2,6 +2,7 @@ import type { User } from '@supabase/supabase-js';
 
 import type { ApiResponse } from 'shared/types/api.types';
 
+import { useAuthStore } from '@/features/auth/auth-store';
 import { useOnboardingStore } from '@/features/onboarding/onboarding-store';
 import { supabase } from '@/lib/supabase/client';
 
@@ -52,4 +53,20 @@ export async function signUp(
   }
 
   return { data: data.user, error: null };
+}
+
+export async function signIn(email: string, password: string): Promise<ApiResponse<User>> {
+  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+  if (error) {
+    return {
+      data: null,
+      error: { code: 'INVALID_CREDENTIALS', message: 'Incorrect email or password', retryable: true },
+    };
+  }
+  return { data: data.user, error: null };
+}
+
+export async function signOut(): Promise<void> {
+  await supabase.auth.signOut();
+  useAuthStore.getState().clearSession();
 }

@@ -9,12 +9,14 @@ import {
 import * as Sentry from '@sentry/react-native';
 import { Slot, useRouter } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { PaperProvider } from 'react-native-paper';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { WarmHearthTheme } from '@/components/common/paper-theme';
+import { useAuthStore } from '@/features/auth/auth-store';
 import { useOnboardingStore } from '@/features/onboarding/onboarding-store';
+import { supabase } from '@/lib/supabase/client';
 
 Sentry.init({
   dsn: process.env.EXPO_PUBLIC_SENTRY_DSN,
@@ -29,7 +31,10 @@ export default function RootLayout() {
   const router = useRouter();
   const ageGateAccepted = useOnboardingStore(s => s.ageGateAccepted);
   const privacyDisclosureAccepted = useOnboardingStore(s => s.privacyDisclosureAccepted);
+  const session = useAuthStore(s => s.session);
+  const setSession = useAuthStore(s => s.setSession);
   const hasNavigatedRef = useRef(false);
+  const [sessionChecked, setSessionChecked] = useState(false);
 
   const [fontsLoaded, fontError] = useFonts({
     Nunito_400Regular,
@@ -45,21 +50,43 @@ export default function RootLayout() {
     }
   }, [fontsLoaded, fontError]);
 
-  // Initial route guard — runs once after fonts load
+  // Restore persisted session and keep store in sync with Supabase auth events
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => {
+      if (data.session)
+        setSession(data.session);
+      setSessionChecked(true);
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, newSession) => {
+      setSession(newSession);
+    });
+
+    return () => subscription.unsubscribe();
+  }, [setSession]);
+
+  // Route guard — runs once when fonts + session check both complete
   useEffect(() => {
     if (!fontsLoaded && !fontError)
+      return;
+    if (!sessionChecked)
       return;
     if (hasNavigatedRef.current)
       return;
     hasNavigatedRef.current = true;
 
+    if (session)
+      return; // Already authenticated — default route (tabs) renders
     if (!ageGateAccepted) {
       router.replace('/onboarding/age-gate');
+      return;
     }
-    else if (!privacyDisclosureAccepted) {
+    if (!privacyDisclosureAccepted) {
       router.replace('/onboarding/privacy-disclosure');
+      return;
     }
-  }, [fontsLoaded, fontError, ageGateAccepted, privacyDisclosureAccepted, router]);
+    router.replace('/(auth)/login');
+  }, [fontsLoaded, fontError, sessionChecked, session, ageGateAccepted, privacyDisclosureAccepted, router]);
 
   if (!fontsLoaded && !fontError)
     return null;
