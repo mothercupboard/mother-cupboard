@@ -121,13 +121,8 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     ['app-icon-badge', appIconBadgeConfig],
     ['react-native-edge-to-edge'],
     'expo-sqlite',
-    [
-      '@sentry/react-native/expo',
-      {
-        organization: 'PLACEHOLDER_ORG',
-        project: 'PLACEHOLDER_PROJECT',
-      },
-    ],
+    ['expo-camera', { cameraPermission: 'Mother Cupboard needs camera access to scan product barcodes.' }],
+    ['@sentry/react-native/expo', { organization: 'PLACEHOLDER_ORG', project: 'PLACEHOLDER_PROJECT' }],
   ],
   extra: {
     eas: {

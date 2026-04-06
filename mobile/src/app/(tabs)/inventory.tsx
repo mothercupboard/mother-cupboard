@@ -1,8 +1,10 @@
 import type { InventoryItem, ItemLocation } from '@/lib/database/models/inventory-item';
+
+import { router } from 'expo-router';
 import { useState } from 'react';
 import { FlatList, StyleSheet, View } from 'react-native';
 
-import { Chip, Divider, Icon, Text } from 'react-native-paper';
+import { Chip, Divider, FAB, Icon, Text } from 'react-native-paper';
 
 import { WarmHearthColors } from '@/components/common/paper-theme';
 import { useInventoryStore } from '@/features/inventory/inventory-store';
@@ -116,6 +118,13 @@ export default function InventoryScreen() {
 
       <Divider />
 
+      <FAB
+        icon="barcode-scan"
+        style={styles.fab}
+        onPress={() => router.push('/inventory/scan')}
+        accessibilityLabel="Scan a barcode to add an item"
+      />
+
       {items.length === 0
         ? (
             <View style={styles.emptyState}>
@@ -168,7 +177,13 @@ const styles = StyleSheet.create({
   },
   locationChip: { borderRadius: 20 },
   chipText: { fontFamily: 'Nunito_600SemiBold', fontSize: 13 },
-  list: { paddingBottom: 24 },
+  list: { paddingBottom: 88 }, // extra room so FAB doesn't overlap last item
+  fab: {
+    backgroundColor: WarmHearthColors.primary,
+    bottom: 24,
+    position: 'absolute',
+    right: 16,
+  },
   itemRow: {
     flexDirection: 'row',
     alignItems: 'center',

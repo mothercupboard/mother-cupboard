@@ -10,7 +10,7 @@ export type FormTextFieldProps = {
   onBlur: () => void;
   errors: string[];
   isTouched: boolean;
-  keyboardType?: 'email-address' | 'default';
+  keyboardType?: 'default' | 'email-address' | 'numeric';
   textContentType?: 'emailAddress' | 'newPassword' | 'password';
   secureTextEntry?: boolean;
   rightIcon?: React.ReactNode;
@@ -39,7 +39,7 @@ export function FormTextField({
         onChangeText={onChangeText}
         onBlur={onBlur}
         autoCapitalize={keyboardType === 'email-address' ? 'none' : undefined}
-        autoCorrect={keyboardType === 'email-address' ? false : undefined}
+        autoCorrect={keyboardType === 'email-address' || keyboardType === 'numeric' ? false : undefined}
         keyboardType={keyboardType}
         textContentType={textContentType}
         secureTextEntry={secureTextEntry}
