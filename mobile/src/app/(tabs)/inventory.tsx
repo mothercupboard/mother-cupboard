@@ -124,8 +124,9 @@ export default function InventoryScreen() {
         visible
         icon={fabOpen ? 'close' : 'plus'}
         actions={[
-          { icon: 'barcode-scan', label: 'Scan barcode', onPress: () => router.push('/inventory/scan') },
+          { icon: 'pencil-outline', label: 'Add manually', onPress: () => router.push({ pathname: '/inventory/add-item', params: { manual: '1' } }) },
           { icon: 'magnify', label: 'Search by name', onPress: () => router.push('/inventory/search') },
+          { icon: 'barcode-scan', label: 'Scan barcode', onPress: () => router.push('/inventory/scan') },
         ]}
         onStateChange={({ open }) => setFabOpen(open)}
         style={styles.fab}

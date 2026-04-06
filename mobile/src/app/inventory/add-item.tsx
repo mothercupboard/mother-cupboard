@@ -6,9 +6,10 @@ import { WarmHearthColors } from '@/components/common/paper-theme';
 import { AddItemForm } from '@/features/inventory/components/add-item-form';
 
 export default function AddItemScreen() {
-  const { barcode, name, category, notFound } = useLocalSearchParams<{
+  const { barcode, name, category, notFound, manual } = useLocalSearchParams<{
     barcode?: string;
     category?: string;
+    manual?: string;
     name?: string;
     notFound?: string;
   }>();
@@ -27,6 +28,7 @@ export default function AddItemScreen() {
         barcode={barcode ?? null}
         initialName={name ?? ''}
         category={category ?? null}
+        requireExpiry={manual === '1'}
       />
     </View>
   );
