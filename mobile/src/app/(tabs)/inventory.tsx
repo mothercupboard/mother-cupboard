@@ -96,6 +96,7 @@ function ItemRow({ item }: { item: InventoryItem }) {
 
 export default function InventoryScreen() {
   const [activeLocation, setActiveLocation] = useState<ItemLocation>('fridge');
+  const [fabOpen, setFabOpen] = useState(false);
   const items = useInventoryItems(activeLocation);
 
   return (
@@ -118,11 +119,16 @@ export default function InventoryScreen() {
 
       <Divider />
 
-      <FAB
-        icon="barcode-scan"
+      <FAB.Group
+        open={fabOpen}
+        visible
+        icon={fabOpen ? 'close' : 'plus'}
+        actions={[
+          { icon: 'barcode-scan', label: 'Scan barcode', onPress: () => router.push('/inventory/scan') },
+          { icon: 'magnify', label: 'Search by name', onPress: () => router.push('/inventory/search') },
+        ]}
+        onStateChange={({ open }) => setFabOpen(open)}
         style={styles.fab}
-        onPress={() => router.push('/inventory/scan')}
-        accessibilityLabel="Scan a barcode to add an item"
       />
 
       {items.length === 0

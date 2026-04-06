@@ -78,6 +78,15 @@ export async function lookupByBarcode(barcode: string): Promise<OffProduct | nul
   );
 }
 
+export async function searchByName(query: string): Promise<OffProduct[]> {
+  const database = await openDb();
+  await seedIfNeeded(database);
+  return database.getAllAsync<OffProduct>(
+    'SELECT barcode, name, category FROM off_cache WHERE name LIKE ? ORDER BY name LIMIT 20',
+    [`%${query}%`],
+  );
+}
+
 export async function cacheProduct(product: OffProduct): Promise<void> {
   const database = await openDb();
   await database.runAsync(
