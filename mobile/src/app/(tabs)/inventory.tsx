@@ -1,13 +1,15 @@
-import type { InventoryItem, ItemLocation } from '@/lib/database/models/inventory-item';
+import type { ItemLocation } from '@/lib/database/models/inventory-item';
 
 import { router } from 'expo-router';
 import { useState } from 'react';
 import { FlatList, StyleSheet, View } from 'react-native';
-
 import { Chip, Divider, FAB, Icon, Text } from 'react-native-paper';
 
 import { WarmHearthColors } from '@/components/common/paper-theme';
+import { InventoryEmptyState } from '@/features/inventory/components/inventory-empty-state';
+import { InventoryItemCard } from '@/features/inventory/components/inventory-item-card';
 import { useInventoryStore } from '@/features/inventory/inventory-store';
+import { sortByExpiry } from '@/features/inventory/inventory.utils';
 import { useInventoryItems } from '@/features/inventory/use-inventory-items';
 
 const LOCATIONS: { label: string; value: ItemLocation }[] = [
@@ -17,11 +19,11 @@ const LOCATIONS: { label: string; value: ItemLocation }[] = [
 ];
 
 const SYNC_ICON: Record<string, string> = {
-  idle: 'cloud-outline',
-  syncing: 'cloud-sync-outline',
-  synced: 'cloud-check-outline',
   error: 'cloud-alert-outline',
+  idle: 'cloud-outline',
   pending: 'cloud-upload-outline',
+  synced: 'cloud-check-outline',
+  syncing: 'cloud-sync-outline',
 };
 
 function SyncBanner() {
@@ -60,44 +62,11 @@ function SyncBanner() {
   );
 }
 
-function ItemRow({ item }: { item: InventoryItem }) {
-  const hasExpiry = item.expiryDate !== null;
-  const expiryLabel = hasExpiry
-    ? new Date(item.expiryDate!).toLocaleDateString('en-GB')
-    : null;
-
-  return (
-    <View style={styles.itemRow}>
-      <View style={styles.itemInfo}>
-        <Text variant="bodyLarge" style={styles.itemName}>{item.name}</Text>
-        {item.quantity !== null && (
-          <Text variant="bodySmall" style={styles.itemMeta}>
-            {item.quantity}
-            {item.unit ? ` ${item.unit}` : ''}
-          </Text>
-        )}
-      </View>
-      {hasExpiry && (
-        <Text
-          variant="labelSmall"
-          style={[
-            styles.expiryLabel,
-            item.expiryType === 'use_by' && styles.expiryUrgent,
-          ]}
-        >
-          {item.expiryType === 'use_by' ? 'Use by' : 'Best before'}
-          {' '}
-          {expiryLabel}
-        </Text>
-      )}
-    </View>
-  );
-}
-
 export default function InventoryScreen() {
   const [activeLocation, setActiveLocation] = useState<ItemLocation>('fridge');
   const [fabOpen, setFabOpen] = useState(false);
   const items = useInventoryItems(activeLocation);
+  const sortedItems = sortByExpiry(items);
 
   return (
     <View style={styles.container}>
@@ -132,24 +101,13 @@ export default function InventoryScreen() {
         style={styles.fab}
       />
 
-      {items.length === 0
-        ? (
-            <View style={styles.emptyState}>
-              <Text variant="bodyMedium" style={styles.emptyText}>
-                Nothing in your
-                {' '}
-                {activeLocation}
-                {' '}
-                yet.
-              </Text>
-            </View>
-          )
+      {sortedItems.length === 0
+        ? <InventoryEmptyState location={activeLocation} />
         : (
             <FlatList
-              data={items}
+              data={sortedItems}
               keyExtractor={item => item.id}
-              renderItem={({ item }) => <ItemRow item={item} />}
-              ItemSeparatorComponent={Divider}
+              renderItem={({ item }) => <InventoryItemCard item={item} />}
               contentContainerStyle={styles.list}
             />
           )}
@@ -158,24 +116,18 @@ export default function InventoryScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: WarmHearthColors.background,
-  },
+  container: { backgroundColor: WarmHearthColors.background, flex: 1 },
   syncBanner: {
-    flexDirection: 'row',
     alignItems: 'center',
+    backgroundColor: WarmHearthColors.surface,
+    borderBottomColor: WarmHearthColors.outline,
+    borderBottomWidth: 1,
+    flexDirection: 'row',
     gap: 6,
     paddingHorizontal: 16,
     paddingVertical: 6,
-    backgroundColor: WarmHearthColors.surface,
-    borderBottomWidth: 1,
-    borderBottomColor: WarmHearthColors.outline,
   },
-  syncText: {
-    color: WarmHearthColors.textSecondary,
-    fontFamily: 'Nunito_400Regular',
-  },
+  syncText: { color: WarmHearthColors.textSecondary, fontFamily: 'Nunito_400Regular' },
   locationTabs: {
     flexDirection: 'row',
     gap: 8,
@@ -184,44 +136,6 @@ const styles = StyleSheet.create({
   },
   locationChip: { borderRadius: 20 },
   chipText: { fontFamily: 'Nunito_600SemiBold', fontSize: 13 },
-  list: { paddingBottom: 88 }, // extra room so FAB doesn't overlap last item
-  fab: {
-    backgroundColor: WarmHearthColors.primary,
-    bottom: 24,
-    position: 'absolute',
-    right: 16,
-  },
-  itemRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-  },
-  itemInfo: { flex: 1, gap: 2 },
-  itemName: {
-    fontFamily: 'Nunito_600SemiBold',
-    color: WarmHearthColors.textPrimary,
-  },
-  itemMeta: {
-    fontFamily: 'Nunito_400Regular',
-    color: WarmHearthColors.textSecondary,
-  },
-  expiryLabel: {
-    fontFamily: 'Nunito_400Regular',
-    color: WarmHearthColors.textSecondary,
-    fontSize: 12,
-  },
-  expiryUrgent: { color: WarmHearthColors.expiryUrgent },
-  emptyState: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 32,
-  },
-  emptyText: {
-    fontFamily: 'Nunito_400Regular',
-    color: WarmHearthColors.textSecondary,
-    textAlign: 'center',
-  },
+  list: { paddingBottom: 96, paddingTop: 8 },
+  fab: { bottom: 24, position: 'absolute', right: 16 },
 });
