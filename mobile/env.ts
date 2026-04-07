@@ -38,9 +38,9 @@ const PACKAGES = {
 } as const;
 
 const SCHEMES = {
-  development: 'motherCupboard',
-  preview: 'motherCupboard.preview',
-  production: 'motherCupboard',
+  development: 'mothercupboard',
+  preview: 'mothercupboard-preview',
+  production: 'mothercupboard',
 } as const;
 
 const NAME = 'Mother Cupboard';
