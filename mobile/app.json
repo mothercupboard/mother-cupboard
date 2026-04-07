@@ -1,4 +1,9 @@
 {
-  "name": "mobile",
-  "slug": "mobile"
+  "expo": {
+    "extra": {
+      "eas": {
+        "projectId": "4073602c-9476-4b92-972d-bf5d92746606"
+      }
+    }
+  }
 }

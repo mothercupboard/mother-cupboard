@@ -8,6 +8,7 @@ import 'tsx/cjs';
 // eslint-disable-next-line perfectionist/sort-imports
 import Env from './env';
 
+const EAS_PROJECT_ID = '4073602c-9476-4b92-972d-bf5d92746606';
 const EXPO_ACCOUNT_OWNER = 'mothercupboard';
 
 const appIconBadgeConfig: AppIconBadgeConfig = {
@@ -122,10 +123,13 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     ['react-native-edge-to-edge'],
     'expo-sqlite',
     ['expo-camera', { cameraPermission: 'Mother Cupboard needs camera access to scan product barcodes.' }],
+    ['expo-notifications'],
     ['@sentry/react-native/expo', { organization: 'PLACEHOLDER_ORG', project: 'PLACEHOLDER_PROJECT' }],
   ],
   extra: {
     eas: {
+      projectId: EAS_PROJECT_ID,
     },
   },
 });
+
