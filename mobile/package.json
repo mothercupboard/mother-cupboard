@@ -49,6 +49,7 @@
     "@gorhom/bottom-sheet": "^5.2.8",
     "@nozbe/watermelondb": "^0.28.0",
     "@react-native-community/netinfo": "11.4.1",
+    "@sentry/cli": "~2.55.0",
     "@sentry/react-native": "~7.2.0",
     "@shopify/flash-list": "2.0.2",
     "@supabase/supabase-js": "^2.101.1",
