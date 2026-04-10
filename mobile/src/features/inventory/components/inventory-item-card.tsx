@@ -1,7 +1,8 @@
 import type { ExpiryBadge } from '@/features/inventory/inventory.utils';
 import type { InventoryItem } from '@/lib/database/models/inventory-item';
 
-import { StyleSheet, View } from 'react-native';
+import { router } from 'expo-router';
+import { Pressable, StyleSheet, View } from 'react-native';
 import { Text } from 'react-native-paper';
 
 import { WarmHearthColors } from '@/components/common/paper-theme';
@@ -28,31 +29,37 @@ export function InventoryItemCard({ item }: { item: InventoryItem }) {
     : null;
 
   return (
-    <View style={styles.card}>
-      <View style={styles.header}>
-        <Text variant="bodyLarge" style={styles.name} numberOfLines={2}>{item.name}</Text>
-        {badge !== null && <BadgePill urgency={badge.urgency} label={badge.label} />}
+    <Pressable
+      onPress={() => router.push({ pathname: '/inventory/edit-item', params: { id: item.id } })}
+      accessibilityRole="button"
+      accessibilityLabel={`Edit ${item.name}`}
+    >
+      <View style={styles.card}>
+        <View style={styles.header}>
+          <Text variant="bodyLarge" style={styles.name} numberOfLines={2}>{item.name}</Text>
+          {badge !== null && <BadgePill urgency={badge.urgency} label={badge.label} />}
+        </View>
+
+        {item.quantity !== null && (
+          <Text variant="bodySmall" style={styles.meta}>
+            {item.quantity}
+            {item.unit ? ` ${item.unit}` : ''}
+          </Text>
+        )}
+
+        {expiryFormatted !== null && (
+          <Text variant="bodySmall" style={styles.meta}>
+            {item.expiryType === 'use_by' ? 'Use by' : 'Best before'}
+            {' '}
+            {expiryFormatted}
+          </Text>
+        )}
+
+        {badge?.note !== null && badge?.note !== undefined && (
+          <Text variant="bodySmall" style={styles.note}>{badge.note}</Text>
+        )}
       </View>
-
-      {item.quantity !== null && (
-        <Text variant="bodySmall" style={styles.meta}>
-          {item.quantity}
-          {item.unit ? ` ${item.unit}` : ''}
-        </Text>
-      )}
-
-      {expiryFormatted !== null && (
-        <Text variant="bodySmall" style={styles.meta}>
-          {item.expiryType === 'use_by' ? 'Use by' : 'Best before'}
-          {' '}
-          {expiryFormatted}
-        </Text>
-      )}
-
-      {badge?.note !== null && badge?.note !== undefined && (
-        <Text variant="bodySmall" style={styles.note}>{badge.note}</Text>
-      )}
-    </View>
+    </Pressable>
   );
 }
 

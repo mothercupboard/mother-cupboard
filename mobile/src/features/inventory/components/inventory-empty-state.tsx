@@ -12,7 +12,7 @@ const EMPTY_CONFIG: Record<ItemLocation, { copy: string; emoji: string }> = {
     emoji: '🫙',
   },
   freezer: {
-    copy: 'Your freezer\'s looking empty — anything hiding in there?',
+    copy: 'Your freezer\'s looking empty — add your first item to get started.',
     emoji: '❄️',
   },
   fridge: {

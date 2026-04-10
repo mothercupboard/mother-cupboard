@@ -7,7 +7,9 @@
     "deploy": "serverless deploy"
   },
   "dependencies": {
-    "@sentry/serverless": "^7.0.0"
+    "@anthropic-ai/sdk": "^0.82.0",
+    "@sentry/serverless": "^7.0.0",
+    "openai": "^6.33.0"
   },
   "devDependencies": {
     "@types/aws-lambda": "^8.10.0",

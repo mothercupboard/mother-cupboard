@@ -33,7 +33,7 @@ export default function ForgotPasswordScreen() {
       <View style={styles.container}>
         <Text variant="headlineMedium" style={styles.heading}>Check your email</Text>
         <Text variant="bodyMedium" style={styles.subtext}>
-          We've sent a password reset link to your email address. The link expires in 1 hour.
+          {'We\u2019ve sent a password reset link to your email address. It\u2019ll be valid for a while, so no rush.'}
         </Text>
         <Button
           mode="contained"

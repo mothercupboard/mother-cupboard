@@ -1,25 +1,46 @@
-import { StyleSheet, View } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
 import { Text } from 'react-native-paper';
 
 import { WarmHearthColors } from '@/components/common/paper-theme';
+import { TrialBanner } from '@/features/auth/components/trial-banner';
+import { StaleInventoryNudge } from '@/features/inventory/components/stale-inventory-nudge';
+import { ExpiryNudgeCard } from '@/features/notifications/expiry-nudge-card';
+import { WelcomeCard } from '@/features/onboarding/components/welcome-card';
 
 export default function HomeScreen() {
   return (
-    <View style={styles.container}>
+    <ScrollView
+      style={styles.scroll}
+      contentContainerStyle={styles.container}
+    >
       <Text variant="headlineMedium" style={styles.heading}>Home</Text>
-    </View>
+
+      <View style={styles.section}>
+        <WelcomeCard />
+        <TrialBanner />
+        <ExpiryNudgeCard />
+        <StaleInventoryNudge />
+      </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  scroll: {
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
     backgroundColor: WarmHearthColors.background,
+  },
+  container: {
+    paddingBottom: 32,
+    paddingTop: 24,
   },
   heading: {
     fontFamily: 'Nunito_700Bold',
     color: WarmHearthColors.textPrimary,
+    marginBottom: 16,
+    marginHorizontal: 16,
+  },
+  section: {
+    gap: 12,
   },
 });

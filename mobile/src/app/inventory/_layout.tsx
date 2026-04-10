@@ -14,6 +14,7 @@ export default function InventoryLayout() {
       <Stack.Screen name="scan" options={{ title: 'Scan Barcode' }} />
       <Stack.Screen name="search" options={{ title: 'Search by Name' }} />
       <Stack.Screen name="add-item" options={{ title: 'Add Item' }} />
+      <Stack.Screen name="edit-item" options={{ title: 'Edit Item' }} />
     </Stack>
   );
 }

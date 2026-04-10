@@ -8,6 +8,7 @@ import {
 } from '@expo-google-fonts/nunito';
 import * as Sentry from '@sentry/react-native';
 import * as Linking from 'expo-linking';
+import * as Notifications from 'expo-notifications';
 import { Slot, useRouter } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect, useRef, useState } from 'react';
@@ -17,8 +18,20 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { WarmHearthTheme } from '@/components/common/paper-theme';
 import { useAuthStore } from '@/features/auth/auth-store';
 import { useOnboardingStore } from '@/features/onboarding/onboarding-store';
+import { APIProvider } from '@/lib/api/provider';
 import { DatabaseProvider } from '@/lib/database/provider';
 import { supabase } from '@/lib/supabase/client';
+
+// Show expiry-alert notifications even while the app is foregrounded
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowAlert: true,
+    shouldPlaySound: false,
+    shouldSetBadge: false,
+    shouldShowBanner: true,
+    shouldShowList: true,
+  }),
+});
 
 Sentry.init({
   dsn: process.env.EXPO_PUBLIC_SENTRY_DSN,
@@ -109,15 +122,28 @@ export default function RootLayout() {
     router.replace('/(auth)/login');
   }, [fontsLoaded, fontError, sessionChecked, urlChecked, session, ageGateAccepted, privacyDisclosureAccepted, router]);
 
+  // Navigate to inventory when user taps an expiry-alert notification
+  useEffect(() => {
+    const sub = Notifications.addNotificationResponseReceivedListener((response) => {
+      const category = response.notification.request.content.categoryIdentifier;
+      if (category === 'expiry-alert') {
+        router.navigate('/(tabs)/inventory');
+      }
+    });
+    return () => sub.remove();
+  }, [router]);
+
   if (!fontsLoaded && !fontError)
     return null;
 
   return (
     <SafeAreaProvider>
       <PaperProvider theme={WarmHearthTheme}>
-        <DatabaseProvider>
-          <Slot />
-        </DatabaseProvider>
+        <APIProvider>
+          <DatabaseProvider>
+            <Slot />
+          </DatabaseProvider>
+        </APIProvider>
       </PaperProvider>
     </SafeAreaProvider>
   );

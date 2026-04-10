@@ -24,6 +24,8 @@ export async function signUp(
         age_gate_accepted_at: now,
         privacy_disclosure_accepted: privacyDisclosureAccepted,
         privacy_disclosure_accepted_at: now,
+        trial_started_at: now,
+        plan: 'trial',
       },
     },
   });
@@ -94,6 +96,35 @@ export async function updatePassword(password: string): Promise<ApiResponse<null
     };
   }
   return { data: null, error: null };
+}
+
+/**
+ * Restore purchases — updates user metadata to premium if a valid
+ * subscription is found. Currently a stub that checks Supabase metadata;
+ * will be wired to App Store / Play Store receipt validation in a future story.
+ */
+export async function restorePurchases(): Promise<ApiResponse<null>> {
+  const { data: { user }, error: fetchError } = await supabase.auth.getUser();
+  if (fetchError || !user) {
+    return {
+      data: null,
+      error: { code: 'RESTORE_FAILED', message: 'Could not verify your account. Please try again.', retryable: true },
+    };
+  }
+
+  const plan = user.user_metadata?.plan;
+  if (plan === 'premium') {
+    // Already premium — refresh the local session to pick up metadata
+    await supabase.auth.refreshSession();
+    return { data: null, error: null };
+  }
+
+  // Stub: in future, validate App Store / Play Store receipt here.
+  // For now, return a clear message that no purchase was found.
+  return {
+    data: null,
+    error: { code: 'NO_PURCHASE', message: 'No active subscription found. If you recently purchased, please try again in a few minutes.', retryable: true },
+  };
 }
 
 export async function deleteAccount(): Promise<ApiResponse<null>> {

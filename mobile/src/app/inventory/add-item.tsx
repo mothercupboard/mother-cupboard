@@ -4,6 +4,7 @@ import { Icon, Text } from 'react-native-paper';
 
 import { WarmHearthColors } from '@/components/common/paper-theme';
 import { AddItemForm } from '@/features/inventory/components/add-item-form';
+import { useNotificationPrompt } from '@/features/notifications/use-notification-prompt';
 
 export default function AddItemScreen() {
   const { barcode, name, category, notFound, manual } = useLocalSearchParams<{
@@ -13,6 +14,8 @@ export default function AddItemScreen() {
     name?: string;
     notFound?: string;
   }>();
+
+  const promptNotifications = useNotificationPrompt();
 
   return (
     <View style={styles.container}>
@@ -29,6 +32,7 @@ export default function AddItemScreen() {
         initialName={name ?? ''}
         category={category ?? null}
         requireExpiry={manual === '1'}
+        onItemSaved={promptNotifications}
       />
     </View>
   );

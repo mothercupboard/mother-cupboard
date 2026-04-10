@@ -11,6 +11,8 @@ import { InventoryItemCard } from '@/features/inventory/components/inventory-ite
 import { useInventoryStore } from '@/features/inventory/inventory-store';
 import { sortByExpiry } from '@/features/inventory/inventory.utils';
 import { useInventoryItems } from '@/features/inventory/use-inventory-items';
+import { FeatureTip } from '@/features/onboarding/components/feature-tip';
+import { useOnboardingStore } from '@/features/onboarding/onboarding-store';
 
 const LOCATIONS: { label: string; value: ItemLocation }[] = [
   { label: 'Fridge', value: 'fridge' },
@@ -68,9 +70,21 @@ export default function InventoryScreen() {
   const items = useInventoryItems(activeLocation);
   const sortedItems = sortByExpiry(items);
 
+  const tipSeen = useOnboardingStore(s => s.inventoryTipSeen);
+  const dismissTip = useOnboardingStore(s => s.dismissTip);
+
   return (
     <View style={styles.container}>
       <SyncBanner />
+
+      {!tipSeen && (
+        <FeatureTip
+          icon="archive-outline"
+          title="Your digital cupboard"
+          body="Add items by scanning a barcode, searching by name, or typing manually. We'll keep track of dates and gently remind you when items are coming up."
+          onDismiss={() => dismissTip('inventoryTipSeen')}
+        />
+      )}
 
       <View style={styles.locationTabs}>
         {LOCATIONS.map(loc => (

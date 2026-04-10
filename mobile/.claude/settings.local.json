@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx expo:*)",
+      "Bash(pnpm install:*)",
+      "Bash(eas build:*)",
+      "Bash(eas --version)",
+      "WebFetch(domain:expo.dev)",
+      "Bash(eas build:view:*)",
+      "WebFetch(domain:job-logs.eascdn.net)",
+      "Bash(pnpm update:*)",
+      "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); [print\\(u\\) for u in d.get\\('logFiles',[]\\)]\")",
+      "Bash(curl -sL \"https://job-logs.eascdn.net/production-xcode-logs/18c43caf-df6e-4df9-9828-b04ca8139a17?X-Goog-Algorithm=GOOG4-RSA-SHA256&X-Goog-Credential=www-production%40exponentjs.iam.gserviceaccount.com%2F20260408%2Fauto%2Fstorage%2Fgoog4_request&X-Goog-Date=20260408T090215Z&X-Goog-Expires=900&X-Goog-SignedHeaders=host&X-Goog-Signature=8d3882378521970bb52cdd7265e248fd252df0bd38522b8781a085429b69dd09518be32412d92bb837469167255c78bd8242f7c4e8e1456088cabc6aafb005df0cb4c06130201320ec0db63fca8ae571e919cfd53bf80a2f713d061918c41ffe2a4555491a8cbf36e607279bf1566bf1049504f759e8417b9a235c3324bcaf228ffd52b76978b9e42f76a2cd604815aade5e94731435fc7a2ec89079e2df6a82a4117f9999b0cdbc7474be33609c495d94f5124b1458951f853ba256aab07744a044630490117d61610759dc551a2ccbe4627c0a8789f646fdbbd75d53ad148771c72e7bbceb04eab18d3eac30f9420886b0db28a6fb718f66c5b60ab4e44993\" -o /tmp/xcode-logs.txt)",
+      "Read(//tmp/**)",
+      "Bash(npm view:*)",
+      "Bash(pnpm exec:*)"
+    ]
+  }
+}

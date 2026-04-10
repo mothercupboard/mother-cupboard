@@ -13,7 +13,28 @@
       "Bash(pnpm test:*)",
       "Bash(git add:*)",
       "Bash(git commit:*)",
-      "Bash(git config:*)"
+      "Bash(git config:*)",
+      "Bash(grep -r \"delete\\\\|remove\" /c/Users/mandr/dev/mother-cupboard/mobile/node_modules/.pnpm/react-native-mmkv*/node_modules/react-native-mmkv/lib/typescript/MMKV.d.ts)",
+      "Bash(xargs cat:*)",
+      "Bash(xargs grep:*)",
+      "Bash(npx expo:*)",
+      "Bash(npx eas:*)",
+      "Bash(pnpm eas:*)",
+      "Bash(eas whoami:*)",
+      "Bash(eas init:*)",
+      "Bash(echo \"exit:$?\")",
+      "Bash(grep -r \"story 2.6\\\\|Story 2.6\\\\|edit\\\\|delete\" \"C:\\\\Users\\\\mandr\\\\dev\\\\mother-cupboard\" --include=\"*.md\" --include=\"*.txt\" --include=\"*.json\" ! -path \"*/node_modules/*\")",
+      "Bash(npx tsc:*)",
+      "Bash(echo \"EXIT: $?\")",
+      "Bash(npx eslint:*)",
+      "Bash(find:*)",
+      "Bash(grep:*)",
+      "Bash(echo \"EXIT:$?\")",
+      "Bash(xargs ls:*)",
+      "Bash(echo \"TSC_EXIT:$?\")",
+      "Bash(echo \"TSC:$?\")",
+      "Bash(echo \"LINT:$?\")",
+      "Bash(pnpm --filter mobile tsc --noEmit)"
     ]
   }
 }

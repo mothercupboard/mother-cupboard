@@ -10,6 +10,9 @@ provider:
   environment:
     STAGE: ${self:provider.stage}
     SENTRY_DSN: ${env:SENTRY_DSN, ''}
+    AI_PROVIDER: ${env:AI_PROVIDER, 'anthropic'}
+    ANTHROPIC_API_KEY: ${env:ANTHROPIC_API_KEY, ''}
+    OPENAI_API_KEY: ${env:OPENAI_API_KEY, ''}
 
 functions:
   suggestMeals:
@@ -23,4 +26,3 @@ functions:
 plugins:
   - serverless-plugin-typescript
 
-# Placeholder — fully configured in Epic 4 Story 4.1

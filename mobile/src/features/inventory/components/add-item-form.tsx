@@ -80,10 +80,11 @@ type Props = {
   barcode: string | null;
   category: string | null;
   initialName: string;
+  onItemSaved?: () => void;
   requireExpiry?: boolean;
 };
 
-export function AddItemForm({ barcode, initialName, category, requireExpiry = false }: Props) {
+export function AddItemForm({ barcode, initialName, category, onItemSaved, requireExpiry = false }: Props) {
   const db = useDatabase();
   const [name, setName] = useState(initialName);
   const [quantity, setQuantity] = useState('');
@@ -109,6 +110,7 @@ export function AddItemForm({ barcode, initialName, category, requireExpiry = fa
     setSubmitting(true);
     try {
       await saveItem(db, { barcode, category, expiryDate, expiryType, location, name, quantity, unit });
+      onItemSaved?.();
       router.replace('/(tabs)/inventory');
     }
     finally {
