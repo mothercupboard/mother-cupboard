@@ -216,7 +216,7 @@ export function EditItemForm({ item }: { item: InventoryItem }) {
         onBlur={() => {}}
         errors={[]}
         isTouched={false}
-        keyboardType="numeric"
+        keyboardType="numbers-and-punctuation"
         accessibilityHint="Enter quantity"
       />
       <Text variant="labelMedium" style={styles.fieldLabel}>Unit</Text>

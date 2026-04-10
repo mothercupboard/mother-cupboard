@@ -92,6 +92,13 @@ export function AddItemForm({ barcode, initialName, category, onItemSaved, requi
   const [location, setLocation] = useState<ItemLocation>('fridge');
   const [expiryType, setExpiryType] = useState<ExpiryType | ''>(requireExpiry ? 'use_by' : '');
   const [expiryDate, setExpiryDate] = useState('');
+  const handleExpiryDateChange = (text: string) => {
+    const digits = text.replace(/\D/g, '');
+    let formatted = digits;
+    if (digits.length >= 3) formatted = digits.slice(0, 2) + '/' + digits.slice(2);
+    if (digits.length >= 5) formatted = digits.slice(0, 2) + '/' + digits.slice(2, 4) + '/' + digits.slice(4, 8);
+    setExpiryDate(formatted);
+  };
   const [nameError, setNameError] = useState<string | null>(null);
   const [expiryError, setExpiryError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -142,7 +149,7 @@ export function AddItemForm({ barcode, initialName, category, onItemSaved, requi
         onBlur={() => {}}
         errors={[]}
         isTouched={false}
-        keyboardType="numeric"
+        keyboardType="number-pad"
         accessibilityHint="Enter quantity"
       />
       <Text variant="labelMedium" style={styles.fieldLabel}>Unit</Text>
@@ -169,7 +176,7 @@ export function AddItemForm({ barcode, initialName, category, onItemSaved, requi
         <FormTextField
           label="Expiry date (DD/MM/YYYY)"
           value={expiryDate}
-          onChangeText={setExpiryDate}
+          onChangeText={handleExpiryDateChange}
           onBlur={() => {}}
           errors={expiryDate && parseDateGB(expiryDate) === null ? ['Enter a date as DD/MM/YYYY'] : []}
           isTouched={expiryDate.length > 0}
