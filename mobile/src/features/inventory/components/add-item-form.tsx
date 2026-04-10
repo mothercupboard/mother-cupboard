@@ -137,7 +137,7 @@ export function AddItemForm({ barcode, initialName, category, onItemSaved, requi
   }
 
   return (
-    <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
+    <ScrollView keyboardDismissMode="on-drag" keyboardShouldPersistTaps="handled" contentContainerStyle={styles.container}>
       <VoiceInputButton onParsed={handleVoiceParsed} />
       <FormTextField
         label="Item name"
@@ -234,4 +234,5 @@ const styles = StyleSheet.create({
   buttonContent: { paddingVertical: 6 },
   buttonLabel: { fontFamily: 'Nunito_700Bold', fontSize: 16 },
 });
+
 

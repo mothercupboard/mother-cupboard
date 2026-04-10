@@ -112,7 +112,7 @@ export default function InventoryScreen() {
           { icon: 'barcode-scan', label: 'Scan barcode', onPress: () => router.push('/inventory/scan') },
         ]}
         onStateChange={({ open }) => setFabOpen(open)}
-        style={styles.fab}
+        style={styles.fab} testID="fab-group"
       />
 
       {sortedItems.length === 0
@@ -151,5 +151,6 @@ const styles = StyleSheet.create({
   locationChip: { borderRadius: 20 },
   chipText: { fontFamily: 'Nunito_600SemiBold', fontSize: 13 },
   list: { paddingBottom: 96, paddingTop: 8 },
-  fab: { bottom: 24, position: 'absolute', right: 16 },
+  fab: { bottom: 24, position: 'absolute', right: 16, zIndex: 10 },
 });
+
