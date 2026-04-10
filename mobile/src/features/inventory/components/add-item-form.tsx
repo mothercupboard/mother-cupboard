@@ -10,6 +10,9 @@ import { FormTextField } from '@/components/common/form-text-field';
 import { WarmHearthColors } from '@/components/common/paper-theme';
 import { parseDateGB } from '@/features/inventory/inventory.utils';
 import { useDatabase } from '@/lib/database/provider';
+import { VoiceInputButton } from '@/features/inventory/components/voice-input-button';
+import type { ParsedVoiceItem } from '@/lib/ai/voice-parser';
+
 
 const LOCATION_BUTTONS = [
   { label: 'Fridge', value: 'fridge' },
@@ -101,6 +104,14 @@ export function AddItemForm({ barcode, initialName, category, onItemSaved, requi
   };
   const [nameError, setNameError] = useState<string | null>(null);
   const [expiryError, setExpiryError] = useState<string | null>(null);
+  const handleVoiceParsed = (parsed: ParsedVoiceItem) => {
+    if (parsed.name) setName(parsed.name);
+    if (parsed.quantity) setQuantity(String(parsed.quantity));
+    if (parsed.unit) setUnit(parsed.unit);
+    if (parsed.location) setLocation(parsed.location as ItemLocation);
+    if (parsed.expiryType) setExpiryType(parsed.expiryType as ExpiryType);
+    if (parsed.expiryDate) setExpiryDate(parsed.expiryDate);
+  };
   const [submitting, setSubmitting] = useState(false);
   async function handleSubmit() {
     if (!name.trim()) {
@@ -127,6 +138,7 @@ export function AddItemForm({ barcode, initialName, category, onItemSaved, requi
 
   return (
     <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
+      <VoiceInputButton onParsed={handleVoiceParsed} />
       <FormTextField
         label="Item name"
         value={name}

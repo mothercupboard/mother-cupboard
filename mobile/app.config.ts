@@ -52,6 +52,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     bundleIdentifier: Env.EXPO_PUBLIC_BUNDLE_ID,
     infoPlist: {
       ITSAppUsesNonExemptEncryption: false,
+      NSMicrophoneUsageDescription: 'Mother Cupboard uses your microphone so you can add items by voice.',
     },
   },
   experiments: {
@@ -136,5 +137,6 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     },
   },
 });
+
 
 
