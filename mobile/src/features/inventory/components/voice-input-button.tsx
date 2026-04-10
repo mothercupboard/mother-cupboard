@@ -4,7 +4,7 @@ import React, { useRef, useState } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
 import { Text } from 'react-native-paper';
 
-import { WarmHearthColors } from '@/lib/theme/warm-hearth-colors';
+import { WarmHearthColors } from '@/components/common/paper-theme';
 import { parseVoiceItem, startVoiceRecording, stopAndTranscribe } from '@/lib/ai/voice-parser';
 import type { ParsedVoiceItem } from '@/lib/ai/voice-parser';
 
@@ -69,9 +69,9 @@ export function VoiceInputButton({ onParsed }: Props) {
         accessibilityRole="button"
       >
         {uiState === 'processing' ? (
-          <ActivityIndicator color={WarmHearthColors.warmCream} size="small" />
+          <ActivityIndicator color={WarmHearthColors.background} size="small" />
         ) : (
-          <MaterialCommunityIcons name={iconName} size={26} color={WarmHearthColors.warmCream} />
+          <MaterialCommunityIcons name={iconName} size={26} color={WarmHearthColors.background} />
         )}
       </Pressable>
       <Text variant="bodySmall" style={styles.hint}>{label}</Text>
@@ -89,7 +89,7 @@ const styles = StyleSheet.create({
     width: 68,
     height: 68,
     borderRadius: 34,
-    backgroundColor: WarmHearthColors.terracotta,
+    backgroundColor: WarmHearthColors.primary,
     alignItems: 'center',
     justifyContent: 'center',
     shadowColor: '#000',
@@ -110,3 +110,5 @@ const styles = StyleSheet.create({
     fontFamily: 'Nunito_400Regular',
   },
 });
+
+

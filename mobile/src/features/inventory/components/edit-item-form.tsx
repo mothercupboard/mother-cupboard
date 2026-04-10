@@ -216,7 +216,7 @@ export function EditItemForm({ item }: { item: InventoryItem }) {
         onBlur={() => {}}
         errors={[]}
         isTouched={false}
-        keyboardType="numbers-and-punctuation"
+        keyboardType="default"
         accessibilityHint="Enter quantity"
       />
       <Text variant="labelMedium" style={styles.fieldLabel}>Unit</Text>
@@ -277,3 +277,4 @@ const styles = StyleSheet.create({
   },
   deleteLabel: { fontFamily: 'Nunito_700Bold', fontSize: 16 },
 });
+

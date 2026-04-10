@@ -161,7 +161,7 @@ export function AddItemForm({ barcode, initialName, category, onItemSaved, requi
         onBlur={() => {}}
         errors={[]}
         isTouched={false}
-        keyboardType="number-pad"
+        keyboardType="numeric"
         accessibilityHint="Enter quantity"
       />
       <Text variant="labelMedium" style={styles.fieldLabel}>Unit</Text>
@@ -234,3 +234,4 @@ const styles = StyleSheet.create({
   buttonContent: { paddingVertical: 6 },
   buttonLabel: { fontFamily: 'Nunito_700Bold', fontSize: 16 },
 });
+
