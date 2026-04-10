@@ -31,7 +31,7 @@ export default function AddItemScreen() {
         barcode={barcode ?? null}
         initialName={name ?? ''}
         category={category ?? null}
-        requireExpiry={manual === '1'}
+        requireExpiry={false}
         onItemSaved={promptNotifications}
       />
     </View>

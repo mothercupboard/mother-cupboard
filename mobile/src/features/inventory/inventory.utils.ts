@@ -1,7 +1,7 @@
 import type { ExpiryType } from '@/lib/database/models/inventory-item';
 
 // DD/MM/YYYY — compiled once at module scope per e18e/prefer-static-regex
-const DATE_GB_RE = /^(\d{2})\/(\d{2})\/(\d{4})$/;
+const DATE_GB_RE = /^(\d{2})\/(\d{2})\/(\d{2}|\d{4})$/;
 
 /**
  * Parses a date string in DD/MM/YYYY format to a unix millisecond timestamp.

@@ -235,14 +235,14 @@ export function EditItemForm({ item }: { item: InventoryItem }) {
       />
       {expiryType !== '' && (
         <FormTextField
-          label="Expiry date (DD/MM/YYYY)"
+          label="Expiry date (DD/MM/YY)"
           value={expiryDate}
           onChangeText={setExpiryDate}
           onBlur={() => {}}
-          errors={expiryDate && parseDateGB(expiryDate) === null ? ['Enter a date as DD/MM/YYYY'] : []}
+          errors={expiryDate && parseDateGB(expiryDate) === null ? ['Enter a date as DD/MM/YY'] : []}
           isTouched={expiryDate.length > 0}
           keyboardType="numeric"
-          accessibilityHint="Enter date as DD/MM/YYYY"
+          accessibilityHint="Enter date as DD/MM/YY"
         />
       )}
       <ActionButtons del={del} itemName={item.name} onSave={handleSubmit} submitting={submitting} />

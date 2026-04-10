@@ -77,3 +77,34 @@ Example: "tin of beans that goes off August 27"
   const data = await res.json() as { choices: { message: { content: string } }[] };
   return JSON.parse(data.choices[0].message.content) as ParsedVoiceItem;
 }
+
+export interface ShoppingItem {
+  name: string;
+  qty?: string;
+}
+
+export async function parseShoppingVoice(transcript: string): Promise<ShoppingItem[]> {
+  const res = await fetch('https://api.openai.com/v1/chat/completions', {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${getKey()}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      model: 'gpt-4o-mini',
+      messages: [
+        {
+          role: 'system',
+          content: `Extract shopping list items from natural language. Return JSON with "items" array, each having "name" (string, capitalised) and optional "qty" (string).
+Examples:
+"milk, bread and two tins of beans" → {"items":[{"name":"Milk"},{"name":"Bread"},{"name":"Beans","qty":"2 tins"}]}
+"a bottle of olive oil and some pasta" → {"items":[{"name":"Olive Oil","qty":"1 bottle"},{"name":"Pasta"}]}`,
+        },
+        { role: 'user', content: transcript },
+      ],
+      response_format: { type: 'json_object' },
+      temperature: 0,
+    }),
+  });
+  if (!res.ok) throw new Error(`GPT error ${res.status}`);
+  const data = await res.json() as { choices: { message: { content: string } }[] };
+  const parsed = JSON.parse(data.choices[0].message.content) as { items: ShoppingItem[] };
+  return Array.isArray(parsed.items) ? parsed.items : [];
+}

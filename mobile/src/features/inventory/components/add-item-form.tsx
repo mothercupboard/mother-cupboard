@@ -3,7 +3,7 @@ import type { ExpiryType, InventoryItem, ItemLocation } from '@/lib/database/mod
 
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { ScrollView, StyleSheet } from 'react-native';
+import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet } from 'react-native';
 import { Button, SegmentedButtons, Text } from 'react-native-paper';
 
 import { FormTextField } from '@/components/common/form-text-field';
@@ -12,6 +12,7 @@ import { parseDateGB } from '@/features/inventory/inventory.utils';
 import { useDatabase } from '@/lib/database/provider';
 import { VoiceInputButton } from '@/features/inventory/components/voice-input-button';
 import type { ParsedVoiceItem } from '@/lib/ai/voice-parser';
+
 
 
 const LOCATION_BUTTONS = [
@@ -75,7 +76,7 @@ function validateExpiry(requireExpiry: boolean, expiryType: ExpiryType | '', exp
   if (!expiryType)
     return 'Please select an expiry type';
   if (!expiryDate || parseDateGB(expiryDate) === null)
-    return 'Please enter a valid expiry date (DD/MM/YYYY)';
+    return 'Please enter a valid expiry date (DD/MM/YY)';
   return null;
 }
 
@@ -99,7 +100,7 @@ export function AddItemForm({ barcode, initialName, category, onItemSaved, requi
     const digits = text.replace(/\D/g, '');
     let formatted = digits;
     if (digits.length >= 3) formatted = digits.slice(0, 2) + '/' + digits.slice(2);
-    if (digits.length >= 5) formatted = digits.slice(0, 2) + '/' + digits.slice(2, 4) + '/' + digits.slice(4, 8);
+    if (digits.length >= 5) formatted = digits.slice(0, 2) + '/' + digits.slice(2, 4) + '/' + digits.slice(4, 6);
     setExpiryDate(formatted);
   };
   const [nameError, setNameError] = useState<string | null>(null);
@@ -137,8 +138,8 @@ export function AddItemForm({ barcode, initialName, category, onItemSaved, requi
   }
 
   return (
-    <ScrollView keyboardDismissMode="on-drag" keyboardShouldPersistTaps="handled" contentContainerStyle={styles.container}>
-      <VoiceInputButton onParsed={handleVoiceParsed} />
+    <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1 }}>
+      <ScrollView keyboardDismissMode="on-drag" keyboardShouldPersistTaps="handled" contentContainerStyle={styles.container}>
       <FormTextField
         label="Item name"
         value={name}
@@ -186,14 +187,14 @@ export function AddItemForm({ barcode, initialName, category, onItemSaved, requi
       />
       {expiryType !== '' && (
         <FormTextField
-          label="Expiry date (DD/MM/YYYY)"
+          label="Expiry date (DD/MM/YY)"
           value={expiryDate}
           onChangeText={handleExpiryDateChange}
           onBlur={() => {}}
-          errors={expiryDate && parseDateGB(expiryDate) === null ? ['Enter a date as DD/MM/YYYY'] : []}
+          errors={expiryDate && parseDateGB(expiryDate) === null ? ['Enter a date as DD/MM/YY'] : []}
           isTouched={expiryDate.length > 0}
           keyboardType="numeric"
-          accessibilityHint="Enter date as DD/MM/YYYY"
+          accessibilityHint="Enter date as DD/MM/YY"
         />
       )}
       {expiryError !== null && (
@@ -211,6 +212,7 @@ export function AddItemForm({ barcode, initialName, category, onItemSaved, requi
         {submitting ? 'Saving…' : 'Add to inventory'}
       </Button>
     </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
 

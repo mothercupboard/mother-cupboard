@@ -18,6 +18,8 @@ const TRIAL_DAYS = 30;
 const MS_PER_DAY = 86_400_000;
 
 function derivePlan(meta: Record<string, unknown> | undefined): PlanType {
+  // Unlock all features in preview and development builds
+  if (process.env.EXPO_PUBLIC_APP_ENV !== 'production') return 'trial';
   if (!meta)
     return 'free';
 

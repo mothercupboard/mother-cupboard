@@ -2,12 +2,17 @@ import { Stack, router } from 'expo-router';
 import { Button, useTheme } from 'react-native-paper';
 
 
+
+
+
 function CancelButton() {
   return (
     <Button
       compact
+      mode="outlined"
       onPress={() => router.replace('/(tabs)/inventory')}
       textColor="#FFFFFF"
+      style={{ borderColor: 'rgba(255,255,255,0.85)', marginRight: 4 }}
       labelStyle={{ fontFamily: 'Nunito_600SemiBold', fontSize: 14 }}
     >
       Cancel
@@ -32,3 +37,4 @@ export default function InventoryLayout() {
     </Stack>
   );
 }
+
