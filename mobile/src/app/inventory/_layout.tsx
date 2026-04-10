@@ -1,5 +1,19 @@
-import { Stack } from 'expo-router';
-import { useTheme } from 'react-native-paper';
+import { Stack, router } from 'expo-router';
+import { Button, useTheme } from 'react-native-paper';
+
+
+function CancelButton() {
+  return (
+    <Button
+      compact
+      onPress={() => router.replace('/(tabs)/inventory')}
+      textColor="#FFFFFF"
+      labelStyle={{ fontFamily: 'Nunito_600SemiBold', fontSize: 14 }}
+    >
+      Cancel
+    </Button>
+  );
+}
 
 export default function InventoryLayout() {
   const theme = useTheme();
@@ -11,10 +25,10 @@ export default function InventoryLayout() {
         headerTitleStyle: { fontFamily: 'Nunito_700Bold' },
       }}
     >
-      <Stack.Screen name="scan" options={{ title: 'Scan Barcode' }} />
-      <Stack.Screen name="search" options={{ title: 'Search by Name' }} />
-      <Stack.Screen name="add-item" options={{ title: 'Add Item' }} />
-      <Stack.Screen name="edit-item" options={{ title: 'Edit Item' }} />
+      <Stack.Screen name="scan" options={{ title: 'Scan Barcode', headerRight: () => <CancelButton /> }} />
+      <Stack.Screen name="search" options={{ title: 'Search by Name', headerRight: () => <CancelButton /> }} />
+      <Stack.Screen name="add-item" options={{ title: 'Add Item', headerRight: () => <CancelButton /> }} />
+      <Stack.Screen name="edit-item" options={{ title: 'Edit Item', headerRight: () => <CancelButton /> }} />
     </Stack>
   );
 }

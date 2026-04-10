@@ -6,6 +6,7 @@ import { TrialBanner } from '@/features/auth/components/trial-banner';
 import { StaleInventoryNudge } from '@/features/inventory/components/stale-inventory-nudge';
 import { ExpiryNudgeCard } from '@/features/notifications/expiry-nudge-card';
 import { WelcomeCard } from '@/features/onboarding/components/welcome-card';
+import { HomeGuideCard } from '@/features/onboarding/components/home-guide-card';
 
 export default function HomeScreen() {
   return (
@@ -17,6 +18,7 @@ export default function HomeScreen() {
 
       <View style={styles.section}>
         <WelcomeCard />
+        <HomeGuideCard />
         <TrialBanner />
         <ExpiryNudgeCard />
         <StaleInventoryNudge />

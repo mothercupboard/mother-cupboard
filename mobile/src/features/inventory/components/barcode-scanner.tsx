@@ -1,6 +1,6 @@
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { useRef, useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { Linking, StyleSheet, View } from 'react-native';
 import { ActivityIndicator, Button, Text } from 'react-native-paper';
 
 import { WarmHearthColors } from '@/components/common/paper-theme';
@@ -11,14 +11,29 @@ type Props = {
 };
 
 function PermissionScreen({ onAddManually }: { onAddManually: () => void }) {
-  const [, requestPermission] = useCameraPermissions();
+  const [permission, requestPermission] = useCameraPermissions();
+  const canAsk = permission?.canAskAgain !== false;
+
+  async function handlePress() {
+    if (canAsk) {
+      await requestPermission();
+    } else {
+      await Linking.openSettings();
+    }
+  }
+
   return (
     <View style={styles.centred}>
       <Text variant="bodyMedium" style={styles.permissionText}>
         Mother Cupboard needs camera access to scan product barcodes.
       </Text>
-      <Button mode="contained" onPress={requestPermission} style={styles.button}>
-        Allow camera access
+      {!canAsk && (
+        <Text variant="bodySmall" style={[styles.permissionText, { marginBottom: 4 }]}>
+          Camera access was previously denied. Tap below to open Settings and enable it.
+        </Text>
+      )}
+      <Button mode="contained" onPress={handlePress} style={styles.button}>
+        {canAsk ? 'Allow camera access' : 'Open Settings'}
       </Button>
       <Button mode="text" onPress={onAddManually} style={styles.button}>
         Add manually instead
