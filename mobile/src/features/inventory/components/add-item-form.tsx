@@ -157,11 +157,10 @@ export function AddItemForm({ barcode, initialName, category, onItemSaved, requi
       <FormTextField
         label="Quantity (optional)"
         value={quantity}
-        onChangeText={setQuantity}
+        onChangeText={(text) => setQuantity(text.replace(/[^0-9.]/g, ""))}
         onBlur={() => {}}
         errors={[]}
         isTouched={false}
-        keyboardType="decimal-pad"
         accessibilityHint="Enter quantity"
       />
       <Text variant="labelMedium" style={styles.fieldLabel}>Unit</Text>
