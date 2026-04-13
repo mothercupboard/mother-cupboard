@@ -1,4 +1,4 @@
-﻿import type { Database } from '@nozbe/watermelondb';
+import type { Database } from '@nozbe/watermelondb';
 import type { ExpiryType, InventoryItem, ItemLocation } from '@/lib/database/models/inventory-item';
 
 import { router } from 'expo-router';
@@ -211,7 +211,7 @@ export function AddItemForm({ barcode, initialName, category, onItemSaved, requi
         contentStyle={styles.buttonContent}
         labelStyle={styles.buttonLabel}
       >
-        {submitting ? 'Savingâ€¦' : 'Add to inventory'}
+        {submitting ? 'Saving…' : 'Add to inventory'}
       </Button>
     </ScrollView>
     </KeyboardAvoidingView>
