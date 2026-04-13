@@ -1,6 +1,6 @@
 import type { OffProduct } from '@/lib/barcode/off-database';
 
-import { cacheProduct, lookupByBarcode } from '@/lib/barcode/off-database';
+import { lookupByBarcode } from '@/lib/barcode/off-database';
 
 const OFF_API_BASE = 'https://world.openfoodfacts.org/api/v0/product';
 
@@ -30,8 +30,7 @@ function extractCategory(tags: string[] | undefined): string | null {
 async function fetchFromApi(barcode: string): Promise<OffProduct | null> {
   try {
     const res = await fetch(`${OFF_API_BASE}/${barcode}.json`, {
-      headers: { 'User-Agent': 'MotherCupboard/1.0 (https://mothercupboard.app)' },
-    });
+      headers: { 'User-Agent': 'MotherCupboard/1.0 (https://mothercupboard.app)' } });
     if (!res.ok)
       return null;
     const json = await res.json() as ApiResponse;
@@ -43,9 +42,8 @@ async function fetchFromApi(barcode: string): Promise<OffProduct | null> {
     const product: OffProduct = {
       barcode,
       category: extractCategory(json.product.categories_tags),
-      name,
-    };
-    await cacheProduct(product);
+      name };
+    await(product);
     return product;
   }
   catch {

@@ -1,5 +1,5 @@
 import { Stack, router } from 'expo-router';
-import { Pressable, Text } from 'react-native';
+import { Pressable, StyleSheet, Text } from 'react-native';
 import { useTheme } from 'react-native-paper';
 
 
@@ -10,27 +10,31 @@ function CancelButton() {
   return (
     <Pressable
       onPress={() => router.replace('/(tabs)/inventory')}
-      style={({ pressed }) => ({
-        backgroundColor: pressed ? 'rgba(255,255,255,0.8)' : '#FFFFFF',
-        borderRadius: 8,
-        marginRight: 8,
-        paddingHorizontal: 14,
-        paddingVertical: 6,
-        elevation: 2,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.15,
-        shadowRadius: 2,
-      })}
+      style={({ pressed }) => [cancelStyles.btn, pressed && cancelStyles.pressed]}
       accessibilityRole="button"
       accessibilityLabel="Cancel"
+      hitSlop={8}
     >
-      <Text style={{ color: '#C05628', fontFamily: 'Nunito_600SemiBold', fontSize: 14 }}>
-        Cancel
-      </Text>
+      <Text style={cancelStyles.label}>Cancel</Text>
     </Pressable>
   );
 }
+
+const cancelStyles = StyleSheet.create({
+  btn: {
+    marginRight: 4,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+  },
+  pressed: {
+    opacity: 0.6,
+  },
+  label: {
+    color: '#FFFFFF',
+    fontFamily: 'Nunito_600SemiBold',
+    fontSize: 16,
+  },
+});
 
 export default function InventoryLayout() {
   const theme = useTheme();

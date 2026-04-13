@@ -13,7 +13,11 @@ export interface ParsedVoiceItem {
   location: 'fridge' | 'freezer' | 'cupboard';
 }
 
-const getKey = () => process.env.EXPO_PUBLIC_OPENAI_API_KEY ?? '';
+const getKey = () => {
+  const key = process.env.EXPO_PUBLIC_OPENAI_API_KEY ?? '';
+  if (!key) console.error('[Voice] EXPO_PUBLIC_OPENAI_API_KEY is empty — check EAS env vars');
+  return key;
+};
 
 function todayGB(): string {
   return new Date().toLocaleDateString('en-GB');
@@ -24,7 +28,33 @@ export async function startVoiceRecording(): Promise<Audio.Recording> {
   if (status !== 'granted') throw new Error('Microphone permission denied');
   await Audio.setAudioModeAsync({ allowsRecordingIOS: true, playsInSilentModeIOS: true });
   const rec = new Audio.Recording();
-  await rec.prepareToRecordAsync(Audio.RecordingOptionsPresets.HIGH_QUALITY);
+  // Use explicit AAC-LC format — Whisper reliably accepts this on both platforms
+  await rec.prepareToRecordAsync({
+    isMeteringEnabled: false,
+    android: {
+      extension: '.m4a',
+      outputFormat: 2,   // MPEG_4
+      audioEncoder: 3,   // AAC
+      sampleRate: 16000,
+      numberOfChannels: 1,
+      bitRate: 128000,
+    },
+    ios: {
+      extension: '.m4a',
+      audioQuality: 96,  // MEDIUM
+      outputFormat: '.mp4', // MPEG4AAC
+      sampleRate: 16000,
+      numberOfChannels: 1,
+      bitRate: 128000,
+      linearPCMBitDepth: 16,
+      linearPCMIsBigEndian: false,
+      linearPCMIsFloat: false,
+    },
+    web: {
+      mimeType: 'audio/webm',
+      bitsPerSecond: 128000,
+    },
+  });
   await rec.startAsync();
   return rec;
 }
@@ -36,7 +66,7 @@ export async function stopAndTranscribe(recording: Audio.Recording): Promise<str
   if (!uri) throw new Error('No recording URI');
 
   const formData = new FormData();
-  formData.append('file', { uri, type: 'audio/m4a', name: 'voice.m4a' } as unknown as Blob);
+  formData.append('file', { uri, type: 'audio/mp4', name: 'voice.m4a' } as unknown as Blob);
   formData.append('model', 'whisper-1');
   formData.append('language', 'en');
 
