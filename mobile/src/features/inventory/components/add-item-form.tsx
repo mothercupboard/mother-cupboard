@@ -200,6 +200,7 @@ export function AddItemForm({ barcode, initialName, category, onItemSaved, requi
       {expiryError !== null && (
         <Text variant="bodySmall" style={styles.expiryError}>{expiryError}</Text>
       )}
+      <VoiceInputButton onParsed={handleVoiceParsed} />
       <Button
         mode="contained"
         onPress={handleSubmit}

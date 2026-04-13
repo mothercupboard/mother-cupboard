@@ -18,6 +18,7 @@ export default function HomeScreen() {
 
       <View style={styles.section}>
         <WelcomeCard />
+        <HomeGuideCard />
         <TrialBanner />
         <ExpiryNudgeCard />
         <StaleInventoryNudge />
