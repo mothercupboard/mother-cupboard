@@ -318,10 +318,12 @@ const styles = StyleSheet.create({
   micContainer: {
     alignItems: 'center',
     bottom: 16,
+    elevation: 10,
     gap: 6,
     left: 0,
     position: 'absolute',
     right: 0,
+    zIndex: 10,
   },
   micHint: {
     color: WarmHearthColors.textSecondary,

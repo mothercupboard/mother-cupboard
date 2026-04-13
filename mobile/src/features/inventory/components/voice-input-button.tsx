@@ -16,6 +16,7 @@ type State = 'idle' | 'recording' | 'processing' | 'error' | 'tooshort';
 
 export function VoiceInputButton({ onParsed }: Props) {
   const [uiState, setUiState] = useState<State>('idle');
+  const [errorMsg, setErrorMsg] = useState('');
   const recordingRef = useRef<Audio.Recording | null>(null);
   const startTimeRef = useRef<number>(0);
 
@@ -25,10 +26,12 @@ export function VoiceInputButton({ onParsed }: Props) {
       recordingRef.current = rec;
       startTimeRef.current = Date.now();
       setUiState('recording');
-    } catch (e) {
-      console.error('[Voice] Failed to start recording:', e);
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : String(e);
+      console.error('[Voice] Failed to start recording:', msg);
+      setErrorMsg(msg);
       setUiState('error');
-      setTimeout(() => setUiState('idle'), 2500);
+      setTimeout(() => { setUiState('idle'); setErrorMsg(''); }, 3000);
     }
   };
 
@@ -54,10 +57,12 @@ export function VoiceInputButton({ onParsed }: Props) {
       console.log('[Voice] Parsed:', JSON.stringify(parsed));
       onParsed(parsed);
       setUiState('idle');
-    } catch (e) {
-      console.error('[Voice] Processing error:', e);
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : String(e);
+      console.error('[Voice] Processing error:', msg);
+      setErrorMsg(msg);
       setUiState('error');
-      setTimeout(() => setUiState('idle'), 2500);
+      setTimeout(() => { setUiState('idle'); setErrorMsg(''); }, 3000);
     }
   };
 
@@ -94,6 +99,7 @@ export function VoiceInputButton({ onParsed }: Props) {
         )}
       </Pressable>
       <Text variant="bodySmall" style={styles.hint}>{label}</Text>
+      {errorMsg ? <Text variant="bodySmall" style={styles.errorDetail}>{errorMsg}</Text> : null}
     </View>
   );
 }
@@ -127,6 +133,13 @@ const styles = StyleSheet.create({
   hint: {
     color: WarmHearthColors.textSecondary,
     fontFamily: 'Nunito_400Regular',
+  },
+  errorDetail: {
+    color: WarmHearthColors.expiryUrgent,
+    fontFamily: 'Nunito_400Regular',
+    fontSize: 11,
+    maxWidth: 220,
+    textAlign: 'center',
   },
 });
 
