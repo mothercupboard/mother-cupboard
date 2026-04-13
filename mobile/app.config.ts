@@ -38,7 +38,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   orientation: 'portrait',
   icon: './assets/icon.png',
   userInterfaceStyle: 'automatic',
-  newArchEnabled: false,
+  newArchEnabled: true,
   updates: {
     url: 'https://u.expo.dev/4073602c-9476-4b92-972d-bf5d92746606',
     fallbackToCacheTimeout: 0,
@@ -137,6 +137,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     },
   },
 });
+
 
 
 
