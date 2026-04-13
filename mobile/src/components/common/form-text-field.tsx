@@ -46,6 +46,8 @@ export function FormTextField({
         mode="outlined"
         error={hasError}
         style={styles.input}
+        textColor={WarmHearthColors.textPrimary}
+        contentStyle={styles.inputContent}
         right={rightIcon}
         accessibilityLabel={label}
         accessibilityHint={accessibilityHint}
@@ -61,4 +63,5 @@ export function FormTextField({
 
 const styles = StyleSheet.create({
   input: { backgroundColor: WarmHearthColors.surface },
+  inputContent: { fontFamily: 'Nunito_400Regular', color: WarmHearthColors.textPrimary },
 });

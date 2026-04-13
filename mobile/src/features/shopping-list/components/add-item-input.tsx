@@ -43,6 +43,8 @@ export function AddItemInput({ onScanReceipt }: Props) {
         onSubmitEditing={handleSubmit}
         returnKeyType="done"
         style={styles.input}
+        textColor={WarmHearthColors.textPrimary}
+        contentStyle={styles.inputContent}
         dense
         accessibilityLabel="Add shopping list item"
         accessibilityHint="Type item name, optionally followed by comma and quantity"
@@ -77,5 +79,9 @@ const styles = StyleSheet.create({
   input: {
     backgroundColor: WarmHearthColors.surface,
     flex: 1,
+  },
+  inputContent: {
+    color: WarmHearthColors.textPrimary,
+    fontFamily: 'Nunito_400Regular',
   },
 });

@@ -1,4 +1,14 @@
-import { Stack, router } from 'expo-router';
+/**
+ * Cancel button v3 — complete rewrite using TouchableOpacity (not Pressable, not Paper Button).
+ * Hardcodes the purple header colour so it's not dependent on theme.
+ * Defines cancelBtn inline so React Navigation can't intercept the component.
+ *
+ * Run from: C:\Users\mandr\dev\mother-cupboard\mobile\
+ */
+const fs = require('fs');
+
+const file = 'src/app/inventory/_layout.tsx';
+const content = `import { Stack, router } from 'expo-router';
 import { StyleSheet, Text, TouchableOpacity } from 'react-native';
 
 export default function InventoryLayout() {
@@ -46,3 +56,8 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
 });
+`;
+
+fs.writeFileSync(file, content, 'utf8');
+console.log('✓ _layout.tsx: Cancel v3 — TouchableOpacity, no theme dependency, hardcoded white text');
+console.log('\\nNow run: npx tsc --noEmit 2>&1 | Select-Object -First 10');

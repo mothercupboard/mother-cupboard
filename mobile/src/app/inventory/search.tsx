@@ -1,7 +1,7 @@
 import type { OffProduct } from '@/lib/barcode/off-database';
 
 import { router } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { FlatList, StyleSheet, View } from 'react-native';
 import { Divider, List, Searchbar, Text } from 'react-native-paper';
 
@@ -25,6 +25,13 @@ export default function SearchScreen() {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<OffProduct[]>([]);
   const [searched, setSearched] = useState(false);
+  const searchbarRef = useRef<any>(null);
+
+  // Focus after navigation animation completes (autoFocus fires too early on iOS)
+  useEffect(() => {
+    const t = setTimeout(() => searchbarRef.current?.focus(), 350);
+    return () => clearTimeout(t);
+  }, []);
 
   useEffect(() => {
     if (query.length < 2) {
@@ -43,11 +50,12 @@ export default function SearchScreen() {
   return (
     <View style={styles.container}>
       <Searchbar
+        ref={searchbarRef}
         placeholder="Type a product name…"
         value={query}
         onChangeText={setQuery}
         style={styles.searchbar}
-        autoFocus
+        inputStyle={styles.searchbarInput}
         accessibilityLabel="Search for a product by name"
       />
 
@@ -80,12 +88,10 @@ export default function SearchScreen() {
       {query.length >= 2 && searched && results.length === 0 && (
         <View style={styles.centred}>
           <Text variant="bodyMedium" style={styles.hint}>
-            No results for "
-            {query}
-            ".
+            {['No results for "', query, '".'].join('')}
           </Text>
           <List.Item
-            title={`Add "${query}" manually`}
+            title={'Add "' + query + '" manually'}
             left={props => <List.Icon {...props} icon="plus-circle-outline" color={WarmHearthColors.primary} />}
             onPress={() => navigateManual(query)}
             titleStyle={styles.addManuallyTitle}
@@ -103,6 +109,10 @@ const styles = StyleSheet.create({
     backgroundColor: WarmHearthColors.surface,
     borderRadius: 0,
     elevation: 2,
+  },
+  searchbarInput: {
+    color: WarmHearthColors.textPrimary,
+    fontFamily: 'Nunito_400Regular',
   },
   centred: {
     alignItems: 'center',
