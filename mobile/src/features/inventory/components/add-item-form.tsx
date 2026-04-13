@@ -161,7 +161,7 @@ export function AddItemForm({ barcode, initialName, category, onItemSaved, requi
         onBlur={() => {}}
         errors={[]}
         isTouched={false}
-        keyboardType="numeric"
+        keyboardType="decimal-pad"
         accessibilityHint="Enter quantity"
       />
       <Text variant="labelMedium" style={styles.fieldLabel}>Unit</Text>
