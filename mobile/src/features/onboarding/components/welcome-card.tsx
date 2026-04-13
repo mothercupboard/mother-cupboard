@@ -40,8 +40,11 @@ export function WelcomeCard() {
       </Text>
 
       <Text variant="bodyMedium" style={styles.body}>
-        Start by adding your first item — scan a barcode, search
-        by name, or type it in manually.
+        Start by adding your first item — scan a barcode, speak
+        it aloud, type it in manually, or photograph your shopping
+        receipt to add everything in one go. Don’t worry if
+        non-food items appear in the receipt list — just remove
+        them before confirming.
       </Text>
 
       <View style={styles.actions}>

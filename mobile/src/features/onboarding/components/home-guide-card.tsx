@@ -10,7 +10,7 @@ const TABS = [
     icon: 'archive-outline',
     name: 'Inventory',
     description:
-      'Add and track items in your fridge, freezer and cupboard. Tap the + button to get started.',
+      'Add and track items in your fridge, freezer and cupboard. Tap + to add manually, scan a barcode, speak an item aloud, or tap the receipt icon on the shopping list to photograph a till receipt and import everything at once. Non-food items on the receipt won’t be added — just remove anything you don’t want before confirming.',
   },
   {
     icon: 'lightbulb-on-outline',
