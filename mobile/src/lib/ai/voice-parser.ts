@@ -42,7 +42,7 @@ export async function startVoiceRecording(): Promise<Audio.Recording> {
     ios: {
       extension: '.m4a',
       audioQuality: 96,  // MEDIUM
-      outputFormat: '.mp4', // MPEG4AAC
+      outputFormat: 'aac ', // kAudioFormatMPEG4AAC — trailing space is intentional!
       sampleRate: 16000,
       numberOfChannels: 1,
       bitRate: 128000,
