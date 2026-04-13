@@ -5,7 +5,7 @@ import { storage } from '@/lib/storage';
 const mmkvSupabaseStorage = {
   getItem: async (key: string) => storage.getString(key) ?? null,
   setItem: async (key: string, value: string) => storage.set(key, value),
-  removeItem: async (key: string) => { storage.delete(key); },
+  removeItem: async (key: string) => { storage.remove(key); },
 };
 
 export const supabase = createClient(
@@ -20,6 +20,7 @@ export const supabase = createClient(
     },
   },
 );
+
 
 
 
