@@ -1,0 +1,47 @@
+[33m814e066[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmaster[m[33m)[m fix: remove react-native-edge-to-edge plugin (breaks iOS keyboard first responder)
+[33m5bc1e5b[m fix: restore storage.tsx and fix mmkv delete()
+[33mb250656[m fix: replace mmkv storage.remove() with storage.delete() across all stores
+[33mb94f37b[m fix: re-enable new arch, fix storage.tsx for mmkv v2 API
+[33m1ac8f6b[m fix: update storage.tsx for mmkv v2 API (createMMKV → new MMKV)
+[33mac657a5[m fix: downgrade mmkv to v2 (JSI) to remove NitroModules/New Arch requirement
+[33mffc9f2d[m fix: remove react-native-worklets (v4-only), pin reanimated to v3
+[33mef007e0[m fix: downgrade reanimated to v3, disable new arch to restore iOS keyboard
+[33m1647144[m fix: disable new architecture to restore TextInput on iOS
+[33mface945[m fix: replace RNP TextInput with RN native TextInput to fix iOS keyboard
+[33mf2f4729[m fix: visible text in all inputs, search focus, cancel button v3
+[33m9b7567b[m Fix mic createAsync, restore keyboard, fix overlay touch blocking, clean cancel button
+[33m2db498e[m Fix iOS audio format code for microphone recording
+[33m1c5fa51[m Fix keyboard dismiss, shopping list mic z-index, show mic error detail
+[33m7b885fb[m Live Open Food Facts search, fix audio format for Whisper, fix cancel button
+[33mbb2c951[m Update onboarding text to mention receipt scanning
+[33m53ffa74[m Add receipt scanner, reposition shopping mic, fix cancel button, improve voice error handling
+[33m0c4775e[m Fix: render HomeGuideCard and VoiceInputButton in JSX
+[33m3e0790c[m Fix UX issues: date DD/MM/YY, voice input, cancel button, expiry optional, AI unlocked, shopping list voice
+[33m502f0f6[m fix: blank home screen, cancel buttons, camera permission, FAB z-order
+[33m59a5307[m fix: FAB z-order, keyboard dismiss, voice input improvements
+[33m162e144[m feat: voice input — add items by speaking with Whisper + GPT
+[33m78f640a[m feat: voice input for adding inventory items via Whisper + GPT
+[33mf4309d1[m fix: auto-format expiry date input DD/MM/YYYY
+[33m6dc22fc[m fix: disable sentry upload and fix preview build config
+[33m6183c57[m fix: add babel-preset-expo dependency
+[33mb3746bf[m fix: add expo-updates config and build for real device
+[33m383401e[m fix: build for real iOS device instead of simulator
+[33m6779b94[m[33m ([m[1;31morigin/master[m[33m)[m fix: add @sentry/cli as direct dependency for pnpm hoisting
+[33m5c997d9[m fix: pin react-native-keyboard-controller to exact 1.18.5 for Expo SDK 54
+[33m0347be6[m fix: upgrade react-native-keyboard-controller to ~1.21.4 for Expo SDK 54
+[33m273ff78[m fix: resolve expo doctor failures — scheme, sentry, camera, watermelondb
+[33m85eac74[m fix: pin react-native-screens to ~4.16.0 and remove stale local lockfile
+[33m61854fe[m fix: update pnpm lockfile with backend AI dependencies
+[33mbd8d056[m fix: restore EAS project ID to app.config.ts
+[33mcad3834[m feat(inventory): implement story 2.5 — inventory view by location & expiry
+[33m3f6a25a[m feat(inventory): implement story 2.4 — manual free-text entry
+[33mdbdeda1[m feat(inventory): implement story 2.3 — search by name entry
+[33m60c3baf[m feat(inventory): implement stories 2.1 & 2.2 — barcode scan with offline OFF cache and fallback
+[33mc80997a[m feat(auth): implement story 1.7 — password reset via Supabase email + PKCE deep-link
+[33md7d2ce6[m feat(account): implement story 1.6 — account deletion
+[33m19db7fe[m feat(data): implement story 1.5 — WatermelonDB offline data layer
+[33m2fc2fc4[m feat(auth): implement story 1.4 — sign in and session persistence
+[33m40dd992[m feat: Story 1.3 — user registration with Supabase Auth
+[33m1051908[m feat: Story 1.2 — age gate & privacy disclosure
+[33m4bbe07a[m Story 1.1: Project scaffold and design system foundation
+[33md59299d[m feat: Story 1.1 — project scaffold & design system foundation
