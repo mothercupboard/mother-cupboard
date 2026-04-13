@@ -1,4 +1,4 @@
-import {
+﻿import {
   Nunito_400Regular,
   Nunito_400Regular_Italic,
   Nunito_600SemiBold,
@@ -14,6 +14,7 @@ import * as SplashScreen from 'expo-splash-screen';
 import { useEffect, useRef, useState } from 'react';
 import { PaperProvider } from 'react-native-paper';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { KeyboardProvider } from 'react-native-keyboard-controller';
 
 import { WarmHearthTheme } from '@/components/common/paper-theme';
 import { useAuthStore } from '@/features/auth/auth-store';
@@ -67,7 +68,7 @@ export default function RootLayout() {
     }
   }, [fontsLoaded, fontError]);
 
-  // Check the initial URL — if the app was opened by a password-reset deep link,
+  // Check the initial URL â€” if the app was opened by a password-reset deep link,
   // skip the login redirect so Expo Router can route to /(auth)/reset-password
   useEffect(() => {
     Linking.getInitialURL().then((url) => {
@@ -95,7 +96,7 @@ export default function RootLayout() {
     return () => subscription.unsubscribe();
   }, [setSession]);
 
-  // Route guard — runs once when fonts + session + URL checks all complete
+  // Route guard â€” runs once when fonts + session + URL checks all complete
   useEffect(() => {
     if (!fontsLoaded && !fontError)
       return;
@@ -108,9 +109,9 @@ export default function RootLayout() {
     hasNavigatedRef.current = true;
 
     if (session)
-      return; // Authenticated — default route (tabs) renders
+      return; // Authenticated â€” default route (tabs) renders
     if (isResetLinkRef.current)
-      return; // Password-reset deep link — Expo Router handles routing
+      return; // Password-reset deep link â€” Expo Router handles routing
     if (!ageGateAccepted) {
       router.replace('/onboarding/age-gate');
       return;
@@ -137,6 +138,7 @@ export default function RootLayout() {
     return null;
 
   return (
+    <KeyboardProvider>
     <SafeAreaProvider>
       <PaperProvider theme={WarmHearthTheme}>
         <APIProvider>
@@ -146,5 +148,7 @@ export default function RootLayout() {
         </APIProvider>
       </PaperProvider>
     </SafeAreaProvider>
+    </KeyboardProvider>
   );
 }
+
