@@ -1,4 +1,4 @@
-import type { MealSuggestion } from '../../../../shared/types/meal-suggestion.types';
+﻿import type { MealSuggestion } from '../../../../shared/types/meal-suggestion.types';
 
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
@@ -11,7 +11,7 @@ const mmkvZustandStorage = {
   removeItem: (name: string) => storage.delete(name),
 };
 
-/** Capped length for preference signal arrays — keeps storage bounded. */
+/** Capped length for preference signal arrays â€” keeps storage bounded. */
 const MAX_SIGNAL_LENGTH = 50;
 const MAX_HISTORY_LENGTH = 100;
 
@@ -30,11 +30,11 @@ type SavedMealsStore = {
   favouriteMeals: MealSuggestion[];
   /** Chronological history of cooked meals with timestamps. */
   cookedMeals: CookedMealEntry[];
-  /** Titles the user cooked — strong positive signal. */
+  /** Titles the user cooked â€” strong positive signal. */
   cookedTitles: string[];
-  /** Titles the user bookmarked — positive signal. */
+  /** Titles the user bookmarked â€” positive signal. */
   savedTitles: string[];
-  /** Titles from "None of these" / rejected batches — negative signal. */
+  /** Titles from "None of these" / rejected batches â€” negative signal. */
   rejectedTitles: string[];
 
   saveMeal: (meal: MealSuggestion) => void;
@@ -111,4 +111,6 @@ export const useSavedMealsStore = create<SavedMealsStore>()(
     },
   ),
 );
+
+
 

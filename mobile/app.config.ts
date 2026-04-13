@@ -1,4 +1,4 @@
-import type { ConfigContext, ExpoConfig } from '@expo/config';
+﻿import type { ConfigContext, ExpoConfig } from '@expo/config';
 
 import type { AppIconBadgeConfig } from 'app-icon-badge/types';
 
@@ -125,7 +125,6 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     'expo-localization',
     'expo-router',
     ['app-icon-badge', appIconBadgeConfig],
-    ['react-native-edge-to-edge'],
     'expo-sqlite',
     ['expo-camera', { cameraPermission: 'Mother Cupboard needs camera access to scan product barcodes.' }],
     ['expo-notifications'],
@@ -137,6 +136,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     },
   },
 });
+
 
 
 

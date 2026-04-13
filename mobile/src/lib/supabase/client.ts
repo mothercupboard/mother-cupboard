@@ -1,4 +1,4 @@
-import { createClient } from '@supabase/supabase-js';
+﻿import { createClient } from '@supabase/supabase-js';
 
 import { storage } from '@/lib/storage';
 
@@ -20,4 +20,6 @@ export const supabase = createClient(
     },
   },
 );
+
+
 

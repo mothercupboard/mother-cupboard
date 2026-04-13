@@ -1,4 +1,4 @@
-import { create } from 'zustand';
+﻿import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 
 import { storage } from '@/lib/storage';
@@ -12,7 +12,7 @@ const mmkvZustandStorage = {
 export type NotificationPreferences = {
   useByAlerts: boolean;
   bestBeforeAlerts: boolean;
-  /** Hour of the day (0–23) for scheduled morning alerts. Default 8. */
+  /** Hour of the day (0â€“23) for scheduled morning alerts. Default 8. */
   alertHour: number;
 };
 
@@ -44,4 +44,6 @@ export const useNotificationStore = create<NotificationStore>()(
     },
   ),
 );
+
+
 
