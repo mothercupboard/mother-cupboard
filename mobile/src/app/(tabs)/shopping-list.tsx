@@ -1,21 +1,21 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { useMemo, useState } from 'react';
-import { SectionList, StyleSheet, View } from 'react-native';
+import { Audio } from 'expo-av';
+import { useMemo, useRef, useState } from 'react';
+import { ActivityIndicator, Pressable, SectionList, StyleSheet, View } from 'react-native';
 import { Button, Dialog, Divider, Portal, Text } from 'react-native-paper';
 
 import { WarmHearthColors } from '@/components/common/paper-theme';
+import { ReceiptScannerModal } from '@/features/inventory/components/receipt-scanner-modal';
 import { FeatureTip } from '@/features/onboarding/components/feature-tip';
 import { useOnboardingStore } from '@/features/onboarding/onboarding-store';
 import { AddItemInput } from '@/features/shopping-list/components/add-item-input';
 import { ShoppingListItemRow } from '@/features/shopping-list/components/shopping-list-item-row';
 import { useShoppingListStore } from '@/features/shopping-list/shopping-list-store';
+import { parseShoppingVoice, startVoiceRecording, stopAndTranscribe } from '@/lib/ai/voice-parser';
 
 function ProgressHeader({ total, purchased }: { purchased: number; total: number }) {
-  if (total === 0)
-    return null;
-
+  if (total === 0) return null;
   const allDone = purchased === total;
-
   return (
     <View style={styles.progressHeader}>
       <MaterialCommunityIcons
@@ -24,9 +24,7 @@ function ProgressHeader({ total, purchased }: { purchased: number; total: number
         color={allDone ? WarmHearthColors.success : WarmHearthColors.shoppingList}
       />
       <Text variant="labelLarge" style={[styles.progressText, allDone && styles.progressDone]}>
-        {allDone
-          ? 'All purchased!'
-          : `${purchased} of ${total} purchased`}
+        {allDone ? 'All purchased!' : `${purchased} of ${total} purchased`}
       </Text>
     </View>
   );
@@ -55,9 +53,7 @@ function ClearConfirmDialog(
         </Dialog.Content>
         <Dialog.Actions>
           <Button onPress={onDismiss}>Cancel</Button>
-          <Button onPress={onConfirm} textColor={WarmHearthColors.shoppingList}>
-            Clear
-          </Button>
+          <Button onPress={onConfirm} textColor={WarmHearthColors.shoppingList}>Clear</Button>
         </Dialog.Actions>
       </Dialog>
     </Portal>
@@ -72,16 +68,10 @@ const dialogStyles = StyleSheet.create({
 function EmptyState() {
   return (
     <View style={styles.emptyState}>
-      <MaterialCommunityIcons
-        name="format-list-bulleted"
-        size={48}
-        color={WarmHearthColors.outline}
-      />
-      <Text variant="bodyLarge" style={styles.emptyTitle}>
-        Your shopping list is empty
-      </Text>
+      <MaterialCommunityIcons name="format-list-bulleted" size={48} color={WarmHearthColors.outline} />
+      <Text variant="bodyLarge" style={styles.emptyTitle}>Your shopping list is empty</Text>
       <Text variant="bodyMedium" style={styles.emptyBody}>
-        {'Add items above, or they\u2019ll appear here automatically when a meal suggestion has missing ingredients.'}
+        {'Add items above, or hold the mic button below to speak your list.'}
       </Text>
     </View>
   );
@@ -97,8 +87,7 @@ function ListActions() {
   const checkedCount = items.filter(i => i.checked).length;
   const allChecked = items.length > 0 && checkedCount === items.length;
 
-  if (items.length === 0)
-    return null;
+  if (items.length === 0) return null;
 
   return (
     <View style={styles.actionsRow}>
@@ -112,7 +101,6 @@ function ListActions() {
       >
         {allChecked ? 'Uncheck all' : 'Check all'}
       </Button>
-
       {checkedCount > 0 && (
         <>
           <Button
@@ -129,10 +117,7 @@ function ListActions() {
             visible={confirmVisible}
             count={checkedCount}
             onDismiss={() => setConfirmVisible(false)}
-            onConfirm={() => {
-              clearChecked();
-              setConfirmVisible(false);
-            }}
+            onConfirm={() => { clearChecked(); setConfirmVisible(false); }}
           />
         </>
       )}
@@ -140,27 +125,68 @@ function ListActions() {
   );
 }
 
+type VoiceState = 'idle' | 'recording' | 'processing';
+
 export default function ShoppingListScreen() {
   const items = useShoppingListStore(s => s.items);
+  const addItem = useShoppingListStore(s => s.addItem);
   const tipSeen = useOnboardingStore(s => s.shoppingTipSeen);
   const dismissTip = useOnboardingStore(s => s.dismissTip);
+  const [voiceState, setVoiceState] = useState<VoiceState>('idle');
+  const [receiptVisible, setReceiptVisible] = useState(false);
+  const recordingRef = useRef<Audio.Recording | null>(null);
+  const startTimeRef = useRef<number>(0);
+
+  async function handleMicPressIn() {
+    try {
+      const rec = await startVoiceRecording();
+      recordingRef.current = rec;
+      startTimeRef.current = Date.now();
+      setVoiceState('recording');
+    } catch (e) {
+      console.error('[ShoppingMic] Start error:', e);
+      setVoiceState('idle');
+    }
+  }
+
+  async function handleMicPressOut() {
+    const rec = recordingRef.current;
+    if (!rec) return;
+    recordingRef.current = null;
+
+    const heldMs = Date.now() - startTimeRef.current;
+    if (heldMs < 600) {
+      try { await rec.stopAndUnloadAsync(); } catch {}
+      setVoiceState('idle');
+      return;
+    }
+
+    try {
+      setVoiceState('processing');
+      const transcript = await stopAndTranscribe(rec);
+      console.log('[ShoppingMic] Transcript:', transcript);
+      const parsed = await parseShoppingVoice(transcript);
+      parsed.forEach(item => addItem(item.name, item.qty));
+      setVoiceState('idle');
+    } catch (e) {
+      console.error('[ShoppingMic] Error:', e);
+      setVoiceState('idle');
+    }
+  }
 
   const { sections, purchasedCount } = useMemo(() => {
-    const pending = items
-      .filter(i => !i.checked)
-      .sort((a, b) => a.createdAt - b.createdAt);
-    const purchased = items
-      .filter(i => i.checked)
-      .sort((a, b) => a.createdAt - b.createdAt);
-
+    const pending = items.filter(i => !i.checked).sort((a, b) => a.createdAt - b.createdAt);
+    const purchased = items.filter(i => i.checked).sort((a, b) => a.createdAt - b.createdAt);
     const result = [];
-    if (pending.length > 0)
-      result.push({ title: 'To buy', data: pending });
-    if (purchased.length > 0)
-      result.push({ title: 'Purchased', data: purchased });
-
+    if (pending.length > 0) result.push({ title: 'To buy', data: pending });
+    if (purchased.length > 0) result.push({ title: 'Purchased', data: purchased });
     return { sections: result, purchasedCount: purchased.length };
   }, [items]);
+
+  const micBgColor =
+    voiceState === 'recording' ? '#B03A2E' :
+    voiceState === 'processing' ? WarmHearthColors.outline :
+    WarmHearthColors.shoppingList;
 
   return (
     <View style={styles.container}>
@@ -168,30 +194,60 @@ export default function ShoppingListScreen() {
         <FeatureTip
           icon="cart-outline"
           title="Your shopping list"
-          body={'Add items manually, or they\u2019ll appear here automatically when a meal suggestion needs ingredients you don\u2019t have.'}
+          body={'Add items by typing above, speaking below, or scanning a receipt with the 📄 icon.'}
           onDismiss={() => dismissTip('shoppingTipSeen')}
         />
       )}
 
-      <AddItemInput />
+      <AddItemInput onScanReceipt={() => setReceiptVisible(true)} />
       <Divider />
       <ProgressHeader total={items.length} purchased={purchasedCount} />
 
       {items.length === 0
         ? <EmptyState />
         : (
-            <>
-              <SectionList
-                sections={sections}
-                keyExtractor={i => i.id}
-                renderItem={({ item }) => <ShoppingListItemRow item={item} />}
-                renderSectionHeader={({ section }) => <SectionHeader title={section.title} />}
-                contentContainerStyle={styles.list}
-                stickySectionHeadersEnabled={false}
+          <>
+            <SectionList
+              sections={sections}
+              keyExtractor={i => i.id}
+              renderItem={({ item }) => <ShoppingListItemRow item={item} />}
+              renderSectionHeader={({ section }) => <SectionHeader title={section.title} />}
+              contentContainerStyle={styles.list}
+              stickySectionHeadersEnabled={false}
+            />
+            <ListActions />
+          </>
+        )}
+
+      {/* Large dictaphone-style mic at bottom */}
+      <View style={styles.micContainer}>
+        <Text variant="bodySmall" style={styles.micHint}>
+          {voiceState === 'idle' ? 'Hold to speak your list' :
+           voiceState === 'recording' ? 'Listening…' : 'Adding items…'}
+        </Text>
+        <Pressable
+          onPressIn={handleMicPressIn}
+          onPressOut={handleMicPressOut}
+          disabled={voiceState === 'processing'}
+          style={[styles.micButton, { backgroundColor: micBgColor }]}
+          accessibilityLabel="Hold to add shopping items by voice"
+          accessibilityRole="button"
+        >
+          {voiceState === 'processing'
+            ? <ActivityIndicator size="large" color="#FFFFFF" />
+            : <MaterialCommunityIcons
+                name={voiceState === 'recording' ? 'microphone' : 'microphone-outline'}
+                size={36}
+                color="#FFFFFF"
               />
-              <ListActions />
-            </>
-          )}
+          }
+        </Pressable>
+      </View>
+
+      <ReceiptScannerModal
+        visible={receiptVisible}
+        onDismiss={() => setReceiptVisible(false)}
+      />
     </View>
   );
 }
@@ -227,7 +283,7 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
   },
   list: {
-    paddingBottom: 16,
+    paddingBottom: 160,
   },
   actionsRow: {
     borderTopColor: WarmHearthColors.outline,
@@ -246,6 +302,7 @@ const styles = StyleSheet.create({
     flex: 1,
     gap: 8,
     justifyContent: 'center',
+    paddingBottom: 120,
     paddingHorizontal: 32,
   },
   emptyTitle: {
@@ -257,5 +314,29 @@ const styles = StyleSheet.create({
     fontFamily: 'Nunito_400Regular',
     lineHeight: 20,
     textAlign: 'center',
+  },
+  micContainer: {
+    alignItems: 'center',
+    bottom: 16,
+    gap: 6,
+    left: 0,
+    position: 'absolute',
+    right: 0,
+  },
+  micHint: {
+    color: WarmHearthColors.textSecondary,
+    fontFamily: 'Nunito_400Regular',
+  },
+  micButton: {
+    alignItems: 'center',
+    borderRadius: 44,
+    elevation: 6,
+    height: 80,
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.22,
+    shadowRadius: 6,
+    width: 80,
   },
 });

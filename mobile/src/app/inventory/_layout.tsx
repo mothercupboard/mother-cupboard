@@ -1,5 +1,6 @@
 import { Stack, router } from 'expo-router';
-import { Button, useTheme } from 'react-native-paper';
+import { Pressable, Text } from 'react-native';
+import { useTheme } from 'react-native-paper';
 
 
 
@@ -7,16 +8,27 @@ import { Button, useTheme } from 'react-native-paper';
 
 function CancelButton() {
   return (
-    <Button
-      compact
-      mode="outlined"
+    <Pressable
       onPress={() => router.replace('/(tabs)/inventory')}
-      textColor="#FFFFFF"
-      style={{ borderColor: 'rgba(255,255,255,0.85)', marginRight: 4 }}
-      labelStyle={{ fontFamily: 'Nunito_600SemiBold', fontSize: 14 }}
+      style={({ pressed }) => ({
+        backgroundColor: pressed ? 'rgba(255,255,255,0.8)' : '#FFFFFF',
+        borderRadius: 8,
+        marginRight: 8,
+        paddingHorizontal: 14,
+        paddingVertical: 6,
+        elevation: 2,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.15,
+        shadowRadius: 2,
+      })}
+      accessibilityRole="button"
+      accessibilityLabel="Cancel"
     >
-      Cancel
-    </Button>
+      <Text style={{ color: '#C05628', fontFamily: 'Nunito_600SemiBold', fontSize: 14 }}>
+        Cancel
+      </Text>
+    </Pressable>
   );
 }
 

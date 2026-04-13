@@ -12,20 +12,23 @@ interface Props {
   onParsed: (item: ParsedVoiceItem) => void;
 }
 
-type State = 'idle' | 'recording' | 'processing' | 'error';
+type State = 'idle' | 'recording' | 'processing' | 'error' | 'tooshort';
 
 export function VoiceInputButton({ onParsed }: Props) {
   const [uiState, setUiState] = useState<State>('idle');
   const recordingRef = useRef<Audio.Recording | null>(null);
+  const startTimeRef = useRef<number>(0);
 
   const handlePressIn = async () => {
     try {
       const rec = await startVoiceRecording();
       recordingRef.current = rec;
+      startTimeRef.current = Date.now();
       setUiState('recording');
-    } catch {
+    } catch (e) {
+      console.error('[Voice] Failed to start recording:', e);
       setUiState('error');
-      setTimeout(() => setUiState('idle'), 2000);
+      setTimeout(() => setUiState('idle'), 2500);
     }
   };
 
@@ -33,25 +36,41 @@ export function VoiceInputButton({ onParsed }: Props) {
     const rec = recordingRef.current;
     if (!rec) return;
     recordingRef.current = null;
+
+    const heldMs = Date.now() - startTimeRef.current;
+    if (heldMs < 600) {
+      // Too short — user tapped rather than held
+      try { await rec.stopAndUnloadAsync(); } catch {}
+      setUiState('tooshort');
+      setTimeout(() => setUiState('idle'), 2000);
+      return;
+    }
+
     try {
       setUiState('processing');
       const transcript = await stopAndTranscribe(rec);
+      console.log('[Voice] Transcript:', transcript);
       const parsed = await parseVoiceItem(transcript);
+      console.log('[Voice] Parsed:', JSON.stringify(parsed));
       onParsed(parsed);
       setUiState('idle');
-    } catch {
+    } catch (e) {
+      console.error('[Voice] Processing error:', e);
       setUiState('error');
-      setTimeout(() => setUiState('idle'), 2000);
+      setTimeout(() => setUiState('idle'), 2500);
     }
   };
 
   const iconName =
-    uiState === 'error' ? 'microphone-off' : 'microphone';
+    uiState === 'error' ? 'microphone-off' :
+    uiState === 'tooshort' ? 'microphone-outline' :
+    'microphone';
 
   const label =
     uiState === 'idle' ? 'Hold to speak' :
     uiState === 'recording' ? 'Listening…' :
     uiState === 'processing' ? 'Processing…' :
+    uiState === 'tooshort' ? 'Hold longer' :
     'Try again';
 
   return (

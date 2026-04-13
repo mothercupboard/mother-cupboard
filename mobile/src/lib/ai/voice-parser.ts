@@ -108,3 +108,55 @@ Examples:
   const parsed = JSON.parse(data.choices[0].message.content) as { items: ShoppingItem[] };
   return Array.isArray(parsed.items) ? parsed.items : [];
 }
+
+export interface ReceiptItem {
+  name: string;
+  quantity: number;
+  unit: string;
+  location: 'fridge' | 'freezer' | 'cupboard' | 'unknown';
+  expiryType: 'use_by' | 'best_before' | '';
+}
+
+/**
+ * Sends a base64-encoded receipt photo to GPT-4o vision and returns
+ * a list of food items with suggested storage locations.
+ */
+export async function parseReceiptImage(base64Image: string): Promise<ReceiptItem[]> {
+  const res = await fetch('https://api.openai.com/v1/chat/completions', {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${getKey()}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      model: 'gpt-4o',
+      messages: [
+        {
+          role: 'user',
+          content: [
+            {
+              type: 'text',
+              text: `You are a UK grocery receipt parser. Extract only food and drink items from this receipt.
+Return JSON with "items" array. Each item:
+- name: string — food item name, properly capitalised (e.g. "Semi-Skimmed Milk", "Baked Beans")
+- quantity: number — quantity purchased (default 1)
+- unit: string — packaging unit if clear (e.g. "tin", "bottle", "pack", "bag") or ""
+- location: "fridge" for dairy/fresh meat/veg/deli; "freezer" for frozen items; "cupboard" for dry/canned/ambient goods; "unknown" if genuinely unsure
+- expiryType: "use_by" for fresh items (meat, fish, ready meals, fresh dairy); "best_before" for dry goods and long-life; "" for most non-perishables
+
+Skip non-food items, alcohol (unless user seems to want it), toiletries, household products, and skip totals/tax lines.
+Be conservative — only include items you can clearly identify as food/drink.`,
+            },
+            {
+              type: 'image_url',
+              image_url: { url: `data:image/jpeg;base64,${base64Image}`, detail: 'high' },
+            },
+          ],
+        },
+      ],
+      response_format: { type: 'json_object' },
+      max_tokens: 2000,
+    }),
+  });
+  if (!res.ok) throw new Error(`GPT vision error ${res.status}`);
+  const data = await res.json() as { choices: { message: { content: string } }[] };
+  const parsed = JSON.parse(data.choices[0].message.content) as { items: ReceiptItem[] };
+  return Array.isArray(parsed.items) ? parsed.items : [];
+}
