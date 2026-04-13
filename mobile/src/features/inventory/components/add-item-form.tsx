@@ -3,8 +3,7 @@ import type { ExpiryType, InventoryItem, ItemLocation } from '@/lib/database/mod
 
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { Platform, ScrollView, StyleSheet } from 'react-native';
-import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
+import { ScrollView, StyleSheet } from 'react-native';
 import { Button, SegmentedButtons, Text } from 'react-native-paper';
 
 import { FormTextField } from '@/components/common/form-text-field';
@@ -139,7 +138,6 @@ export function AddItemForm({ barcode, initialName, category, onItemSaved, requi
   }
 
   return (
-    <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1 }}>
       <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={styles.container}>
       <FormTextField
         label="Item name"
@@ -214,7 +212,6 @@ export function AddItemForm({ barcode, initialName, category, onItemSaved, requi
         {submitting ? 'Saving…' : 'Add to inventory'}
       </Button>
     </ScrollView>
-    </KeyboardAvoidingView>
   );
 }
 
