@@ -219,8 +219,8 @@ export default function ShoppingListScreen() {
           </>
         )}
 
-      {/* Large dictaphone-style mic at bottom */}
-      <View style={styles.micContainer}>
+      {/* Large dictaphone-style mic at bottom — box-none lets touches pass through the transparent area */}
+      <View style={styles.micContainer} pointerEvents="box-none">
         <Text variant="bodySmall" style={styles.micHint}>
           {voiceState === 'idle' ? 'Hold to speak your list' :
            voiceState === 'recording' ? 'Listening…' : 'Adding items…'}

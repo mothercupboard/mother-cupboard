@@ -2,10 +2,6 @@ import { Stack, router } from 'expo-router';
 import { Pressable, StyleSheet, Text } from 'react-native';
 import { useTheme } from 'react-native-paper';
 
-
-
-
-
 function CancelButton() {
   return (
     <Pressable
@@ -26,9 +22,7 @@ const cancelStyles = StyleSheet.create({
     paddingHorizontal: 8,
     paddingVertical: 4,
   },
-  pressed: {
-    opacity: 0.6,
-  },
+  pressed: { opacity: 0.6 },
   label: {
     color: '#FFFFFF',
     fontFamily: 'Nunito_600SemiBold',
@@ -46,11 +40,10 @@ export default function InventoryLayout() {
         headerTitleStyle: { fontFamily: 'Nunito_700Bold' },
       }}
     >
-      <Stack.Screen name="scan" options={{ title: 'Scan Barcode', headerRight: () => <CancelButton /> }} />
-      <Stack.Screen name="search" options={{ title: 'Search by Name', headerRight: () => <CancelButton /> }} />
-      <Stack.Screen name="add-item" options={{ title: 'Add Item', headerRight: () => <CancelButton /> }} />
-      <Stack.Screen name="edit-item" options={{ title: 'Edit Item', headerRight: () => <CancelButton /> }} />
+      <Stack.Screen name="scan"      options={{ title: 'Scan Barcode',    headerRight: () => <CancelButton /> }} />
+      <Stack.Screen name="search"    options={{ title: 'Search by Name',  headerRight: () => <CancelButton /> }} />
+      <Stack.Screen name="add-item"  options={{ title: 'Add Item',        headerRight: () => <CancelButton /> }} />
+      <Stack.Screen name="edit-item" options={{ title: 'Edit Item',       headerRight: () => <CancelButton /> }} />
     </Stack>
   );
 }
-

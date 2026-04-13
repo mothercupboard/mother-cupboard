@@ -27,36 +27,32 @@ export async function startVoiceRecording(): Promise<Audio.Recording> {
   const { status } = await Audio.requestPermissionsAsync();
   if (status !== 'granted') throw new Error('Microphone permission denied');
   await Audio.setAudioModeAsync({ allowsRecordingIOS: true, playsInSilentModeIOS: true });
-  const rec = new Audio.Recording();
-  // Use explicit AAC-LC format — Whisper reliably accepts this on both platforms
-  await rec.prepareToRecordAsync({
+
+  // createAsync handles setup atomically — avoids "recorder not prepared" race conditions
+  const { recording } = await Audio.Recording.createAsync({
     isMeteringEnabled: false,
     android: {
       extension: '.m4a',
-      outputFormat: 2,   // MPEG_4
-      audioEncoder: 3,   // AAC
-      sampleRate: 16000,
+      outputFormat: 2,  // MPEG_4
+      audioEncoder: 3,  // AAC
+      sampleRate: 44100,
       numberOfChannels: 1,
       bitRate: 128000,
     },
     ios: {
       extension: '.m4a',
-      audioQuality: 96,  // MEDIUM
-      outputFormat: 'aac ', // kAudioFormatMPEG4AAC — trailing space is intentional!
-      sampleRate: 16000,
+      audioQuality: 127,    // MAX
+      outputFormat: 'aac ', // kAudioFormatMPEG4AAC — trailing space is intentional
+      sampleRate: 44100,
       numberOfChannels: 1,
       bitRate: 128000,
       linearPCMBitDepth: 16,
       linearPCMIsBigEndian: false,
       linearPCMIsFloat: false,
     },
-    web: {
-      mimeType: 'audio/webm',
-      bitsPerSecond: 128000,
-    },
+    web: { mimeType: 'audio/webm', bitsPerSecond: 128000 },
   });
-  await rec.startAsync();
-  return rec;
+  return recording;
 }
 
 export async function stopAndTranscribe(recording: Audio.Recording): Promise<string> {
