@@ -1,6 +1,6 @@
-import { createMMKV } from 'react-native-mmkv';
+import { MMKV } from 'react-native-mmkv';
 
-export const storage = createMMKV();
+export const storage = new MMKV();
 
 export function getItem<T>(key: string): T | null {
   const value = storage.getString(key);
@@ -14,3 +14,4 @@ export async function setItem<T>(key: string, value: T) {
 export function removeItem(key: string) {
   storage.remove(key);
 }
+
