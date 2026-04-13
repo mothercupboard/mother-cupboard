@@ -1,9 +1,10 @@
-import type { Database } from '@nozbe/watermelondb';
+﻿import type { Database } from '@nozbe/watermelondb';
 import type { ExpiryType, InventoryItem, ItemLocation } from '@/lib/database/models/inventory-item';
 
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet } from 'react-native';
+import { Platform, ScrollView, StyleSheet } from 'react-native';
+import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
 import { Button, SegmentedButtons, Text } from 'react-native-paper';
 
 import { FormTextField } from '@/components/common/form-text-field';
@@ -210,7 +211,7 @@ export function AddItemForm({ barcode, initialName, category, onItemSaved, requi
         contentStyle={styles.buttonContent}
         labelStyle={styles.buttonLabel}
       >
-        {submitting ? 'Saving…' : 'Add to inventory'}
+        {submitting ? 'Savingâ€¦' : 'Add to inventory'}
       </Button>
     </ScrollView>
     </KeyboardAvoidingView>
@@ -237,5 +238,6 @@ const styles = StyleSheet.create({
   buttonContent: { paddingVertical: 6 },
   buttonLabel: { fontFamily: 'Nunito_700Bold', fontSize: 16 },
 });
+
 
 
