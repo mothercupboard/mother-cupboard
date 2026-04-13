@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import { StyleSheet, View } from 'react-native';
-import { IconButton, TextInput } from 'react-native-paper';
+import { StyleSheet, TextInput, TouchableOpacity, View } from 'react-native';
+import { IconButton } from 'react-native-paper';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 import { WarmHearthColors } from '@/components/common/paper-theme';
 import { useShoppingListStore } from '@/features/shopping-list/shopping-list-store';
@@ -9,10 +10,6 @@ interface Props {
   onScanReceipt?: () => void;
 }
 
-/**
- * Inline input row at the top of the shopping list.
- * The receipt camera icon opens the receipt scanner modal (handled by parent).
- */
 export function AddItemInput({ onScanReceipt }: Props) {
   const [text, setText] = useState('');
   const addItem = useShoppingListStore(s => s.addItem);
@@ -20,13 +17,9 @@ export function AddItemInput({ onScanReceipt }: Props) {
   function handleSubmit() {
     const trimmed = text.trim();
     if (!trimmed) return;
-
-    // Support "name, quantity" shorthand
     const commaIdx = trimmed.indexOf(',');
     if (commaIdx > 0) {
-      const name = trimmed.slice(0, commaIdx).trim();
-      const qty = trimmed.slice(commaIdx + 1).trim();
-      addItem(name, qty);
+      addItem(trimmed.slice(0, commaIdx).trim(), trimmed.slice(commaIdx + 1).trim());
     } else {
       addItem(trimmed);
     }
@@ -36,27 +29,29 @@ export function AddItemInput({ onScanReceipt }: Props) {
   return (
     <View style={styles.container}>
       <TextInput
-        mode="outlined"
         placeholder="Add item (e.g. Milk, 2 pints)"
+        placeholderTextColor={WarmHearthColors.textSecondary}
         value={text}
         onChangeText={setText}
         onSubmitEditing={handleSubmit}
         returnKeyType="done"
         style={styles.input}
-        textColor={WarmHearthColors.textPrimary}
-        contentStyle={styles.inputContent}
-        dense
         accessibilityLabel="Add shopping list item"
         accessibilityHint="Type item name, optionally followed by comma and quantity"
       />
-      <IconButton
-        icon="plus-circle"
-        iconColor={WarmHearthColors.shoppingList}
-        size={28}
+      <TouchableOpacity
         onPress={handleSubmit}
         disabled={!text.trim()}
+        style={[styles.addBtn, !text.trim() && styles.addBtnDisabled]}
         accessibilityLabel="Add item"
-      />
+        hitSlop={8}
+      >
+        <MaterialCommunityIcons
+          name="plus-circle"
+          size={28}
+          color={text.trim() ? WarmHearthColors.shoppingList : WarmHearthColors.outline}
+        />
+      </TouchableOpacity>
       <IconButton
         icon="receipt"
         iconColor={WarmHearthColors.primary}
@@ -72,16 +67,22 @@ const styles = StyleSheet.create({
   container: {
     alignItems: 'center',
     flexDirection: 'row',
-    gap: 2,
+    gap: 4,
     paddingHorizontal: 12,
     paddingVertical: 8,
   },
   input: {
     backgroundColor: WarmHearthColors.surface,
-    flex: 1,
-  },
-  inputContent: {
+    borderColor: WarmHearthColors.outline,
+    borderRadius: 8,
+    borderWidth: 1,
     color: WarmHearthColors.textPrimary,
+    flex: 1,
     fontFamily: 'Nunito_400Regular',
+    fontSize: 15,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
   },
+  addBtn: { padding: 4 },
+  addBtnDisabled: { opacity: 0.4 },
 });

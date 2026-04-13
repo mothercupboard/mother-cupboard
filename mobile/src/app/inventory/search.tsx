@@ -2,8 +2,9 @@ import type { OffProduct } from '@/lib/barcode/off-database';
 
 import { router } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
-import { FlatList, StyleSheet, View } from 'react-native';
-import { Divider, List, Searchbar, Text } from 'react-native-paper';
+import { FlatList, StyleSheet, TextInput, TouchableOpacity, View } from 'react-native';
+import { Divider, List, Text } from 'react-native-paper';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 import { WarmHearthColors } from '@/components/common/paper-theme';
 import { searchByName } from '@/lib/barcode/off-database';
@@ -25,11 +26,10 @@ export default function SearchScreen() {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<OffProduct[]>([]);
   const [searched, setSearched] = useState(false);
-  const searchbarRef = useRef<any>(null);
+  const inputRef = useRef<TextInput>(null);
 
-  // Focus after navigation animation completes (autoFocus fires too early on iOS)
   useEffect(() => {
-    const t = setTimeout(() => searchbarRef.current?.focus(), 350);
+    const t = setTimeout(() => inputRef.current?.focus(), 350);
     return () => clearTimeout(t);
   }, []);
 
@@ -49,15 +49,25 @@ export default function SearchScreen() {
 
   return (
     <View style={styles.container}>
-      <Searchbar
-        ref={searchbarRef}
-        placeholder="Type a product name…"
-        value={query}
-        onChangeText={setQuery}
-        style={styles.searchbar}
-        inputStyle={styles.searchbarInput}
-        accessibilityLabel="Search for a product by name"
-      />
+      <View style={styles.searchRow}>
+        <MaterialCommunityIcons name="magnify" size={20} color={WarmHearthColors.textSecondary} style={styles.searchIcon} />
+        <TextInput
+          ref={inputRef}
+          placeholder="Type a product name…"
+          placeholderTextColor={WarmHearthColors.textSecondary}
+          value={query}
+          onChangeText={setQuery}
+          style={styles.searchInput}
+          returnKeyType="search"
+          autoCorrect={false}
+          accessibilityLabel="Search for a product by name"
+        />
+        {query.length > 0 && (
+          <TouchableOpacity onPress={() => setQuery('')} hitSlop={8}>
+            <MaterialCommunityIcons name="close-circle" size={18} color={WarmHearthColors.textSecondary} />
+          </TouchableOpacity>
+        )}
+      </View>
 
       {query.length < 2 && (
         <View style={styles.centred}>
@@ -105,14 +115,23 @@ export default function SearchScreen() {
 
 const styles = StyleSheet.create({
   container: { backgroundColor: WarmHearthColors.background, flex: 1 },
-  searchbar: {
+  searchRow: {
+    alignItems: 'center',
     backgroundColor: WarmHearthColors.surface,
-    borderRadius: 0,
+    borderBottomColor: WarmHearthColors.outline,
+    borderBottomWidth: 1,
     elevation: 2,
+    flexDirection: 'row',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
   },
-  searchbarInput: {
+  searchIcon: { marginRight: 8 },
+  searchInput: {
     color: WarmHearthColors.textPrimary,
+    flex: 1,
     fontFamily: 'Nunito_400Regular',
+    fontSize: 16,
+    paddingVertical: 8,
   },
   centred: {
     alignItems: 'center',
