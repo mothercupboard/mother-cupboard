@@ -88,8 +88,10 @@ function ListActions() {
   const [confirmVisible, setConfirmVisible] = useState(false);
 
   async function moveToInventory(checkedItems: { name: string; quantity: string }[]) {
+    const validItems = checkedItems.filter(i => i.name.trim().length > 0);
+    if (validItems.length === 0) return;
     await db.write(async () => {
-      for (const item of checkedItems) {
+      for (const item of validItems) {
         const match = item.quantity.match(/^([\d.]+)\s*(.*)$/);
         const qty = match ? parseFloat(match[1]) : null;
         const unit = match && match[2] ? match[2].trim() : null;

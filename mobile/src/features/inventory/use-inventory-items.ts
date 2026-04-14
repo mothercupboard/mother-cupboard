@@ -11,7 +11,7 @@ export function useInventoryItems(location?: 'fridge' | 'freezer' | 'cupboard') 
   const [items, setItems] = useState<InventoryItem[]>([]);
 
   useEffect(() => {
-    const conditions = [Q.where('is_deleted', false)];
+    const conditions = [Q.where('is_deleted', false), Q.where('name', Q.notEq(''))];
     if (location)
       conditions.push(Q.where('location', location));
 

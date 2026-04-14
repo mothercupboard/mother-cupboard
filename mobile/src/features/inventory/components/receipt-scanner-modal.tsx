@@ -78,7 +78,8 @@ export function ReceiptScannerModal({ visible, onDismiss }: Props) {
     setState('parsing');
     try {
       const parsed = await parseReceiptImage(result.assets[0].base64);
-      setItems(parsed.map((p, i) => ({ ...p, id: String(i) })));
+      const valid = parsed.filter(p => p.name && p.name.trim().length > 0);
+      setItems(valid.map((p, i) => ({ ...p, id: String(i) })));
       setState('review');
     } catch (err) {
       Alert.alert('Parsing failed', err instanceof Error ? err.message : 'Unknown error');
