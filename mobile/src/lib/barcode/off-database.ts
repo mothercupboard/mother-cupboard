@@ -76,58 +76,36 @@ export async function lookupByBarcode(barcode: string): Promise<OffProduct | nul
  */
 export async function searchByName(query: string): Promise<OffProduct[]> {
   const db = await openDb();
-  const trimmed = query.trim();
-  if (trimmed.length < 2) return [];
-
-  // 1. Local cache — fast, works offline
+  const q = `%${query}%`;
+  // 1. Check local cache
   const cached = await db.getAllAsync<OffProduct>(
-    `SELECT barcode, name, category FROM off_cache
-     WHERE name LIKE ? COLLATE NOCASE
-     ORDER BY name ASC LIMIT 8`,
-    [`%${trimmed}%`],
+    'SELECT barcode, name, category FROM off_cache WHERE name LIKE ? LIMIT 20',
+    [q],
   );
-
-  // 2. Live OFF API search — runs concurrently with any cache miss
-  let apiResults: OffProduct[] = [];
+  if (cached.length >= 3) return cached;
+  // 2. Fallback: search Open Food Facts API
   try {
-    const params = new URLSearchParams({
-      search_terms: trimmed,
-      search_simple: '1',
-      action: 'process',
-      json: '1',
-      'countries_tags': 'en:united-kingdom',
-      page_size: '15',
-      fields: 'code,product_name,categories_tags',
-    });
     const res = await fetch(
-      `https://world.openfoodfacts.org/cgi/search.pl?${params}`,
-      { headers: { 'User-Agent': 'MotherCupboard/1.0' }, signal: AbortSignal.timeout(4000) },
+      `https://world.openfoodfacts.org/cgi/search.pl?search_terms=${encodeURIComponent(query)}&search_simple=1&action=process&json=1&page_size=15&fields=code,product_name,categories_tags`,
+      { signal: AbortSignal.timeout(5000) },
     );
-    if (res.ok) {
-      const data = await res.json() as {
-        products: { code: string; product_name?: string; categories_tags?: string[] }[];
-      };
-      apiResults = (data.products ?? [])
-        .filter(p => p.product_name)
-        .map(p => ({
-          barcode: p.code,
-          name: p.product_name!,
-          category: cleanCategory(p.categories_tags?.[0] ?? null),
-        }));
-
-      // Cache API results for next time
-      if (apiResults.length > 0) {
-        await cacheProducts(db, apiResults);
-      }
-    }
+    if (!res.ok) return cached;
+    const data = await res.json();
+    const products: OffProduct[] = (data.products ?? [])
+      .filter((p: any) => p.product_name && p.code)
+      .map((p: any) => ({
+        barcode: p.code,
+        name: p.product_name,
+        category: p.categories_tags?.[0]?.replace('en:', '') ?? null,
+      }));
+    if (products.length > 0) await cacheProducts(db, products);
+    // Merge cached + online, deduplicate by barcode
+    const merged = new Map<string, OffProduct>();
+    for (const p of [...cached, ...products]) merged.set(p.barcode, p);
+    return [...merged.values()].slice(0, 20);
   } catch {
-    // Network unavailable — cached results are fine
+    return cached;
   }
-
-  // 3. Merge: cached first, then API results not already in cache, deduplicated
-  const seen = new Set(cached.map(p => p.barcode));
-  const fresh = apiResults.filter(p => !seen.has(p.barcode));
-  return [...cached, ...fresh].slice(0, 15);
 }
 
 // ─── Helpers ─────────────────────────────────────────────────────────────

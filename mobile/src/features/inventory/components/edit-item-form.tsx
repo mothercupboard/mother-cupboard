@@ -212,6 +212,7 @@ export function EditItemForm({ item }: { item: InventoryItem }) {
         accessibilityHint="Enter the product name"
       />
       <Pressable onPress={() => { setQtyDraft(quantity); setQtyDialogVisible(true); }}>
+        <View pointerEvents="none">
         <PaperTextInput
           label="Quantity (optional)"
           value={quantity}
@@ -223,6 +224,7 @@ export function EditItemForm({ item }: { item: InventoryItem }) {
           activeOutlineColor={WarmHearthColors.primary}
           theme={{ fonts: { bodyLarge: { fontFamily: 'Nunito_400Regular' } } }}
         />
+        </View>
       </Pressable>
       <Portal>
         <Dialog visible={qtyDialogVisible} onDismiss={() => setQtyDialogVisible(false)}>
@@ -234,7 +236,6 @@ export function EditItemForm({ item }: { item: InventoryItem }) {
               onChangeText={setQtyDraft}
               mode="outlined"
               keyboardType="decimal-pad"
-              autoFocus
               style={{ backgroundColor: WarmHearthColors.background }}
               theme={{ fonts: { bodyLarge: { fontFamily: 'Nunito_400Regular' } } }}
             />

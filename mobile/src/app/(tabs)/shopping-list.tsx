@@ -5,6 +5,8 @@ import { ActivityIndicator, Pressable, SectionList, StyleSheet, View } from 'rea
 import { Button, Dialog, Divider, Portal, Text } from 'react-native-paper';
 
 import { WarmHearthColors } from '@/components/common/paper-theme';
+import { useDatabase } from '@/lib/database/provider';
+import type { InventoryItem } from '@/lib/database/models/inventory-item';
 import { ReceiptScannerModal } from '@/features/inventory/components/receipt-scanner-modal';
 import { FeatureTip } from '@/features/onboarding/components/feature-tip';
 import { useOnboardingStore } from '@/features/onboarding/onboarding-store';
@@ -45,15 +47,15 @@ function ClearConfirmDialog(
   return (
     <Portal>
       <Dialog visible={visible} onDismiss={onDismiss}>
-        <Dialog.Title style={dialogStyles.title}>Clear purchased items?</Dialog.Title>
+        <Dialog.Title style={dialogStyles.title}>Move to cupboard?</Dialog.Title>
         <Dialog.Content>
           <Text variant="bodyMedium" style={dialogStyles.text}>
-            {`This will clear ${count} purchased item${count !== 1 ? 's' : ''} from your list. You can re-add them any time.`}
+            {`This will add ${count} purchased item${count !== 1 ? 's' : ''} to your cupboard and remove them from this list.`}
           </Text>
         </Dialog.Content>
         <Dialog.Actions>
           <Button onPress={onDismiss}>Cancel</Button>
-          <Button onPress={onConfirm} textColor={WarmHearthColors.shoppingList}>Clear</Button>
+          <Button onPress={onConfirm} textColor={WarmHearthColors.shoppingList}>Move to cupboard</Button>
         </Dialog.Actions>
       </Dialog>
     </Portal>
@@ -78,11 +80,35 @@ function EmptyState() {
 }
 
 function ListActions() {
+  const db = useDatabase();
   const items = useShoppingListStore(s => s.items);
   const checkAll = useShoppingListStore(s => s.checkAll);
   const uncheckAll = useShoppingListStore(s => s.uncheckAll);
   const clearChecked = useShoppingListStore(s => s.clearChecked);
   const [confirmVisible, setConfirmVisible] = useState(false);
+
+  async function moveToInventory(checkedItems: { name: string; quantity: string }[]) {
+    await db.write(async () => {
+      for (const item of checkedItems) {
+        const match = item.quantity.match(/^([\d.]+)\s*(.*)$/);
+        const qty = match ? parseFloat(match[1]) : null;
+        const unit = match && match[2] ? match[2].trim() : null;
+        await db.get<InventoryItem>('inventory_items').create((inv) => {
+          inv.name = item.name;
+          inv.quantity = qty;
+          inv.unit = unit;
+          inv.location = 'cupboard';
+          inv.expiryType = null;
+          inv.expiryDate = null;
+          inv.barcode = null;
+          inv.category = null;
+          inv.notes = null;
+          inv.isDeleted = false;
+          inv.updatedAt = new Date();
+        });
+      }
+    });
+  }
 
   const checkedCount = items.filter(i => i.checked).length;
   const allChecked = items.length > 0 && checkedCount === items.length;
@@ -111,13 +137,13 @@ function ListActions() {
             textColor={WarmHearthColors.shoppingList}
             compact
           >
-            {`Clear purchased (${checkedCount})`}
+            {`Move to cupboard (${checkedCount})`}
           </Button>
           <ClearConfirmDialog
             visible={confirmVisible}
             count={checkedCount}
             onDismiss={() => setConfirmVisible(false)}
-            onConfirm={() => { clearChecked(); setConfirmVisible(false); }}
+            onConfirm={async () => { const checked = items.filter(i => i.checked); await moveToInventory(checked); clearChecked(); setConfirmVisible(false); }}
           />
         </>
       )}

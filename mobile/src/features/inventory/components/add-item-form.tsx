@@ -3,7 +3,7 @@ import type { ExpiryType, InventoryItem, ItemLocation } from '@/lib/database/mod
 
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { Pressable, ScrollView, StyleSheet } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { Button, Dialog, Portal, SegmentedButtons, Text, TextInput as PaperTextInput } from 'react-native-paper';
 
 import { FormTextField } from '@/components/common/form-text-field';
@@ -155,6 +155,7 @@ export function AddItemForm({ barcode, initialName, category, onItemSaved, requi
         accessibilityHint="Enter the product name"
       />
       <Pressable onPress={() => { setQtyDraft(quantity); setQtyDialogVisible(true); }}>
+        <View pointerEvents="none">
         <PaperTextInput
           label="Quantity (optional)"
           value={quantity}
@@ -166,6 +167,7 @@ export function AddItemForm({ barcode, initialName, category, onItemSaved, requi
           activeOutlineColor={WarmHearthColors.primary}
           theme={{ fonts: { bodyLarge: { fontFamily: 'Nunito_400Regular' } } }}
         />
+        </View>
       </Pressable>
       <Portal>
         <Dialog visible={qtyDialogVisible} onDismiss={() => setQtyDialogVisible(false)}>
@@ -177,7 +179,6 @@ export function AddItemForm({ barcode, initialName, category, onItemSaved, requi
               onChangeText={setQtyDraft}
               mode="outlined"
               keyboardType="decimal-pad"
-              autoFocus
               style={{ backgroundColor: WarmHearthColors.background }}
               theme={{ fonts: { bodyLarge: { fontFamily: 'Nunito_400Regular' } } }}
             />
