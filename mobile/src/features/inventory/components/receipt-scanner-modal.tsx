@@ -70,7 +70,7 @@ export function ReceiptScannerModal({ visible, onDismiss }: Props) {
       return;
     }
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ['images'],
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
       base64: true,
       quality: 0.8,
     });
