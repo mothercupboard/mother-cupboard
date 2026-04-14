@@ -247,7 +247,7 @@ const planStyles = StyleSheet.create({
 });
 
 export default function SettingsScreen() {
-  const email = useAuthStore(s => s.session?.user.email ?? null);
+  const email = useAuthStore(s => s.user?.email ?? s.session?.user?.email ?? null);
   const notificationsEnabled = useNotificationStatus();
   const [step, setStep] = useState<DialogStep>(null);
   const [isDeleting, setIsDeleting] = useState(false);
