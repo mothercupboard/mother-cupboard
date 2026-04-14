@@ -21,6 +21,7 @@ import { useOnboardingStore } from '@/features/onboarding/onboarding-store';
 import { APIProvider } from '@/lib/api/provider';
 import { DatabaseProvider } from '@/lib/database/provider';
 import { supabase } from '@/lib/supabase/client';
+import { KeyboardProvider } from 'react-native-keyboard-controller';
 
 // Show expiry-alert notifications even while the app is foregrounded
 Notifications.setNotificationHandler({
@@ -137,7 +138,8 @@ export default function RootLayout() {
     return null;
 
   return (
-    <SafeAreaProvider>
+    <KeyboardProvider>
+      <SafeAreaProvider>
       <PaperProvider theme={WarmHearthTheme}>
         <APIProvider>
           <DatabaseProvider>
@@ -146,6 +148,7 @@ export default function RootLayout() {
         </APIProvider>
       </PaperProvider>
     </SafeAreaProvider>
+      </KeyboardProvider>
   );
 }
 
