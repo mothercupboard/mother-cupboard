@@ -149,7 +149,7 @@ export function ReceiptScannerModal({ visible, onDismiss }: Props) {
       <Modal
         visible={visible}
         onDismiss={handleClose}
-        dismissable={false}
+        dismissable={true}
         contentContainerStyle={styles.modal}
       >
         {/* Idle — prompt to take photo */}
@@ -199,6 +199,9 @@ export function ReceiptScannerModal({ visible, onDismiss }: Props) {
             <Text variant="bodySmall" style={styles.loadingSubtext}>
               This takes a few seconds
             </Text>
+            <Button mode="text" onPress={handleClose} labelStyle={styles.cancelLabel}>
+              Cancel
+            </Button>
           </View>
         )}
 

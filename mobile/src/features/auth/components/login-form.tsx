@@ -1,8 +1,8 @@
 import { useForm } from '@tanstack/react-form';
 import { router } from 'expo-router';
-import { useState } from 'react';
-import { StyleSheet, View } from 'react-native';
-import { Button, Text, TextInput } from 'react-native-paper';
+import { useRef, useState } from 'react';
+import { Pressable, StyleSheet, View } from 'react-native';
+import { Button, Dialog, Portal, Text, TextInput } from 'react-native-paper';
 import z from 'zod';
 
 import { FormTextField } from '@/components/common/form-text-field';
@@ -19,6 +19,8 @@ export function LoginForm() {
   const setSession = useAuthStore(s => s.setSession);
   const [serverError, setServerError] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
+  const [pwDialogVisible, setPwDialogVisible] = useState(false);
+  const [pwDraft, setPwDraft] = useState('');
 
   const form = useForm({
     defaultValues: { email: '', password: '' },
@@ -84,25 +86,43 @@ export function LoginForm() {
         }}
       >
         {field => (
-          <FormTextField
-            label="Password"
-            value={field.state.value}
-            onChangeText={field.handleChange}
-            onBlur={field.handleBlur}
-            errors={field.state.meta.errors.map(String)}
-            isTouched={field.state.meta.isTouched}
-            secureTextEntry={!showPassword}
-            textContentType="password"
-            autoComplete="password"
-            accessibilityHint="Enter your password"
-            rightIcon={(
-              <TextInput.Icon
-                icon={showPassword ? 'eye-off' : 'eye'}
-                onPress={() => setShowPassword(p => !p)}
-                accessibilityLabel={showPassword ? 'Hide password' : 'Show password'}
-              />
-            )}
-          />
+          <>
+            <Pressable onPress={() => { setPwDraft(field.state.value); setPwDialogVisible(true); }}>
+              <View pointerEvents="none">
+                <FormTextField
+                  label="Password"
+                  value={field.state.value ? '••••••••' : ''}
+                  onChangeText={() => {}}
+                  onBlur={() => {}}
+                  errors={field.state.meta.errors.map(String)}
+                  isTouched={field.state.meta.isTouched}
+                  accessibilityHint="Tap to enter your password"
+                />
+              </View>
+            </Pressable>
+            <Portal>
+              <Dialog visible={pwDialogVisible} onDismiss={() => setPwDialogVisible(false)}>
+                <Dialog.Title style={{ fontFamily: 'Nunito_700Bold' }}>Password</Dialog.Title>
+                <Dialog.Content>
+                  <TextInput
+                    label="Enter password"
+                    value={pwDraft}
+                    onChangeText={setPwDraft}
+                    mode="outlined"
+                    secureTextEntry={!showPassword}
+                    autoComplete="password"
+                    textContentType="password"
+                    right={<TextInput.Icon icon={showPassword ? 'eye-off' : 'eye'} onPress={() => setShowPassword(!showPassword)} />}
+                    style={{ backgroundColor: '#FAF6F0' }}
+                  />
+                </Dialog.Content>
+                <Dialog.Actions>
+                  <Button onPress={() => setPwDialogVisible(false)}>Cancel</Button>
+                  <Button onPress={() => { field.handleChange(pwDraft); setPwDialogVisible(false); }}>OK</Button>
+                </Dialog.Actions>
+              </Dialog>
+            </Portal>
+          </>
         )}
       </form.Field>
       <form.Subscribe selector={s => [s.canSubmit, s.isSubmitting]}>
