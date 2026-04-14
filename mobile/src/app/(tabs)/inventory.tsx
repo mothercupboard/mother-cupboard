@@ -13,6 +13,7 @@ import { sortByExpiry } from '@/features/inventory/inventory.utils';
 import { useInventoryItems } from '@/features/inventory/use-inventory-items';
 import { FeatureTip } from '@/features/onboarding/components/feature-tip';
 import { useOnboardingStore } from '@/features/onboarding/onboarding-store';
+import { ReceiptScannerModal } from '@/features/inventory/components/receipt-scanner-modal';
 
 const LOCATIONS: { label: string; value: ItemLocation }[] = [
   { label: 'Fridge', value: 'fridge' },
@@ -67,6 +68,7 @@ function SyncBanner() {
 export default function InventoryScreen() {
   const [activeLocation, setActiveLocation] = useState<ItemLocation>('fridge');
   const [fabOpen, setFabOpen] = useState(false);
+  const [receiptVisible, setReceiptVisible] = useState(false);
   const items = useInventoryItems(activeLocation);
   const sortedItems = sortByExpiry(items);
 
@@ -110,6 +112,7 @@ export default function InventoryScreen() {
           { icon: 'pencil-outline', label: 'Add manually', onPress: () => router.push({ pathname: '/inventory/add-item', params: { manual: '1' } }) },
           { icon: 'magnify', label: 'Search by name', onPress: () => router.push('/inventory/search') },
           { icon: 'barcode-scan', label: 'Scan barcode', onPress: () => router.push('/inventory/scan') },
+          { icon: 'receipt', label: 'Scan receipt', onPress: () => setReceiptVisible(true) },
         ]}
         onStateChange={({ open }) => setFabOpen(open)}
         style={styles.fab} testID="fab-group"
@@ -125,7 +128,8 @@ export default function InventoryScreen() {
               contentContainerStyle={styles.list}
             />
           )}
-    </View>
+    <ReceiptScannerModal visible={receiptVisible} onDismiss={() => setReceiptVisible(false)} />
+      </View>
   );
 }
 
@@ -144,6 +148,7 @@ const styles = StyleSheet.create({
   syncText: { color: WarmHearthColors.textSecondary, fontFamily: 'Nunito_400Regular' },
   locationTabs: {
     flexDirection: 'row',
+    justifyContent: 'center',
     gap: 8,
     paddingHorizontal: 16,
     paddingVertical: 12,

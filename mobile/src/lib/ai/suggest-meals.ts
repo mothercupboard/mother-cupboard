@@ -26,6 +26,7 @@ const SYSTEM_PROMPT = [
   '- Use ingredients the household already has',
   '- Are realistic for home cooking in the UK',
   '- Match the requested adventurousness level (1 = simple comfort food, 5 = ambitious)',
+  '- Always use UK English spelling (e.g. colour, flavour, minimise, centre)',
   'Respond with ONLY a valid JSON object matching this schema:',
   '{',
   '  "suggestions": [',
@@ -37,11 +38,12 @@ const SYSTEM_PROMPT = [
   '      "missingIngredients": ["<common items NOT in inventory that are needed>"],',
   '      "adventurousness": <1-5>,',
   '      "estimatedCookTime": <minutes>,',
-  '      "usesExpiringItems": <true if it prioritises soon-to-expire items>',
+  '      "usesExpiringItems": <true if it prioritises soon-to-expire items>,',
+  '      "steps": ["Step 1: ...", "Step 2: ...", "Step 3: ..."]',
   '    }',
   '  ]',
   '}',
-  'Return 3 suggestions unless the inventory is very limited (then return as many as practical).',
+  'Include 4-8 clear, concise cooking steps for each suggestion.\nReturn 3 suggestions unless the inventory is very limited (then return as many as practical).',
 ].join('\n');
 
 const MOOD_DESCRIPTIONS: Record<string, string> = {
@@ -50,7 +52,6 @@ const MOOD_DESCRIPTIONS: Record<string, string> = {
   healthy: 'Healthy and nutritious options',
   'leftover-rescue': 'Creative ways to use up leftovers and odds-and-ends',
   'batch-cook': 'Batch cooking — makes enough to freeze or eat across the week',
-  budget: 'Budget-friendly meals',
   'one-pot': 'One-pot or one-pan meals (minimal washing up)',
   'kid-friendly': 'Kid-friendly meals the whole family will enjoy',
 };
