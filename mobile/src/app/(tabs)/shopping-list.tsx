@@ -207,6 +207,7 @@ export default function ShoppingListScreen() {
         ? <EmptyState />
         : (
           <>
+            <ListActions />
             <SectionList
               sections={sections}
               keyExtractor={i => i.id}
@@ -215,7 +216,6 @@ export default function ShoppingListScreen() {
               contentContainerStyle={styles.list}
               stickySectionHeadersEnabled={false}
             />
-            <ListActions />
           </>
         )}
 

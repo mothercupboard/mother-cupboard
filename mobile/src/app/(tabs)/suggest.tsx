@@ -46,6 +46,7 @@ const MOOD_OPTIONS: MoodOption[] = [
   { value: 'batch-cook', label: 'Batch cook', icon: 'pot-steam-outline' },
   { value: 'one-pot', label: 'One-pot', icon: 'pot-outline' },
   { value: 'kid-friendly', label: 'Kid-friendly', icon: 'baby-face-outline' },
+  { value: 'favourite', label: 'Favourite', icon: 'heart' },
 ];
 
 function MoodChips() {

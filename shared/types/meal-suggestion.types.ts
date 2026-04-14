@@ -9,7 +9,8 @@ export type MoodFilter =
   | 'batch-cook'
   | 'budget'
   | 'one-pot'
-  | 'kid-friendly';
+  | 'kid-friendly'
+  | 'favourite';
 
 export interface MealSuggestion {
   id: string;

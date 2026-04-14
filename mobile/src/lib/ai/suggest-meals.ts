@@ -54,6 +54,7 @@ const MOOD_DESCRIPTIONS: Record<string, string> = {
   'batch-cook': 'Batch cooking — makes enough to freeze or eat across the week',
   'one-pot': 'One-pot or one-pan meals (minimal washing up)',
   'kid-friendly': 'Kid-friendly meals the whole family will enjoy',
+  favourite: 'Suggest meals similar to the user\'s favourited meals — comfort picks they already love',
 };
 
 function formatItems(items: InventoryItemForAI[]): string {

@@ -80,14 +80,17 @@ export async function parseVoiceItem(transcript: string): Promise<ParsedVoiceIte
   const systemPrompt = `You extract food inventory item details from spoken natural language. Today is ${todayGB()}.
 Return ONLY valid JSON with exactly these fields:
 - name: string — the food item name, capitalised (e.g. "Tin of Beans", "Semi-Skimmed Milk")
-- quantity: number — default 1
-- unit: string — packaging unit if mentioned (e.g. "tin", "bottle", "pack", "bag", "litre") or ""
+- quantity: number — extract the actual number stated. "200g" means quantity 200, "2 packs" means quantity 2, "a dozen eggs" means quantity 12. Only default to 1 when no amount at all is mentioned
+- unit: string — the unit of measurement or packaging (e.g. "g", "kg", "ml", "litre", "tin", "bottle", "pack", "bag", "items"). Extract from combined forms like "200g" → unit is "g", "500ml" → unit is "ml"
 - expiryDate: string — date in DD/MM/YYYY format, or "". If only month and day mentioned (e.g. "August 27"), use the soonest future occurrence.
 - expiryType: "use_by" if the phrase is "use by", "goes off", "expires" or similar; "best_before" if "best before"; "" if not clear
 - location: "fridge" for dairy/fresh meat/leftovers; "freezer" for frozen items; "cupboard" for everything else
 
-Example: "tin of beans that goes off August 27"
-→ {"name":"Tin of Beans","quantity":1,"unit":"tin","expiryDate":"27/08/2026","expiryType":"use_by","location":"cupboard"}`;
+Examples:
+"200g of minced beef" → {"name":"Minced Beef","quantity":200,"unit":"g","expiryDate":"","expiryType":"","location":"fridge"}
+"tin of beans that goes off August 27" → {"name":"Tin of Beans","quantity":1,"unit":"tin","expiryDate":"27/08/2026","expiryType":"use_by","location":"cupboard"}
+"500ml of semi-skimmed milk" → {"name":"Semi-Skimmed Milk","quantity":500,"unit":"ml","expiryDate":"","expiryType":"","location":"fridge"}
+"2 packs of chicken breast" → {"name":"Chicken Breast","quantity":2,"unit":"pack","expiryDate":"","expiryType":"use_by","location":"fridge"}`;
 
   const res = await fetch('https://api.openai.com/v1/chat/completions', {
     method: 'POST',

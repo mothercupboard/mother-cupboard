@@ -63,6 +63,29 @@ export function ReceiptScannerModal({ visible, onDismiss }: Props) {
     }
   }
 
+  async function handleChoosePhoto() {
+    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (permission.status !== 'granted') {
+      Alert.alert('Photos access needed', 'Please allow photo library access to select receipt images.');
+      return;
+    }
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'],
+      base64: true,
+      quality: 0.8,
+    });
+    if (result.canceled || !result.assets[0]?.base64) return;
+    setState('parsing');
+    try {
+      const parsed = await parseReceiptImage(result.assets[0].base64);
+      setItems(parsed.map((p, i) => ({ ...p, id: String(i) })));
+      setState('review');
+    } catch (err) {
+      Alert.alert('Parsing failed', err instanceof Error ? err.message : 'Unknown error');
+      setState('idle');
+    }
+  }
+
   function removeItem(id: string) {
     setItems(prev => {
       const next = prev.filter(i => i.id !== id);
@@ -136,6 +159,15 @@ export function ReceiptScannerModal({ visible, onDismiss }: Props) {
               labelStyle={styles.buttonLabel}
             >
               Take Photo
+            </Button>
+            <Button
+              mode="outlined"
+              icon="image-multiple"
+              onPress={handleChoosePhoto}
+              style={styles.photoButton}
+              labelStyle={styles.buttonLabel}
+            >
+              Choose from Photos
             </Button>
             <Button mode="text" onPress={handleClose} labelStyle={styles.cancelLabel}>
               Cancel
@@ -335,4 +367,5 @@ const styles = StyleSheet.create({
   addButton: {
     borderRadius: 10,
   },
+  photoButton: { borderColor: '#7B5EA7', borderRadius: 12, marginTop: 8 },
 });

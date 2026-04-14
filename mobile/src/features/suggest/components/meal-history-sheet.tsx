@@ -74,7 +74,7 @@ function FavouriteRow({ meal }: { meal: MealSuggestion }) {
         accessibilityLabel={`Remove ${meal.title} from favourites`}
         accessibilityRole="button"
       >
-        <MaterialCommunityIcons name="heart-off-outline" size={22} color={WarmHearthColors.textSecondary} />
+        <MaterialCommunityIcons name="heart" size={22} color={WarmHearthColors.expiryUrgent} />
       </Pressable>
     </View>
   );

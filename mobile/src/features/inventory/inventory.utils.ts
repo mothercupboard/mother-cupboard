@@ -1,7 +1,7 @@
 import type { ExpiryType } from '@/lib/database/models/inventory-item';
 
 // DD/MM/YYYY — compiled once at module scope per e18e/prefer-static-regex
-const DATE_GB_RE = /^(\d{2})\/(\d{2})\/(\d{2}|\d{4})$/;
+const DATE_GB_RE = /^(\d{1,2})\/?\s*(\d{1,2})\/?\s*(\d{2,4})$/;
 
 /**
  * Parses a date string in DD/MM/YYYY format to a unix millisecond timestamp.
@@ -12,7 +12,8 @@ export function parseDateGB(value: string): number | null {
   if (!match)
     return null;
   const [, day, month, year] = match;
-  const d = new Date(Number(year), Number(month) - 1, Number(day));
+  const yr = Number(year) < 100 ? 2000 + Number(year) : Number(year);
+  const d = new Date(yr, Number(month) - 1, Number(day));
   return Number.isNaN(d.getTime()) ? null : d.getTime();
 }
 

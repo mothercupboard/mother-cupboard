@@ -3,7 +3,7 @@ import type { ExpiryType, InventoryItem, ItemLocation } from '@/lib/database/mod
 
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { ScrollView, StyleSheet, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { Button, Dialog, Portal, SegmentedButtons, Text, TextInput as PaperTextInput } from 'react-native-paper';
 
 import { FormTextField } from '@/components/common/form-text-field';
@@ -174,6 +174,8 @@ export function EditItemForm({ item }: { item: InventoryItem }) {
   const [expiryDate, setExpiryDate] = useState(() => item.expiryDate !== null ? formatDateGB(item.expiryDate) : '');
   const [nameError, setNameError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [qtyDialogVisible, setQtyDialogVisible] = useState(false);
+  const [qtyDraft, setQtyDraft] = useState(quantity);
   const del = useDeleteItem(db, item);
 
   async function handleSubmit() {
@@ -209,18 +211,40 @@ export function EditItemForm({ item }: { item: InventoryItem }) {
         isTouched={nameError !== null}
         accessibilityHint="Enter the product name"
       />
-      <PaperTextInput
-        label="Quantity (optional)"
-        value={quantity}
-        onChangeText={setQuantity}
-        mode="outlined"
-        keyboardType="decimal-pad"
-        accessibilityLabel="Quantity (optional)"
-        style={styles.paperInput}
-        outlineColor={WarmHearthColors.outline}
-        activeOutlineColor={WarmHearthColors.primary}
-        theme={{ fonts: { bodyLarge: { fontFamily: 'Nunito_400Regular' } } }}
-      />
+      <Pressable onPress={() => { setQtyDraft(quantity); setQtyDialogVisible(true); }}>
+        <PaperTextInput
+          label="Quantity (optional)"
+          value={quantity}
+          mode="outlined"
+          editable={false}
+          right={<PaperTextInput.Icon icon="pencil" />}
+          style={styles.paperInput}
+          outlineColor={WarmHearthColors.outline}
+          activeOutlineColor={WarmHearthColors.primary}
+          theme={{ fonts: { bodyLarge: { fontFamily: 'Nunito_400Regular' } } }}
+        />
+      </Pressable>
+      <Portal>
+        <Dialog visible={qtyDialogVisible} onDismiss={() => setQtyDialogVisible(false)}>
+          <Dialog.Title style={{ fontFamily: 'Nunito_700Bold' }}>Quantity</Dialog.Title>
+          <Dialog.Content>
+            <PaperTextInput
+              label="Enter quantity"
+              value={qtyDraft}
+              onChangeText={setQtyDraft}
+              mode="outlined"
+              keyboardType="decimal-pad"
+              autoFocus
+              style={{ backgroundColor: WarmHearthColors.background }}
+              theme={{ fonts: { bodyLarge: { fontFamily: 'Nunito_400Regular' } } }}
+            />
+          </Dialog.Content>
+          <Dialog.Actions>
+            <Button onPress={() => setQtyDialogVisible(false)}>Cancel</Button>
+            <Button onPress={() => { setQuantity(qtyDraft); setQtyDialogVisible(false); }}>OK</Button>
+          </Dialog.Actions>
+        </Dialog>
+      </Portal>
       <Text variant="labelMedium" style={styles.fieldLabel}>Unit</Text>
       <SegmentedButtons value={unit} onValueChange={setUnit} buttons={UNIT_BUTTONS} />
       <Text variant="labelMedium" style={styles.fieldLabel}>Storage location</Text>

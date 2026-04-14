@@ -3,8 +3,8 @@ import type { ExpiryType, InventoryItem, ItemLocation } from '@/lib/database/mod
 
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { ScrollView, StyleSheet } from 'react-native';
-import { Button, SegmentedButtons, Text, TextInput as PaperTextInput } from 'react-native-paper';
+import { Pressable, ScrollView, StyleSheet } from 'react-native';
+import { Button, Dialog, Portal, SegmentedButtons, Text, TextInput as PaperTextInput } from 'react-native-paper';
 
 import { FormTextField } from '@/components/common/form-text-field';
 import { WarmHearthColors } from '@/components/common/paper-theme';
@@ -97,11 +97,9 @@ export function AddItemForm({ barcode, initialName, category, onItemSaved, requi
   const [expiryType, setExpiryType] = useState<ExpiryType | ''>(requireExpiry ? 'use_by' : '');
   const [expiryDate, setExpiryDate] = useState('');
   const handleExpiryDateChange = (text: string) => {
-    const digits = text.replace(/\D/g, '');
-    let formatted = digits;
-    if (digits.length >= 3) formatted = digits.slice(0, 2) + '/' + digits.slice(2);
-    if (digits.length >= 5) formatted = digits.slice(0, 2) + '/' + digits.slice(2, 4) + '/' + digits.slice(4, 6);
-    setExpiryDate(formatted);
+    // Accept digits and slashes, max 8 chars (DD/MM/YY)
+    const cleaned = text.replace(/[^0-9\/]/g, '').slice(0, 8);
+    setExpiryDate(cleaned);
   };
   const [nameError, setNameError] = useState<string | null>(null);
   const [expiryError, setExpiryError] = useState<string | null>(null);
@@ -114,6 +112,8 @@ export function AddItemForm({ barcode, initialName, category, onItemSaved, requi
     if (parsed.expiryDate) setExpiryDate(parsed.expiryDate);
   };
   const [submitting, setSubmitting] = useState(false);
+  const [qtyDialogVisible, setQtyDialogVisible] = useState(false);
+  const [qtyDraft, setQtyDraft] = useState(quantity);
   async function handleSubmit() {
     if (!name.trim()) {
       setNameError('Name is required');
@@ -154,18 +154,40 @@ export function AddItemForm({ barcode, initialName, category, onItemSaved, requi
         isTouched={nameError !== null}
         accessibilityHint="Enter the product name"
       />
-      <PaperTextInput
-        label="Quantity (optional)"
-        value={quantity}
-        onChangeText={setQuantity}
-        mode="outlined"
-        keyboardType="decimal-pad"
-        accessibilityLabel="Quantity (optional)"
-        style={styles.paperInput}
-        outlineColor={WarmHearthColors.outline}
-        activeOutlineColor={WarmHearthColors.primary}
-        theme={{ fonts: { bodyLarge: { fontFamily: 'Nunito_400Regular' } } }}
-      />
+      <Pressable onPress={() => { setQtyDraft(quantity); setQtyDialogVisible(true); }}>
+        <PaperTextInput
+          label="Quantity (optional)"
+          value={quantity}
+          mode="outlined"
+          editable={false}
+          right={<PaperTextInput.Icon icon="pencil" />}
+          style={styles.paperInput}
+          outlineColor={WarmHearthColors.outline}
+          activeOutlineColor={WarmHearthColors.primary}
+          theme={{ fonts: { bodyLarge: { fontFamily: 'Nunito_400Regular' } } }}
+        />
+      </Pressable>
+      <Portal>
+        <Dialog visible={qtyDialogVisible} onDismiss={() => setQtyDialogVisible(false)}>
+          <Dialog.Title style={{ fontFamily: 'Nunito_700Bold' }}>Quantity</Dialog.Title>
+          <Dialog.Content>
+            <PaperTextInput
+              label="Enter quantity"
+              value={qtyDraft}
+              onChangeText={setQtyDraft}
+              mode="outlined"
+              keyboardType="decimal-pad"
+              autoFocus
+              style={{ backgroundColor: WarmHearthColors.background }}
+              theme={{ fonts: { bodyLarge: { fontFamily: 'Nunito_400Regular' } } }}
+            />
+          </Dialog.Content>
+          <Dialog.Actions>
+            <Button onPress={() => setQtyDialogVisible(false)}>Cancel</Button>
+            <Button onPress={() => { setQuantity(qtyDraft); setQtyDialogVisible(false); }}>OK</Button>
+          </Dialog.Actions>
+        </Dialog>
+      </Portal>
       <Text variant="labelMedium" style={styles.fieldLabel}>Unit</Text>
       <SegmentedButtons
         value={unit}
