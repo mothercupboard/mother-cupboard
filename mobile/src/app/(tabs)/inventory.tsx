@@ -1,7 +1,6 @@
 import type { ItemLocation } from '@/lib/database/models/inventory-item';
 
 import { router } from 'expo-router';
-import * as ImagePicker from 'expo-image-picker';
 import { useState } from 'react';
 import { FlatList, StyleSheet, View } from 'react-native';
 import { Chip, Divider, FAB, Icon, Text } from 'react-native-paper';
@@ -14,7 +13,6 @@ import { sortByExpiry } from '@/features/inventory/inventory.utils';
 import { useInventoryItems } from '@/features/inventory/use-inventory-items';
 import { FeatureTip } from '@/features/onboarding/components/feature-tip';
 import { useOnboardingStore } from '@/features/onboarding/onboarding-store';
-import { ReceiptScannerModal } from '@/features/inventory/components/receipt-scanner-modal';
 
 const LOCATIONS: { label: string; value: ItemLocation }[] = [
   { label: 'Fridge', value: 'fridge' },
@@ -69,8 +67,6 @@ function SyncBanner() {
 export default function InventoryScreen() {
   const [activeLocation, setActiveLocation] = useState<ItemLocation>('fridge');
   const [fabOpen, setFabOpen] = useState(false);
-  const [receiptVisible, setReceiptVisible] = useState(false);
-  const [receiptBase64, setReceiptBase64] = useState<string | null>(null);
   const items = useInventoryItems(activeLocation);
   const sortedItems = sortByExpiry(items);
 
@@ -114,16 +110,7 @@ export default function InventoryScreen() {
           { icon: 'pencil-outline', label: 'Add manually', onPress: () => router.push({ pathname: '/inventory/add-item', params: { manual: '1' } }) },
           { icon: 'magnify', label: 'Search by name', onPress: () => router.push('/inventory/search') },
           { icon: 'barcode-scan', label: 'Scan barcode', onPress: () => router.push('/inventory/scan') },
-          { icon: 'receipt', label: 'Scan receipt', onPress: async () => {
-            const result = await ImagePicker.launchImageLibraryAsync({
-              mediaTypes: ImagePicker.MediaTypeOptions.Images,
-              base64: true,
-              quality: 0.8,
-            });
-            if (result.canceled || !result.assets[0]?.base64) return;
-            setReceiptBase64(result.assets[0].base64);
-            setReceiptVisible(true);
-          } },
+          { icon: 'receipt', label: 'Scan receipt', onPress: () => router.push('/inventory/scan-receipt' as any) },
         ]}
         onStateChange={({ open }) => setFabOpen(open)}
         style={styles.fab} testID="fab-group"
@@ -139,7 +126,7 @@ export default function InventoryScreen() {
               contentContainerStyle={styles.list}
             />
           )}
-    <ReceiptScannerModal visible={receiptVisible} initialBase64={receiptBase64} onDismiss={() => { setReceiptVisible(false); setReceiptBase64(null); }} />
+    
       </View>
   );
 }
