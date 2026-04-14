@@ -78,6 +78,7 @@ export function ReceiptScannerModal({ visible, onDismiss }: Props) {
     setState('parsing');
     try {
       const parsed = await parseReceiptImage(result.assets[0].base64);
+      Alert.alert('Receipt debug', 'Found ' + parsed.length + ' items. Going to review...');
       const valid = parsed.filter(p => p.name && p.name.trim().length > 0);
       if (valid.length === 0) {
         Alert.alert('No items found', 'Could not find any food items. Try a clearer image of your receipt.');
