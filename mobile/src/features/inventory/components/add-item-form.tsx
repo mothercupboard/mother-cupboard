@@ -157,7 +157,7 @@ export function AddItemForm({ barcode, initialName, category, onItemSaved, requi
       <FormTextField
         label="Quantity (optional)"
         value={quantity}
-        onChangeText={(text) => setQuantity(text.replace(/[^0-9.]/g, ""))}
+        onChangeText={setQuantity}
         onBlur={() => {}}
         errors={[]}
         isTouched={false}

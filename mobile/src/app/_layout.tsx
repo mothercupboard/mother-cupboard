@@ -14,7 +14,6 @@ import * as SplashScreen from 'expo-splash-screen';
 import { useEffect, useRef, useState } from 'react';
 import { PaperProvider } from 'react-native-paper';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { KeyboardProvider } from 'react-native-keyboard-controller';
 
 import { WarmHearthTheme } from '@/components/common/paper-theme';
 import { useAuthStore } from '@/features/auth/auth-store';
@@ -138,7 +137,6 @@ export default function RootLayout() {
     return null;
 
   return (
-    <KeyboardProvider enabled={false}>
     <SafeAreaProvider>
       <PaperProvider theme={WarmHearthTheme}>
         <APIProvider>
@@ -148,7 +146,6 @@ export default function RootLayout() {
         </APIProvider>
       </PaperProvider>
     </SafeAreaProvider>
-    </KeyboardProvider>
   );
 }
 
