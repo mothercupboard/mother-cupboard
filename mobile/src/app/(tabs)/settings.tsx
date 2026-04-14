@@ -6,6 +6,7 @@ import { Button, Dialog, Divider, List, Portal, SegmentedButtons, Switch, Text }
 
 import { WarmHearthColors } from '@/components/common/paper-theme';
 import { useAuthStore } from '@/features/auth/auth-store';
+import { supabase } from '@/lib/supabase/client';
 import { deleteAccount, restorePurchases, signOut } from '@/features/auth/auth.service';
 import { useEntitlements } from '@/features/auth/entitlements';
 import { useTrialStatus } from '@/features/auth/trial-store';
@@ -247,7 +248,15 @@ const planStyles = StyleSheet.create({
 });
 
 export default function SettingsScreen() {
-  const email = useAuthStore(s => s.user?.email ?? s.session?.user?.email ?? null);
+  const storeEmail = useAuthStore(s => s.user?.email ?? s.session?.user?.email ?? null);
+  const [email, setEmail] = useState<string | null>(storeEmail);
+  useEffect(() => {
+    if (!storeEmail) {
+      supabase.auth.getUser().then(({ data }) => {
+        if (data.user?.email) setEmail(data.user.email);
+      });
+    }
+  }, [storeEmail]);
   const notificationsEnabled = useNotificationStatus();
   const [step, setStep] = useState<DialogStep>(null);
   const [isDeleting, setIsDeleting] = useState(false);
