@@ -1,4 +1,5 @@
-import type { MealSuggestion, SuggestMealsRequest } from '../../../../shared/types/meal-suggestion.types';
+import type { MealSuggestion } from '../../../../shared/types/meal-suggestion.types';
+import type { LocalSuggestRequest } from '@/lib/ai/suggest-meals';
 
 import { useRef } from 'react';
 
@@ -26,9 +27,16 @@ export function useSuggestActions() {
 
   const likedMeals = [...new Set([...cookedTitles, ...savedTitles])];
 
-  function buildRequest(extraHint?: string): SuggestMealsRequest {
+  function buildRequest(extraHint?: string): LocalSuggestRequest {
     return {
-      inventoryItemIds: items.map(i => i.id),
+      items: items.map(i => ({
+        name: i.name,
+        quantity: i.quantity,
+        unit: i.unit,
+        location: i.location,
+        expiryDate: i.expiryDate,
+        expiryType: i.expiryType,
+      })),
       adventurousness,
       servings,
       moods: moods.length > 0 ? moods : undefined,
