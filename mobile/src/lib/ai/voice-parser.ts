@@ -162,7 +162,7 @@ export async function parseReceiptImage(base64Image: string): Promise<ReceiptIte
           content: [
             {
               type: 'text',
-              text: `You are a UK grocery receipt parser. Extract only food and drink items from this receipt.
+              text: `You are a UK grocery receipt and shopping list parser. Extract food and drink items from this image. The image may be a paper receipt, a screenshot from a store loyalty app (such as Smartpay, Tesco Clubcard, Sainsbury's Nectar, etc.), a digital receipt, or a photo of a shopping list. Look for product names, quantities, and prices.
 Return JSON with "items" array. Each item:
 - name: string — food item name, properly capitalised (e.g. "Semi-Skimmed Milk", "Baked Beans")
 - quantity: number — quantity purchased (default 1)
