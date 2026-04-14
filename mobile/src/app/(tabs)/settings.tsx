@@ -248,18 +248,9 @@ const planStyles = StyleSheet.create({
 });
 
 export default function SettingsScreen() {
-  const [email, setEmail] = useState<string | null>(null);
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
-      Alert.alert('Session debug', JSON.stringify({ email: data.session?.user?.email, hasSession: !!data.session, hasUser: !!data.session?.user }));
-      const e = data.session?.user?.email;
-      if (e) { setEmail(e); return; }
-      // Fallback: network call
-      supabase.auth.getUser().then(({ data: ud }) => {
-        if (ud.user?.email) setEmail(ud.user.email);
-      });
-    });
-  }, []);
+  const sessionEmail = useAuthStore(s => s.session?.user?.email ?? null);
+  const userEmail = useAuthStore(s => s.user?.email ?? null);
+  const email = userEmail ?? sessionEmail;
   const notificationsEnabled = useNotificationStatus();
   const [step, setStep] = useState<DialogStep>(null);
   const [isDeleting, setIsDeleting] = useState(false);

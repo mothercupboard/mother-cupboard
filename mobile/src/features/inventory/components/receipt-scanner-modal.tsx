@@ -30,6 +30,7 @@ export function ReceiptScannerModal({ visible, onDismiss }: Props) {
   const [state, setState] = useState<ModalState>('idle');
   const [items, setItems] = useState<EditableItem[]>([]);
   const [saving, setSaving] = useState(false);
+  const [parseError, setParseError] = useState<string | null>(null);
 
   async function handleTakePhoto() {
     const permission = await ImagePicker.requestCameraPermissionsAsync();
@@ -46,11 +47,12 @@ export function ReceiptScannerModal({ visible, onDismiss }: Props) {
 
     if (result.canceled || !result.assets[0]?.base64) return;
 
+    setParseError(null);
     setState('parsing');
     try {
       const parsed = await parseReceiptImage(result.assets[0].base64);
       if (parsed.length === 0) {
-        Alert.alert('No items found', 'Could not find any food items on the receipt. Try a clearer photo.');
+        setParseError('No food items found on the receipt. Try a clearer photo.');
         setState('idle');
         return;
       }
@@ -58,7 +60,7 @@ export function ReceiptScannerModal({ visible, onDismiss }: Props) {
       setState('review');
     } catch (e) {
       console.error('[Receipt] Parse error:', e);
-      Alert.alert('Could not read receipt', 'Please try again with a clearer, well-lit photo.');
+      setParseError('Could not read receipt. Please try again with a clearer photo.');
       setState('idle');
     }
   }
@@ -78,17 +80,16 @@ export function ReceiptScannerModal({ visible, onDismiss }: Props) {
     setState('parsing');
     try {
       const parsed = await parseReceiptImage(result.assets[0].base64);
-      Alert.alert('Receipt debug', 'Found ' + parsed.length + ' items. Going to review...');
       const valid = parsed.filter(p => p.name && p.name.trim().length > 0);
       if (valid.length === 0) {
-        Alert.alert('No items found', 'Could not find any food items. Try a clearer image of your receipt.');
+        setParseError('No food items found. Try a clearer image of your receipt.');
         setState('idle');
         return;
       }
       setItems(valid.map((p, i) => ({ ...p, id: String(i) })));
       setState('review');
     } catch (err) {
-      Alert.alert('Parsing failed', err instanceof Error ? err.message : 'Unknown error');
+      setParseError('Parsing failed: ' + (err instanceof Error ? err.message : 'Unknown error'));
       setState('idle');
     }
   }
@@ -158,7 +159,12 @@ export function ReceiptScannerModal({ visible, onDismiss }: Props) {
             <Text variant="bodyMedium" style={styles.body}>
               Photograph your shopping receipt and we’ll add all the food items to your inventory automatically.
             </Text>
-            <Button
+            {parseError && (
+            <Text variant="bodyMedium" style={{ color: '#B03A2E', fontFamily: 'Nunito_400Regular', textAlign: 'center', marginBottom: 8 }}>
+              {parseError}
+            </Text>
+          )}
+          <Button
               mode="contained"
               icon="camera"
               onPress={handleTakePhoto}
