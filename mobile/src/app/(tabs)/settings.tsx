@@ -248,15 +248,12 @@ const planStyles = StyleSheet.create({
 });
 
 export default function SettingsScreen() {
-  const storeEmail = useAuthStore(s => s.user?.email ?? s.session?.user?.email ?? null);
-  const [email, setEmail] = useState<string | null>(storeEmail);
+  const [email, setEmail] = useState<string | null>(null);
   useEffect(() => {
-    if (!storeEmail) {
-      supabase.auth.getUser().then(({ data }) => {
-        if (data.user?.email) setEmail(data.user.email);
-      });
-    }
-  }, [storeEmail]);
+    supabase.auth.getUser().then(({ data, error }) => {
+      if (data?.user?.email) setEmail(data.user.email);
+    });
+  }, []);
   const notificationsEnabled = useNotificationStatus();
   const [step, setStep] = useState<DialogStep>(null);
   const [isDeleting, setIsDeleting] = useState(false);
