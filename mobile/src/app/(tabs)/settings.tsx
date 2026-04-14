@@ -1,7 +1,7 @@
 import * as Notifications from 'expo-notifications';
 import { router } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
-import { AppState, Linking, ScrollView, StyleSheet, View } from 'react-native';
+import { Alert, AppState, Linking, ScrollView, StyleSheet, View } from 'react-native';
 import { Button, Dialog, Divider, List, Portal, SegmentedButtons, Switch, Text } from 'react-native-paper';
 
 import { WarmHearthColors } from '@/components/common/paper-theme';
