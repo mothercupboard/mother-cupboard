@@ -138,7 +138,7 @@ export default function RootLayout() {
     return null;
 
   return (
-    <KeyboardProvider>
+    <KeyboardProvider enabled={false}>
     <SafeAreaProvider>
       <PaperProvider theme={WarmHearthTheme}>
         <APIProvider>
