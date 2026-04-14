@@ -1,6 +1,6 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Alert, FlatList, StyleSheet, View } from 'react-native';
 import { ActivityIndicator, Button, Chip, IconButton, Modal, Portal, Text } from 'react-native-paper';
 
@@ -22,14 +22,37 @@ const LOCATION_ICONS: Record<string, string> = {
 
 interface Props {
   visible: boolean;
+  initialBase64?: string | null;
   onDismiss: () => void;
 }
 
-export function ReceiptScannerModal({ visible, onDismiss }: Props) {
+export function ReceiptScannerModal({ visible, initialBase64, onDismiss }: Props) {
   const db = useDatabase();
   const [state, setState] = useState<ModalState>('idle');
   const [items, setItems] = useState<EditableItem[]>([]);
   const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    if (visible && initialBase64) {
+      setParseError(null);
+      setState('parsing');
+      parseReceiptImage(initialBase64)
+        .then(parsed => {
+          const valid = parsed.filter(p => p.name && p.name.trim().length > 0);
+          if (valid.length === 0) {
+            setParseError('No food items found. Try a clearer image.');
+            setState('idle');
+            return;
+          }
+          setItems(valid.map((p, i) => ({ ...p, id: String(i) })));
+          setState('review');
+        })
+        .catch(err => {
+          setParseError('Parsing failed: ' + (err instanceof Error ? err.message : 'Unknown error'));
+          setState('idle');
+        });
+    }
+  }, [visible, initialBase64]);
   const [parseError, setParseError] = useState<string | null>(null);
 
   async function handleTakePhoto() {

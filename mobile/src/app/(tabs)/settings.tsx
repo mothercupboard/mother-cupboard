@@ -249,7 +249,22 @@ const planStyles = StyleSheet.create({
 });
 
 export default function SettingsScreen() {
-  const email = useAuthStore(s => s.user?.email) ?? storage.getString('user-email') ?? null;
+    // Read email from every possible source
+  const authUser = useAuthStore(s => s.user);
+  const authSession = useAuthStore(s => s.session);
+  const mmkvEmail = storage.getString('user-email');
+  let derivedEmail = authUser?.email ?? authSession?.user?.email ?? mmkvEmail ?? null;
+  // Last resort: decode JWT
+  if (!derivedEmail && authSession?.access_token) {
+    try {
+      const parts = authSession.access_token.split('.');
+      if (parts[1]) {
+        const payload = JSON.parse(atob(parts[1].replace(/-/g, '+').replace(/_/g, '/')));
+        derivedEmail = payload.email ?? null;
+      }
+    } catch {}
+  }
+  const email = derivedEmail;
   const notificationsEnabled = useNotificationStatus();
   const [step, setStep] = useState<DialogStep>(null);
   const [isDeleting, setIsDeleting] = useState(false);
