@@ -87,7 +87,7 @@ export async function searchByName(query: string): Promise<OffProduct[]> {
   try {
     const res = await fetch(
       `https://world.openfoodfacts.org/cgi/search.pl?search_terms=${encodeURIComponent(query)}&search_simple=1&action=process&json=1&page_size=15&fields=code,product_name,categories_tags`,
-      { signal: AbortSignal.timeout(5000) },
+      { signal: (() => { const ac = new AbortController(); setTimeout(() => ac.abort(), 5000); return ac.signal; })() },
     );
     if (!res.ok) return cached;
     const data = await res.json();
