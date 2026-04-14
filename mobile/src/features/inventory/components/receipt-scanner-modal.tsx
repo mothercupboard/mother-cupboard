@@ -149,6 +149,7 @@ export function ReceiptScannerModal({ visible, onDismiss }: Props) {
       <Modal
         visible={visible}
         onDismiss={handleClose}
+        dismissable={false}
         contentContainerStyle={styles.modal}
       >
         {/* Idle — prompt to take photo */}
