@@ -14,6 +14,7 @@ export type FormTextFieldProps = {
   secureTextEntry?: boolean;
   rightIcon?: React.ReactNode;
   accessibilityHint: string;
+  autoComplete?: 'email' | 'password' | 'new-password' | 'off';
 };
 
 export function FormTextField({
@@ -27,6 +28,7 @@ export function FormTextField({
   textContentType,
   secureTextEntry,
   accessibilityHint,
+  autoComplete,
 }: FormTextFieldProps) {
   const hasError = isTouched && errors.length > 0;
   return (
@@ -44,6 +46,7 @@ export function FormTextField({
         style={[styles.input, hasError && styles.inputError]}
         placeholderTextColor={WarmHearthColors.textSecondary}
         accessibilityLabel={label}
+        autoComplete={autoComplete}
         accessibilityHint={accessibilityHint}
       />
       {hasError && (

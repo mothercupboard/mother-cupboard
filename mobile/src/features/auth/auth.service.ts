@@ -76,7 +76,7 @@ export async function signOut(): Promise<void> {
 }
 
 export async function requestPasswordReset(email: string): Promise<ApiResponse<null>> {
-  const redirectTo = Linking.createURL('reset-password');
+  const redirectTo = Linking.createURL('(auth)/reset-password');
   const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo });
   if (error) {
     return {

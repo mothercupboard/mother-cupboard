@@ -4,7 +4,7 @@ import type { ExpiryType, InventoryItem, ItemLocation } from '@/lib/database/mod
 import { router } from 'expo-router';
 import { useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
-import { Button, Dialog, Portal, SegmentedButtons, Text } from 'react-native-paper';
+import { Button, Dialog, Portal, SegmentedButtons, Text, TextInput as PaperTextInput } from 'react-native-paper';
 
 import { FormTextField } from '@/components/common/form-text-field';
 import { WarmHearthColors } from '@/components/common/paper-theme';
@@ -209,15 +209,17 @@ export function EditItemForm({ item }: { item: InventoryItem }) {
         isTouched={nameError !== null}
         accessibilityHint="Enter the product name"
       />
-      <FormTextField
+      <PaperTextInput
         label="Quantity (optional)"
         value={quantity}
         onChangeText={setQuantity}
-        onBlur={() => {}}
-        errors={[]}
-        isTouched={false}
-        keyboardType="default"
-        accessibilityHint="Enter quantity"
+        mode="outlined"
+        keyboardType="decimal-pad"
+        accessibilityLabel="Quantity (optional)"
+        style={styles.paperInput}
+        outlineColor={WarmHearthColors.outline}
+        activeOutlineColor={WarmHearthColors.primary}
+        theme={{ fonts: { bodyLarge: { fontFamily: 'Nunito_400Regular' } } }}
       />
       <Text variant="labelMedium" style={styles.fieldLabel}>Unit</Text>
       <SegmentedButtons value={unit} onValueChange={setUnit} buttons={UNIT_BUTTONS} />
@@ -262,6 +264,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Nunito_600SemiBold',
     marginTop: 4,
   },
+  paperInput: { backgroundColor: WarmHearthColors.background, fontSize: 15 },
   button: { borderRadius: 12, marginTop: 8 },
   buttonContent: { paddingVertical: 6 },
   buttonLabel: { fontFamily: 'Nunito_700Bold', fontSize: 16 },

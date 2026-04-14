@@ -283,7 +283,7 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
   },
   list: {
-    paddingBottom: 160,
+    paddingBottom: 220,
   },
   actionsRow: {
     borderTopColor: WarmHearthColors.outline,
@@ -317,7 +317,7 @@ const styles = StyleSheet.create({
   },
   micContainer: {
     alignItems: 'center',
-    bottom: 16,
+    bottom: 90,
     elevation: 10,
     gap: 6,
     left: 0,

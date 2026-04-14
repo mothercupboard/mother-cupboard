@@ -20,6 +20,7 @@ export interface MealSuggestion {
   adventurousness: AdventurousnessLevel;
   estimatedCookTime: number; // minutes
   usesExpiringItems: boolean;
+  steps: string[];
 }
 
 export interface SuggestMealsRequest {

@@ -63,6 +63,7 @@ export function LoginForm() {
             isTouched={field.state.meta.isTouched}
             keyboardType="email-address"
             textContentType="emailAddress"
+            autoComplete="email"
             accessibilityHint="Enter your email address"
           />
         )}
@@ -89,6 +90,7 @@ export function LoginForm() {
             isTouched={field.state.meta.isTouched}
             secureTextEntry={!showPassword}
             textContentType="password"
+            autoComplete="password"
             accessibilityHint="Enter your password"
             rightIcon={(
               <TextInput.Icon

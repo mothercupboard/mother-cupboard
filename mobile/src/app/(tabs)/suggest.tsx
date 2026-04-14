@@ -44,7 +44,6 @@ const MOOD_OPTIONS: MoodOption[] = [
   { value: 'healthy', label: 'Healthy', icon: 'heart-outline' },
   { value: 'leftover-rescue', label: 'Leftover rescue', icon: 'recycle' },
   { value: 'batch-cook', label: 'Batch cook', icon: 'pot-steam-outline' },
-  { value: 'budget', label: 'Budget', icon: 'currency-gbp' },
   { value: 'one-pot', label: 'One-pot', icon: 'pot-outline' },
   { value: 'kid-friendly', label: 'Kid-friendly', icon: 'baby-face-outline' },
 ];

@@ -51,6 +51,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     supportsTablet: true,
     bundleIdentifier: Env.EXPO_PUBLIC_BUNDLE_ID,
     infoPlist: {
+          NSPhotoLibraryUsageDescription: 'Mother Cupboard needs access to your photos to import receipt images.',
       ITSAppUsesNonExemptEncryption: false,
       NSMicrophoneUsageDescription: 'Mother Cupboard uses your microphone so you can add items by voice.',
     },

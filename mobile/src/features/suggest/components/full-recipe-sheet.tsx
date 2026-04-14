@@ -112,17 +112,31 @@ function IngredientsSection({ suggestion }: { suggestion: MealSuggestion }) {
   );
 }
 
-function MethodPlaceholder() {
+function MethodSteps({ suggestion }: { suggestion: MealSuggestion }) {
+  if (!suggestion.steps || suggestion.steps.length === 0) {
+    return (
+      <View style={styles.section}>
+        <Text variant="titleSmall" style={styles.sectionTitle}>Method</Text>
+        <View style={styles.placeholderBox}>
+          <MaterialCommunityIcons name="chef-hat" size={28} color={WarmHearthColors.outline} />
+          <Text variant="bodyMedium" style={styles.placeholderText}>
+            No steps available for this recipe.
+          </Text>
+        </View>
+      </View>
+    );
+  }
   return (
     <View style={styles.section}>
       <Text variant="titleSmall" style={styles.sectionTitle}>Method</Text>
-      <View style={styles.placeholderBox}>
-        <MaterialCommunityIcons name="chef-hat" size={28} color={WarmHearthColors.outline} />
-        <Text variant="bodyMedium" style={styles.placeholderText}>
-          Full step-by-step recipes are coming soon. For now, the description
-          above should give you a good idea of how to prepare this meal.
-        </Text>
-      </View>
+      {suggestion.steps.map((step, i) => (
+        <View key={String(i)} style={styles.stepRow}>
+          <View style={styles.stepNumber}>
+            <Text variant="labelMedium" style={styles.stepNumberText}>{i + 1}</Text>
+          </View>
+          <Text variant="bodyMedium" style={styles.stepText}>{step}</Text>
+        </View>
+      ))}
     </View>
   );
 }
@@ -157,7 +171,7 @@ export function FullRecipeSheet({ suggestion, onClose }: { onClose: () => void; 
 
         <Divider style={styles.divider} />
 
-        <MethodPlaceholder />
+        <MethodSteps suggestion={suggestion} />
       </ScrollView>
     </View>
   );
@@ -268,6 +282,31 @@ const styles = StyleSheet.create({
   addedText: {
     color: WarmHearthColors.shoppingList,
     fontFamily: 'Nunito_400Regular',
+  },
+  stepRow: {
+    flexDirection: 'row',
+    gap: 12,
+    paddingLeft: 4,
+    marginBottom: 4,
+  },
+  stepNumber: {
+    alignItems: 'center',
+    backgroundColor: WarmHearthColors.primary,
+    borderRadius: 12,
+    height: 24,
+    justifyContent: 'center',
+    minWidth: 24,
+  },
+  stepNumberText: {
+    color: '#FFFFFF',
+    fontFamily: 'Nunito_700Bold',
+    fontSize: 12,
+  },
+  stepText: {
+    color: WarmHearthColors.textPrimary,
+    flex: 1,
+    fontFamily: 'Nunito_400Regular',
+    lineHeight: 22,
   },
   placeholderBox: {
     alignItems: 'center',
