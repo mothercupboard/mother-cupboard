@@ -4,6 +4,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { Button, Chip, Divider, Text } from 'react-native-paper';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { WarmHearthColors } from '@/components/common/paper-theme';
 import { useShoppingListStore } from '@/features/shopping-list/shopping-list-store';
@@ -49,7 +50,11 @@ function AddToListButton({ suggestion }: { suggestion: MealSuggestion }) {
   const [addedCount, setAddedCount] = useState<number | null>(null);
 
   function handlePress() {
-    const count = addMissing(suggestion.missingIngredients, suggestion.id);
+    const toAdd = [
+      ...suggestion.missingIngredients,
+      ...(suggestion.insufficientIngredients ?? []),
+    ];
+    const count = addMissing(toAdd, suggestion.id);
     setAddedCount(count);
   }
 
@@ -81,6 +86,28 @@ function AddToListButton({ suggestion }: { suggestion: MealSuggestion }) {
   );
 }
 
+function EquipmentSection({ suggestion }: { suggestion: MealSuggestion }) {
+  if (!suggestion.equipment || suggestion.equipment.length === 0) return null;
+  return (
+    <View style={styles.section}>
+      <Text variant="titleSmall" style={styles.sectionTitle}>Equipment needed</Text>
+      <View style={styles.chipRow}>
+        {suggestion.equipment.map(item => (
+          <Chip
+            key={item}
+            compact
+            icon="pot-mix-outline"
+            style={styles.equipmentChip}
+            textStyle={styles.chipText}
+          >
+            {item}
+          </Chip>
+        ))}
+      </View>
+    </View>
+  );
+}
+
 function IngredientsSection({ suggestion }: { suggestion: MealSuggestion }) {
   return (
     <View style={styles.section}>
@@ -95,6 +122,19 @@ function IngredientsSection({ suggestion }: { suggestion: MealSuggestion }) {
         </View>
       ))}
 
+      {(suggestion.insufficientIngredients ?? []).length > 0 && (
+        <>
+          <Text variant="titleSmall" style={styles.insufficientSectionTitle}>Need more of</Text>
+          <View style={styles.chipRow}>
+            {(suggestion.insufficientIngredients ?? []).map(ing => (
+              <Chip key={ing} compact icon="plus-circle-outline" style={styles.insufficientChip} textStyle={styles.chipText}>
+                {ing}
+              </Chip>
+            ))}
+          </View>
+        </>
+      )}
+
       {suggestion.missingIngredients.length > 0 && (
         <>
           <Text variant="titleSmall" style={styles.missingSectionTitle}>You might need</Text>
@@ -105,8 +145,11 @@ function IngredientsSection({ suggestion }: { suggestion: MealSuggestion }) {
               </Chip>
             ))}
           </View>
-          <AddToListButton suggestion={suggestion} />
         </>
+      )}
+
+      {((suggestion.insufficientIngredients ?? []).length > 0 || suggestion.missingIngredients.length > 0) && (
+        <AddToListButton suggestion={suggestion} />
       )}
     </View>
   );
@@ -147,6 +190,8 @@ function MethodSteps({ suggestion }: { suggestion: MealSuggestion }) {
  * cooking instructions (to be populated in a future story).
  */
 export function FullRecipeSheet({ suggestion, onClose }: { onClose: () => void; suggestion: MealSuggestion }) {
+  const insets = useSafeAreaInsets();
+
   return (
     <View style={styles.container}>
       <View style={styles.header}>
@@ -158,12 +203,16 @@ export function FullRecipeSheet({ suggestion, onClose }: { onClose: () => void; 
         </Pressable>
       </View>
 
-      <ScrollView contentContainerStyle={styles.scrollContent}>
+      <ScrollView contentContainerStyle={[styles.scrollContent, { paddingBottom: Math.max(insets.bottom + 40, 80) }]}>
         <Text variant="bodyLarge" style={styles.description}>
           {suggestion.description}
         </Text>
 
         <MetaRow suggestion={suggestion} />
+
+        <Divider style={styles.divider} />
+
+        <EquipmentSection suggestion={suggestion} />
 
         <Divider style={styles.divider} />
 
@@ -199,7 +248,6 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     gap: 16,
-    paddingBottom: 40,
     paddingHorizontal: 16,
     paddingTop: 16,
   },
@@ -247,6 +295,14 @@ const styles = StyleSheet.create({
     flex: 1,
     fontFamily: 'Nunito_400Regular',
   },
+  insufficientSectionTitle: {
+    color: WarmHearthColors.expiryWarning,
+    fontFamily: 'Nunito_700Bold',
+    marginTop: 8,
+  },
+  insufficientChip: {
+    backgroundColor: '#FFF8E1',
+  },
   missingSectionTitle: {
     color: WarmHearthColors.shoppingList,
     fontFamily: 'Nunito_700Bold',
@@ -256,6 +312,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 6,
+  },
+  equipmentChip: {
+    backgroundColor: '#FFF3E0',
   },
   missingChip: {
     backgroundColor: '#E8EAF6',

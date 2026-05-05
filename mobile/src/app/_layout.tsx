@@ -20,6 +20,8 @@ import { useAuthStore } from '@/features/auth/auth-store';
 import { useOnboardingStore } from '@/features/onboarding/onboarding-store';
 import { APIProvider } from '@/lib/api/provider';
 import { DatabaseProvider } from '@/lib/database/provider';
+import { configureRevenueCat, identifyUser, logOutRevenueCat } from '@/lib/revenuecat/client';
+import { useRevenueCatStore } from '@/lib/revenuecat/store';
 import { supabase } from '@/lib/supabase/client';
 import { KeyboardProvider } from 'react-native-keyboard-controller';
 
@@ -37,7 +39,7 @@ Notifications.setNotificationHandler({
 Sentry.init({
   dsn: process.env.EXPO_PUBLIC_SENTRY_DSN,
   environment: __DEV__ ? 'development' : 'production',
-  enabled: !__DEV__, // Disable in dev to avoid noise; enable for preview/production
+  enabled: !__DEV__ && !!process.env.EXPO_PUBLIC_SENTRY_DSN,
   tracesSampleRate: 0.2, // 20% of transactions for performance monitoring
 });
 
@@ -47,6 +49,7 @@ export default function RootLayout() {
   const router = useRouter();
   const ageGateAccepted = useOnboardingStore(s => s.ageGateAccepted);
   const privacyDisclosureAccepted = useOnboardingStore(s => s.privacyDisclosureAccepted);
+  const aiConsentAccepted = useOnboardingStore(s => s.aiConsentAccepted);
   const session = useAuthStore(s => s.session);
   const setSession = useAuthStore(s => s.setSession);
   const hasNavigatedRef = useRef(false);
@@ -96,6 +99,20 @@ export default function RootLayout() {
     return () => subscription.unsubscribe();
   }, [setSession]);
 
+  // Initialise RevenueCat and sync user identity
+  useEffect(() => {
+    if (!sessionChecked) return;
+
+    configureRevenueCat().then(async () => {
+      if (session?.user?.id) {
+        await identifyUser(session.user.id);
+      }
+      useRevenueCatStore.getState().refresh();
+    }).catch((err) => {
+      console.warn('[RevenueCat] init failed:', err?.message);
+    });
+  }, [sessionChecked, session?.user?.id]);
+
   // Route guard â€” runs once when fonts + session + URL checks all complete
   useEffect(() => {
     if (!fontsLoaded && !fontError)
@@ -108,8 +125,6 @@ export default function RootLayout() {
       return;
     hasNavigatedRef.current = true;
 
-    if (session)
-      return; // Authenticated â€” default route (tabs) renders
     if (isResetLinkRef.current)
       return; // Password-reset deep link â€” Expo Router handles routing
     if (!ageGateAccepted) {
@@ -120,8 +135,16 @@ export default function RootLayout() {
       router.replace('/onboarding/privacy-disclosure');
       return;
     }
+    // AI consent runs for all users — new and existing authenticated alike.
+    // This ensures Apple's reviewer sees the in-app AI disclosure on first launch.
+    if (!aiConsentAccepted) {
+      router.replace('/onboarding/ai-consent');
+      return;
+    }
+    if (session)
+      return; // Authenticated â€” default route (tabs) renders
     router.replace('/(auth)/login');
-  }, [fontsLoaded, fontError, sessionChecked, urlChecked, session, ageGateAccepted, privacyDisclosureAccepted, router]);
+  }, [fontsLoaded, fontError, sessionChecked, urlChecked, session, ageGateAccepted, privacyDisclosureAccepted, aiConsentAccepted, router]);
 
   // Navigate to inventory when user taps an expiry-alert notification
   useEffect(() => {
