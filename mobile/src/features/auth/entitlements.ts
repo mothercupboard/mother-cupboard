@@ -1,4 +1,6 @@
 import { useAuthStore } from '@/features/auth/auth-store';
+import { isGuestExpired, useGuestStore } from '@/features/guest/guest-store';
+import { useRevenueCatStore } from '@/lib/revenuecat/store';
 
 export type PlanType = 'trial' | 'free' | 'premium';
 
@@ -17,19 +19,12 @@ export type Entitlements = {
 const TRIAL_DAYS = 30;
 const MS_PER_DAY = 86_400_000;
 
-function derivePlan(meta: Record<string, unknown> | undefined): PlanType {
-  // Unlock all features in preview and development builds
-  if (process.env.EXPO_PUBLIC_APP_ENV !== 'production') return 'trial';
+function deriveTrialOrFree(meta: Record<string, unknown> | undefined): 'trial' | 'free' {
   if (!meta)
     return 'free';
 
   const plan = meta.plan as string | undefined;
 
-  // Explicit premium
-  if (plan === 'premium')
-    return 'premium';
-
-  // Trial — check if still valid
   if (plan === 'trial') {
     const startedAt = meta.trial_started_at as string | undefined;
     if (!startedAt)
@@ -42,18 +37,60 @@ function derivePlan(meta: Record<string, unknown> | undefined): PlanType {
 }
 
 /**
- * Derives the user's current plan and feature entitlements from Supabase
- * user metadata. Trial users get full access; free-tier users get core
- * inventory features only; premium users get everything.
+ * Derives the user's current plan and feature entitlements.
+ *
+ * - **Premium**: RevenueCat reports an active subscription
+ * - **Trial**: Supabase metadata shows a trial within 30 days
+ * - **Free**: neither of the above
+ *
+ * In non-production builds (dev/preview), the trial is always active
+ * so all features are unlocked for testing.
  *
  * **Free tier includes:** inventory management, manual shopping list,
  * expiry badge UI (but not scheduled push alerts).
  */
 export function useEntitlements(): Entitlements {
   const user = useAuthStore(s => s.user);
-  const plan = derivePlan(user?.user_metadata);
+  const hasPremium = useRevenueCatStore(s => s.hasPremium);
+  const isGuest = useGuestStore(s => s.isGuest);
+  const guestStartedAt = useGuestStore(s => s.guestStartedAt);
 
-  const isPaid = plan === 'trial' || plan === 'premium';
+  // Active guest trial: full access for 7 days, local storage only
+  if (isGuest && !isGuestExpired(guestStartedAt)) {
+    return {
+      plan: 'trial',
+      canUseSuggestions: true,
+      canUseScheduledAlerts: true,
+      canUseCloudSync: false, // guests are local-only
+      canUseMealHistory: true,
+    };
+  }
+
+  // Non-production builds: unlock everything for testing
+  if (process.env.EXPO_PUBLIC_APP_ENV !== 'production') {
+    return {
+      plan: 'trial',
+      canUseSuggestions: true,
+      canUseScheduledAlerts: true,
+      canUseCloudSync: true,
+      canUseMealHistory: true,
+    };
+  }
+
+  // RevenueCat is the source of truth for paid subscriptions
+  if (hasPremium) {
+    return {
+      plan: 'premium',
+      canUseSuggestions: true,
+      canUseScheduledAlerts: true,
+      canUseCloudSync: true,
+      canUseMealHistory: true,
+    };
+  }
+
+  // Fall back to trial check from Supabase metadata
+  const plan = deriveTrialOrFree(user?.user_metadata);
+  const isPaid = plan === 'trial';
 
   return {
     plan,

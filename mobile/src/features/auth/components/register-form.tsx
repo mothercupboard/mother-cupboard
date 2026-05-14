@@ -9,6 +9,7 @@ import { FormTextField } from '@/components/common/form-text-field';
 import { WarmHearthColors } from '@/components/common/paper-theme';
 import { useAuthStore } from '@/features/auth/auth-store';
 import { signUp } from '@/features/auth/auth.service';
+import { useGuestStore } from '@/features/guest/guest-store';
 import { supabase } from '@/lib/supabase/client';
 
 const emailSchema = z.string().email('Please enter a valid email address');
@@ -16,6 +17,7 @@ const passwordSchema = z.string().min(8, 'Password must be at least 8 characters
 
 export function RegisterForm() {
   const setSession = useAuthStore(s => s.setSession);
+  const endGuestSession = useGuestStore(s => s.endGuestSession);
   const [serverError, setServerError] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
 
@@ -29,6 +31,7 @@ export function RegisterForm() {
         return;
       }
       const { data } = await supabase.auth.getSession();
+      endGuestSession(); // clear guest flag — local items will sync on first pull
       setSession(data.session);
       router.replace('/(tabs)');
     },

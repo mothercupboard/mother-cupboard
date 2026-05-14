@@ -17,6 +17,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { WarmHearthTheme } from '@/components/common/paper-theme';
 import { useAuthStore } from '@/features/auth/auth-store';
+import { isGuestExpired, useGuestStore } from '@/features/guest/guest-store';
 import { useOnboardingStore } from '@/features/onboarding/onboarding-store';
 import { APIProvider } from '@/lib/api/provider';
 import { DatabaseProvider } from '@/lib/database/provider';
@@ -50,6 +51,8 @@ export default function RootLayout() {
   const ageGateAccepted = useOnboardingStore(s => s.ageGateAccepted);
   const privacyDisclosureAccepted = useOnboardingStore(s => s.privacyDisclosureAccepted);
   const aiConsentAccepted = useOnboardingStore(s => s.aiConsentAccepted);
+  const isGuest = useGuestStore(s => s.isGuest);
+  const guestStartedAt = useGuestStore(s => s.guestStartedAt);
   const session = useAuthStore(s => s.session);
   const setSession = useAuthStore(s => s.setSession);
   const hasNavigatedRef = useRef(false);
@@ -143,8 +146,17 @@ export default function RootLayout() {
     }
     if (session)
       return; // Authenticated â€” default route (tabs) renders
+    // Guest with active trial — allow through to tabs (local-only mode)
+    if (isGuest && !isGuestExpired(guestStartedAt)) {
+      return;
+    }
+    // Guest whose trial has expired — show expiry screen
+    if (isGuest && isGuestExpired(guestStartedAt)) {
+      router.replace('/onboarding/guest-expired');
+      return;
+    }
     router.replace('/(auth)/login');
-  }, [fontsLoaded, fontError, sessionChecked, urlChecked, session, ageGateAccepted, privacyDisclosureAccepted, aiConsentAccepted, router]);
+  }, [fontsLoaded, fontError, sessionChecked, urlChecked, session, ageGateAccepted, privacyDisclosureAccepted, aiConsentAccepted, isGuest, guestStartedAt, router]);
 
   // Navigate to inventory when user taps an expiry-alert notification
   useEffect(() => {
