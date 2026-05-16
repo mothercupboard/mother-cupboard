@@ -8,9 +8,10 @@ import { WarmHearthColors } from '@/components/common/paper-theme';
 import { useAuthStore } from '@/features/auth/auth-store';
 import { supabase } from '@/lib/supabase/client';
 import { storage } from '@/lib/storage';
-import { deleteAccount, restorePurchases, signOut } from '@/features/auth/auth.service';
+import { deleteAccount, signOut } from '@/features/auth/auth.service';
 import { useEntitlements } from '@/features/auth/entitlements';
 import { useTrialStatus } from '@/features/auth/trial-store';
+import { useRevenueCatStore } from '@/lib/revenuecat/store';
 import { useNotificationStore } from '@/features/notifications/notification-store';
 import { database } from '@/lib/database';
 
@@ -196,15 +197,16 @@ const settingsStyles = StyleSheet.create({
 function PlanSection() {
   const trial = useTrialStatus();
   const { plan } = useEntitlements();
+  const rcRestore = useRevenueCatStore(s => s.restore);
   const [isRestoring, setIsRestoring] = useState(false);
   const [restoreMessage, setRestoreMessage] = useState<string | null>(null);
 
   async function handleRestore() {
     setIsRestoring(true);
     setRestoreMessage(null);
-    const result = await restorePurchases();
+    const success = await rcRestore();
     setIsRestoring(false);
-    setRestoreMessage(result.error ? result.error.message : 'Purchase restored successfully!');
+    setRestoreMessage(success ? 'Purchase restored successfully!' : 'No active subscription found. If you recently purchased, please try again in a few minutes.');
   }
 
   const planDescription
@@ -225,7 +227,7 @@ function PlanSection() {
       />
       {plan !== 'premium' && (
         <View style={planStyles.actions}>
-          <Button mode="contained" icon="rocket-launch-outline" style={planStyles.upgradeButton} labelStyle={planStyles.upgradeLabel}>
+          <Button mode="contained" icon="rocket-launch-outline" style={planStyles.upgradeButton} labelStyle={planStyles.upgradeLabel} onPress={() => router.push('/paywall')}>
             Upgrade to Premium
           </Button>
           <Button mode="text" icon="restore" loading={isRestoring} disabled={isRestoring} onPress={handleRestore} labelStyle={planStyles.restoreLabel} compact>

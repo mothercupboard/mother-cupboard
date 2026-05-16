@@ -48,8 +48,8 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   },
   assetBundlePatterns: ['**/*'],
   ios: {
-    supportsTablet: true,
-    bundleIdentifier: Env.EXPO_PUBLIC_BUNDLE_ID,
+    supportsTablet: false,
+    bundleIdentifier: process.env.OVERRIDE_BUNDLE_ID ?? Env.EXPO_PUBLIC_BUNDLE_ID,
     infoPlist: {
           NSPhotoLibraryUsageDescription: 'Mother Cupboard needs access to your photos to import receipt images.',
       ITSAppUsesNonExemptEncryption: false,
@@ -76,7 +76,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       {
         backgroundColor: '#FAF6F0',
         image: './assets/splash-icon.png',
-        imageWidth: 800,
+        imageWidth: 200,
       },
     ],
     [

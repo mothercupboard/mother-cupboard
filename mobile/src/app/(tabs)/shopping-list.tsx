@@ -1,7 +1,7 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Audio } from 'expo-av';
 import { useMemo, useRef, useState } from 'react';
-import { ActivityIndicator, Pressable, SectionList, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, Keyboard, Pressable, SectionList, StyleSheet, View } from 'react-native';
 import { Button, Dialog, Divider, Portal, Text } from 'react-native-paper';
 
 import { WarmHearthColors } from '@/components/common/paper-theme';
@@ -227,7 +227,7 @@ export default function ShoppingListScreen() {
         />
       )}
 
-      <AddItemInput onScanReceipt={() => setReceiptVisible(true)} />
+      <AddItemInput onScanReceipt={() => { Keyboard.dismiss(); setReceiptVisible(true); }} />
       <Divider />
       <ProgressHeader total={items.length} purchased={purchasedCount} />
 

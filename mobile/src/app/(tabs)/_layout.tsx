@@ -1,5 +1,5 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { Tabs } from 'expo-router';
+import { router, Tabs } from 'expo-router';
 import { useState } from 'react';
 import { useTheme } from 'react-native-paper';
 
@@ -34,7 +34,7 @@ export default function TabLayout() {
         trial={trial}
         visible={promptVisible}
         onDismiss={dismissPrompt}
-        onUpgrade={dismissPrompt}
+        onUpgrade={() => { dismissPrompt(); router.push('/paywall'); }}
       />
       <Tabs
         screenOptions={{

@@ -1,4 +1,5 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { router } from 'expo-router';
 import { StyleSheet, View } from 'react-native';
 import { Button, Text } from 'react-native-paper';
 
@@ -55,6 +56,7 @@ function ExpiredBanner() {
           compact
           style={styles.upgradeButton}
           labelStyle={styles.upgradeLabel}
+          onPress={() => router.push('/paywall')}
         >
           View plans
         </Button>

@@ -1,66 +1,70 @@
 {
-    "cli":  {
-                "version":  "\u003e= 7.0.0"
-            },
-    "build":  {
-                  "development":  {
-                                      "developmentClient":  true,
-                                      "distribution":  "internal",
-                                      "environment":  "development",
-                                      "ios":  {
-                                                  "simulator":  false,
-                                                  "image":  "latest"
-                                              },
-                                      "android":  {
-                                                      "image":  "latest"
-                                                  },
-                                      "env":  {
-                                                  "EXPO_PUBLIC_APP_ENV":  "development"
-                                              }
-                                  },
-                  "preview":  {
-                                  "channel":  "preview",
-                                  "distribution":  "internal",
-                                  "ios":  {
-                                              "image":  "latest"
-                                          },
-                                  "android":  {
-                                                  "buildType":  "apk",
-                                                  "image":  "latest"
-                                              },
-                                  "environment":  "preview",
-                                  "env":  {
-                                              "EXPO_PUBLIC_APP_ENV": "preview",
-                                  "SENTRY_DISABLE_AUTO_UPLOAD": "true"
-                                          }
-                              },
-                  "production":  {
-                                     "channel":  "production",
-                                     "autoIncrement":  true,
-                                     "distribution":  "store",
-                                     "environment":  "production",
-                                     "ios":  {
-                                                 "image":  "latest"
-                                             },
-                                     "android":  {
-                                                     "buildType":  "app-bundle",
-                                                     "image":  "latest"
-                                                 },
-                                     "env":  {
-                                                 "EXPO_PUBLIC_APP_ENV":  "production"
-                                             }
-                                 }
-              },
-    "submit":  {
-                   "production":  {
-                                      "ios":  {
-                                                  "appleId":  "PLACEHOLDER"
-                                              },
-                                      "android":  {
-                                                      "serviceAccountKeyPath":  "PLACEHOLDER"
-                                                  }
-                                  }
-               }
+  "cli": {
+    "version": ">= 7.0.0",
+    "appVersionSource": "remote"
+  },
+  "build": {
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal",
+      "environment": "development",
+      "ios": {
+        "simulator": false,
+        "image": "latest"
+      },
+      "android": {
+        "image": "latest"
+      },
+      "env": {
+        "EXPO_PUBLIC_APP_ENV": "development"
+      }
+    },
+    "preview": {
+      "channel": "preview",
+      "distribution": "internal",
+      "ios": {
+        "image": "latest"
+      },
+      "android": {
+        "buildType": "apk",
+        "image": "latest"
+      },
+      "environment": "preview",
+      "env": {
+        "EXPO_PUBLIC_APP_ENV": "preview",
+        "SENTRY_DISABLE_AUTO_UPLOAD": "true"
+      }
+    },
+    "production": {
+      "channel": "production",
+      "autoIncrement": true,
+      "distribution": "store",
+      "ios": {
+        "image": "latest"
+      },
+      "android": {
+        "buildType": "app-bundle",
+        "image": "latest"
+      },
+      "env": {
+        "EXPO_PUBLIC_APP_ENV": "production",
+        "OVERRIDE_BUNDLE_ID": "com.mothercupboard.app.preview",
+        "SENTRY_DISABLE_AUTO_UPLOAD": "true",
+        "EXPO_PUBLIC_SUPABASE_URL": "https://niryabiodltfisbohzth.supabase.co",
+        "EXPO_PUBLIC_SUPABASE_ANON_KEY": "sb_publishable_tCrRS0Md13gZNH2HAlJAOA_Lz0T0oI3",
+        "EXPO_PUBLIC_API_URL": "https://fyq97migw7.execute-api.eu-west-2.amazonaws.com/preview"
+      }
+    }
+  },
+  "submit": {
+    "production": {
+      "ios": {
+        "appleId": "info@theplacespeople.com",
+        "ascAppId": "6762460788"
+      },
+      "android": {
+        "serviceAccountKeyPath": "PLACEHOLDER"
+      }
+    }
+  }
 }
-
-

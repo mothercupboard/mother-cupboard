@@ -6,6 +6,7 @@ import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { Button, Dialog, Portal, SegmentedButtons, Text, TextInput as PaperTextInput } from 'react-native-paper';
 
+import { ExpiryDateField } from '@/components/common/expiry-date-field';
 import { FormTextField } from '@/components/common/form-text-field';
 import { WarmHearthColors } from '@/components/common/paper-theme';
 import { parseDateGB } from '@/features/inventory/inventory.utils';
@@ -210,15 +211,12 @@ export function AddItemForm({ barcode, initialName, category, onItemSaved, requi
         buttons={requireExpiry ? EXPIRY_BUTTONS_REQUIRED : EXPIRY_BUTTONS_ALL}
       />
       {expiryType !== '' && (
-        <FormTextField
-          label="Expiry date (DD/MM/YY)"
+        <ExpiryDateField
+          label="Expiry date"
           value={expiryDate}
-          onChangeText={handleExpiryDateChange}
-          onBlur={() => {}}
+          onChangeText={setExpiryDate}
           errors={expiryDate && parseDateGB(expiryDate) === null ? ['Enter a date as DD/MM/YY'] : []}
           isTouched={expiryDate.length > 0}
-          keyboardType="numeric"
-          accessibilityHint="Enter date as DD/MM/YY"
         />
       )}
       {expiryError !== null && (

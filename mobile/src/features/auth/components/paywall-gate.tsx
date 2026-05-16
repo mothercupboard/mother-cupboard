@@ -1,8 +1,11 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { router } from 'expo-router';
+import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { Button, Text } from 'react-native-paper';
 
 import { WarmHearthColors } from '@/components/common/paper-theme';
+import { useRevenueCatStore } from '@/lib/revenuecat/store';
 
 type Props = {
   /** Feature name shown in the heading (e.g. "AI Meal Suggestions") */
@@ -19,6 +22,20 @@ type Props = {
  * restore-purchase CTAs.
  */
 export function PaywallGate({ feature, description, icon }: Props) {
+  const restore = useRevenueCatStore(s => s.restore);
+  const [isRestoring, setIsRestoring] = useState(false);
+  const [restoreMsg, setRestoreMsg] = useState<string | null>(null);
+
+  async function handleRestore() {
+    setIsRestoring(true);
+    setRestoreMsg(null);
+    const success = await restore();
+    setIsRestoring(false);
+    if (!success) {
+      setRestoreMsg('No active subscription found.');
+    }
+  }
+
   return (
     <View style={styles.container}>
       <MaterialCommunityIcons name={icon as 'lock-outline'} size={48} color={WarmHearthColors.outline} />
@@ -40,6 +57,7 @@ export function PaywallGate({ feature, description, icon }: Props) {
         icon="rocket-launch-outline"
         style={styles.upgradeButton}
         labelStyle={styles.upgradeLabel}
+        onPress={() => router.push('/paywall')}
       >
         Upgrade to unlock
       </Button>
@@ -49,9 +67,16 @@ export function PaywallGate({ feature, description, icon }: Props) {
         icon="restore"
         labelStyle={styles.restoreLabel}
         compact
+        onPress={handleRestore}
+        loading={isRestoring}
+        disabled={isRestoring}
       >
         Restore purchases
       </Button>
+
+      {restoreMsg ? (
+        <Text variant="bodySmall" style={styles.restoreMsg}>{restoreMsg}</Text>
+      ) : null}
     </View>
   );
 }
@@ -100,5 +125,10 @@ const styles = StyleSheet.create({
     color: WarmHearthColors.textSecondary,
     fontFamily: 'Nunito_400Regular',
     fontSize: 13,
+  },
+  restoreMsg: {
+    color: WarmHearthColors.textSecondary,
+    fontFamily: 'Nunito_400Regular',
+    textAlign: 'center',
   },
 });

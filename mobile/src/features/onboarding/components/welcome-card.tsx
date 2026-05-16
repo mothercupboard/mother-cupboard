@@ -20,7 +20,7 @@ export function WelcomeCard() {
 
   function handleAddItem() {
     dismissWelcome();
-    router.push({ pathname: '/inventory/add-item', params: { manual: '1' } });
+    router.push('/(tabs)/inventory');
   }
 
   return (

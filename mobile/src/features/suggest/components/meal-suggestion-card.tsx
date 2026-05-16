@@ -117,6 +117,19 @@ function CardIngredients({ suggestion }: { suggestion: MealSuggestion }) {
         ))}
       </View>
 
+      {(suggestion.insufficientIngredients ?? []).length > 0 && (
+        <>
+          <Text variant="labelMedium" style={styles.insufficientLabel}>Need more of</Text>
+          <View style={styles.chipRow}>
+            {(suggestion.insufficientIngredients ?? []).map(ing => (
+              <Chip key={ing} compact icon="plus-circle-outline" style={styles.insufficientChip} textStyle={styles.chipText}>
+                {ing}
+              </Chip>
+            ))}
+          </View>
+        </>
+      )}
+
       {suggestion.missingIngredients.length > 0 && (
         <>
           <Text variant="labelMedium" style={styles.missingLabel}>You might need</Text>
@@ -194,8 +207,12 @@ export function MealSuggestionCard({ suggestion, onViewRecipe }: CardProps) {
     setDialogVisible(false);
     recordCooked(suggestion);
 
-    if (suggestion.missingIngredients.length > 0) {
-      const added = addMissing(suggestion.missingIngredients, suggestion.id);
+    const toAdd = [
+      ...suggestion.missingIngredients,
+      ...(suggestion.insufficientIngredients ?? []),
+    ];
+    if (toAdd.length > 0) {
+      const added = addMissing(toAdd, suggestion.id);
       setAddedToListCount(added);
     }
   }
@@ -344,6 +361,14 @@ const styles = StyleSheet.create({
     color: WarmHearthColors.textPrimary,
     fontFamily: 'Nunito_600SemiBold',
     marginTop: 4,
+  },
+  insufficientLabel: {
+    color: WarmHearthColors.expiryWarning,
+    fontFamily: 'Nunito_600SemiBold',
+    marginTop: 4,
+  },
+  insufficientChip: {
+    backgroundColor: '#FFF8E1',
   },
   missingLabel: {
     color: WarmHearthColors.shoppingList,

@@ -81,7 +81,7 @@ export default function InventoryScreen() {
         <FeatureTip
           icon="archive-outline"
           title="Your digital cupboard"
-          body="Add items by scanning a barcode, searching by name, or typing manually. We'll keep track of dates and gently remind you when items are coming up."
+          body="Add items by scanning a barcode, snapping a receipt, or typing manually. We'll keep track of dates and gently remind you when items are coming up."
           onDismiss={() => dismissTip('inventoryTipSeen')}
         />
       )}
@@ -108,7 +108,6 @@ export default function InventoryScreen() {
         icon={fabOpen ? 'close' : 'plus'}
         actions={[
           { icon: 'pencil-outline', label: 'Add manually', onPress: () => router.push({ pathname: '/inventory/add-item', params: { manual: '1' } }) },
-          { icon: 'magnify', label: 'Search by name', onPress: () => router.push('/inventory/search') },
           { icon: 'barcode-scan', label: 'Scan barcode', onPress: () => router.push('/inventory/scan') },
           { icon: 'receipt', label: 'Scan receipt', onPress: () => router.push('/inventory/scan-receipt' as any) },
         ]}

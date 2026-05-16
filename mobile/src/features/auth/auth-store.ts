@@ -26,8 +26,13 @@ export const useAuthStore = create<AuthStore>()(
       user: null,
       session: null,
       isLoading: false,
-      setSession: session =>
-        set({ session, user: session?.user ?? null }),
+      setSession: session => {
+        // Cache email in MMKV so it survives session refreshes that strip the email field
+        if (session?.user?.email) {
+          storage.set('user-email', session.user.email);
+        }
+        set({ session, user: session?.user ?? null });
+      },
       setLoading: isLoading => set({ isLoading }),
       clearSession: () => set({ user: null, session: null }),
     }),
