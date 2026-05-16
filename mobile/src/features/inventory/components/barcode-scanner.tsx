@@ -33,7 +33,7 @@ function PermissionScreen({ onAddManually }: { onAddManually: () => void }) {
         </Text>
       )}
       <Button mode="contained" onPress={handlePress} style={styles.button}>
-        {canAsk ? 'Allow camera access' : 'Open Settings'}
+        {canAsk ? 'Continue' : 'Open Settings'}
       </Button>
       <Button mode="text" onPress={onAddManually} style={styles.button}>
         Add manually instead
