@@ -3,11 +3,15 @@ import type { PurchasesPackage } from 'react-native-purchases';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, ScrollView, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, Linking, ScrollView, StyleSheet, View } from 'react-native';
 import { Button, Text } from 'react-native-paper';
 
 import { WarmHearthColors } from '@/components/common/paper-theme';
+import { useGuestStore } from '@/features/guest/guest-store';
 import { useRevenueCatStore } from '@/lib/revenuecat/store';
+
+const PRIVACY_POLICY_URL = 'https://mothercupboard.github.io/mother-cupboard/legal/privacy-policy.html';
+const TERMS_URL = 'https://www.apple.com/legal/internet-services/itunes/dev/stdeula/';
 
 type FeatureRowProps = { icon: string; label: string };
 
@@ -65,6 +69,7 @@ export default function PaywallScreen() {
   const restore = useRevenueCatStore(s => s.restore);
   const refresh = useRevenueCatStore(s => s.refresh);
   const clearError = useRevenueCatStore(s => s.clearError);
+  const isGuest = useGuestStore(s => s.isGuest);
 
   const [selectedPkg, setSelectedPkg] = useState<PurchasesPackage | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -93,6 +98,11 @@ export default function PaywallScreen() {
 
   async function handlePurchase() {
     if (!selectedPkg) return;
+    // Guests must create an account before subscribing
+    if (isGuest) {
+      router.replace('/(auth)/register');
+      return;
+    }
     clearError();
     const success = await purchase(selectedPkg);
     if (success) {
@@ -206,6 +216,26 @@ export default function PaywallScreen() {
       <Text variant="bodySmall" style={styles.legal}>
         Payment will be charged to your Apple ID account at confirmation of purchase. Subscription automatically renews unless cancelled at least 24 hours before the end of the current period. Manage subscriptions in your device Settings.
       </Text>
+
+      <View style={styles.legalLinks}>
+        <Text
+          variant="bodySmall"
+          style={styles.legalLink}
+          onPress={() => Linking.openURL(PRIVACY_POLICY_URL)}
+          accessibilityRole="link"
+        >
+          Privacy Policy
+        </Text>
+        <Text variant="bodySmall" style={styles.legalDot}>·</Text>
+        <Text
+          variant="bodySmall"
+          style={styles.legalLink}
+          onPress={() => Linking.openURL(TERMS_URL)}
+          accessibilityRole="link"
+        >
+          Terms of Use
+        </Text>
+      </View>
     </ScrollView>
   );
 }
@@ -329,5 +359,23 @@ const styles = StyleSheet.create({
     lineHeight: 16,
     marginTop: 20,
     textAlign: 'center',
+  },
+  legalLinks: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: 8,
+    justifyContent: 'center',
+    marginTop: 12,
+  },
+  legalLink: {
+    color: WarmHearthColors.textSecondary,
+    fontFamily: 'Nunito_400Regular',
+    fontSize: 12,
+    textDecorationLine: 'underline',
+  },
+  legalDot: {
+    color: WarmHearthColors.outline,
+    fontFamily: 'Nunito_400Regular',
+    fontSize: 12,
   },
 });
