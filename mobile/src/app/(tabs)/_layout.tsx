@@ -3,12 +3,10 @@ import { router, Tabs } from 'expo-router';
 import { useState } from 'react';
 import { useTheme } from 'react-native-paper';
 
-import { SIDEBAR_WIDTH, TabletSidebar } from '@/components/common/tablet-sidebar';
 import { ConversionPrompt } from '@/features/auth/components/conversion-prompt';
 import { useConversionPromptStore } from '@/features/auth/conversion-prompt-store';
 import { useTrialStatus } from '@/features/auth/trial-store';
 import { useExpiryAlerts } from '@/features/notifications/use-expiry-alerts';
-import { useIsTablet } from '@/lib/hooks/use-is-tablet';
 
 function useConversionModal() {
   const trial = useTrialStatus();
@@ -27,7 +25,6 @@ function useConversionModal() {
 
 export default function TabLayout() {
   const theme = useTheme();
-  const isTablet = useIsTablet();
   useExpiryAlerts();
   const { trial, visible: promptVisible, dismiss: dismissPrompt } = useConversionModal();
 
@@ -40,8 +37,6 @@ export default function TabLayout() {
         onUpgrade={() => { dismissPrompt(); router.push('/paywall'); }}
       />
       <Tabs
-        tabBar={isTablet ? (props) => <TabletSidebar {...props} /> : undefined}
-        sceneContainerStyle={isTablet ? { marginLeft: SIDEBAR_WIDTH } : undefined}
         screenOptions={{
           tabBarActiveTintColor: theme.colors.primary,
           tabBarInactiveTintColor: '#7A6E68',
