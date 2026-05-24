@@ -48,7 +48,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   },
   assetBundlePatterns: ['**/*'],
   ios: {
-    supportsTablet: false,
+    supportsTablet: true,
     bundleIdentifier: process.env.OVERRIDE_BUNDLE_ID ?? Env.EXPO_PUBLIC_BUNDLE_ID,
     infoPlist: {
           NSPhotoLibraryUsageDescription: 'Mother Cupboard needs access to your photos to import receipt images.',

@@ -1,13 +1,13 @@
-import { useWindowDimensions } from 'react-native';
+import { Platform, useWindowDimensions } from 'react-native';
 
-/** Breakpoint at which we consider the device a tablet (iPad). */
+/** Breakpoint for non-Apple large screens (Android tablets etc). */
 const TABLET_BREAKPOINT = 768;
 
 /**
- * Returns true when the screen width is at or above 768px.
- * Re-evaluates on rotation so layouts stay correct in both orientations.
+ * Returns true on iPad (via Platform.isPad) or any device with a screen
+ * width at or above 768px. Re-evaluates on rotation.
  */
 export function useIsTablet(): boolean {
   const { width } = useWindowDimensions();
-  return width >= TABLET_BREAKPOINT;
+  return Platform.isPad || width >= TABLET_BREAKPOINT;
 }
