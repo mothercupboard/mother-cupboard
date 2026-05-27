@@ -4,6 +4,8 @@ export type OffProduct = {
   barcode: string;
   category: string | null;
   name: string;
+  /** Raw quantity string from Open Food Facts e.g. "250 g", "500ml", "6 x 330 ml". */
+  productQuantity: string | null;
 };
 
 // ─── Local SQLite cache ───────────────────────────────────────────────────
@@ -15,12 +17,20 @@ async function openDb(): Promise<SQLite.SQLiteDatabase> {
   _db = await SQLite.openDatabaseAsync('off_cache.db');
   await _db.execAsync(
     `CREATE TABLE IF NOT EXISTS off_cache (
-      barcode TEXT PRIMARY KEY,
-      name    TEXT NOT NULL,
-      category TEXT,
-      cached_at INTEGER NOT NULL
+      barcode          TEXT PRIMARY KEY,
+      name             TEXT NOT NULL,
+      category         TEXT,
+      cached_at        INTEGER NOT NULL,
+      product_quantity TEXT
     );`,
   );
+  // Graceful migration for existing installs that lack the column
+  try {
+    await _db.execAsync('ALTER TABLE off_cache ADD COLUMN product_quantity TEXT');
+  }
+  catch {
+    // Column already exists — safe to ignore
+  }
   return _db;
 }
 
@@ -28,8 +38,8 @@ async function cacheProducts(db: SQLite.SQLiteDatabase, products: OffProduct[]):
   const now = Date.now();
   for (const p of products) {
     await db.runAsync(
-      'INSERT OR REPLACE INTO off_cache (barcode, name, category, cached_at) VALUES (?, ?, ?, ?)',
-      [p.barcode, p.name, p.category, now],
+      'INSERT OR REPLACE INTO off_cache (barcode, name, category, cached_at, product_quantity) VALUES (?, ?, ?, ?, ?)',
+      [p.barcode, p.name, p.category, now, p.productQuantity ?? null],
     );
   }
 }
@@ -41,7 +51,7 @@ export async function lookupByBarcode(barcode: string): Promise<OffProduct | nul
 
   // 1. Check local cache first
   const cached = await db.getFirstAsync<OffProduct>(
-    'SELECT barcode, name, category FROM off_cache WHERE barcode = ?',
+    'SELECT barcode, name, category, product_quantity AS productQuantity FROM off_cache WHERE barcode = ?',
     [barcode],
   );
   if (cached) return cached;
@@ -60,6 +70,7 @@ export async function lookupByBarcode(barcode: string): Promise<OffProduct | nul
       barcode,
       name: data.product.product_name,
       category: cleanCategory(data.product.categories_tags?.[0] ?? null),
+      productQuantity: (data.product as any).product_quantity ?? null,
     };
     await cacheProducts(db, [product]);
     return product;
@@ -79,7 +90,7 @@ export async function searchByName(query: string): Promise<OffProduct[]> {
   const q = `%${query}%`;
   // 1. Check local cache
   const cached = await db.getAllAsync<OffProduct>(
-    'SELECT barcode, name, category FROM off_cache WHERE name LIKE ? LIMIT 20',
+    'SELECT barcode, name, category, product_quantity AS productQuantity FROM off_cache WHERE name LIKE ? LIMIT 20',
     [q],
   );
   if (cached.length >= 3) return cached;
@@ -97,6 +108,7 @@ export async function searchByName(query: string): Promise<OffProduct[]> {
         barcode: p.code,
         name: p.product_name,
         category: p.categories_tags?.[0]?.replace('en:', '') ?? null,
+        productQuantity: p.product_quantity ?? null,
       }));
     if (products.length > 0) await cacheProducts(db, products);
     // Merge cached + online, deduplicate by barcode

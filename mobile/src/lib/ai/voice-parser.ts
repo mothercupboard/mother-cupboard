@@ -189,3 +189,53 @@ Be conservative — only include items you can clearly identify as food/drink.`,
   const parsed = JSON.parse(data.choices[0].message.content) as { items: ReceiptItem[] };
   return Array.isArray(parsed.items) ? parsed.items : [];
 }
+
+export type ParsedExpiry = {
+  /** Date in DD/MM/YY format, or '' if not found. */
+  expiryDate: string;
+  expiryType: 'use_by' | 'best_before' | '';
+};
+
+/**
+ * Sends a base64-encoded product photo to GPT-4o vision and extracts
+ * any use-by or best-before date printed on the packaging.
+ */
+export async function parseExpiryFromImage(base64Image: string): Promise<ParsedExpiry> {
+  const res = await fetch('https://api.openai.com/v1/chat/completions', {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${getKey()}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      model: 'gpt-4o',
+      messages: [
+        {
+          role: 'user',
+          content: [
+            {
+              type: 'text',
+              text: `Look at this food product packaging and find any expiry date. Today is ${todayGB()}.
+Return ONLY JSON with:
+- expiryDate: string — the date in DD/MM/YY format (e.g. "31/12/25"), or "" if not found
+- expiryType: "use_by" if labelled "USE BY" or similar; "best_before" if "BEST BEFORE" or "BB"; "" if unclear
+
+Examples:
+USE BY 15 MAR 26 → {"expiryDate":"15/03/26","expiryType":"use_by"}
+BEST BEFORE END 06/2026 → {"expiryDate":"30/06/26","expiryType":"best_before"}
+BB: 27.02.25 → {"expiryDate":"27/02/25","expiryType":"best_before"}
+No date visible → {"expiryDate":"","expiryType":""}`,
+            },
+            {
+              type: 'image_url',
+              image_url: { url: `data:image/jpeg;base64,${base64Image}`, detail: 'high' },
+            },
+          ],
+        },
+      ],
+      response_format: { type: 'json_object' },
+      max_tokens: 200,
+      temperature: 0,
+    }),
+  });
+  if (!res.ok) throw new Error(`GPT vision error ${res.status}`);
+  const data = await res.json() as { choices: { message: { content: string } }[] };
+  return JSON.parse(data.choices[0].message.content) as ParsedExpiry;
+}

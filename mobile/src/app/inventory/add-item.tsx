@@ -7,12 +7,14 @@ import { AddItemForm } from '@/features/inventory/components/add-item-form';
 import { useNotificationPrompt } from '@/features/notifications/use-notification-prompt';
 
 export default function AddItemScreen() {
-  const { barcode, name, category, notFound, manual } = useLocalSearchParams<{
+  const { barcode, name, category, notFound, manual, quantity, unit } = useLocalSearchParams<{
     barcode?: string;
     category?: string;
     manual?: string;
     name?: string;
     notFound?: string;
+    quantity?: string;
+    unit?: string;
   }>();
 
   const promptNotifications = useNotificationPrompt();
@@ -30,6 +32,8 @@ export default function AddItemScreen() {
       <AddItemForm
         barcode={barcode ?? null}
         initialName={name ?? ''}
+        initialQuantity={quantity}
+        initialUnit={unit}
         category={category ?? null}
         requireExpiry={false}
         onItemSaved={promptNotifications}

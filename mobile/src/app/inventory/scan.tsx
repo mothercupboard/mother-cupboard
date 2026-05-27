@@ -4,7 +4,7 @@ import { ActivityIndicator, StyleSheet, View } from 'react-native';
 
 import { WarmHearthColors } from '@/components/common/paper-theme';
 import { BarcodeScanner } from '@/features/inventory/components/barcode-scanner';
-import { resolveBarcode } from '@/lib/barcode/off-lookup';
+import { parseOffQuantity, resolveBarcode } from '@/lib/barcode/off-lookup';
 
 export default function ScanScreen() {
   const [resolving, setResolving] = useState(false);
@@ -14,9 +14,15 @@ export default function ScanScreen() {
     try {
       const product = await resolveBarcode(barcode);
       if (product) {
+        const parsed = parseOffQuantity(product.productQuantity);
         router.replace({
           pathname: '/inventory/add-item',
-          params: { barcode, category: product.category ?? '', name: product.name },
+          params: {
+            barcode,
+            category: product.category ?? '',
+            name: product.name,
+            ...(parsed && { quantity: String(parsed.quantity), unit: parsed.unit }),
+          },
         });
       }
       else {

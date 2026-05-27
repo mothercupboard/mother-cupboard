@@ -1,10 +1,11 @@
 import type { Database } from '@nozbe/watermelondb';
 import type { ExpiryType, InventoryItem, ItemLocation } from '@/lib/database/models/inventory-item';
 
+import * as ImagePicker from 'expo-image-picker';
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
-import { Button, Dialog, Portal, SegmentedButtons, Text, TextInput as PaperTextInput } from 'react-native-paper';
+import { ActivityIndicator, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { Button, Dialog, IconButton, Portal, SegmentedButtons, Text, TextInput as PaperTextInput } from 'react-native-paper';
 
 import { ExpiryDateField } from '@/components/common/expiry-date-field';
 import { FormTextField } from '@/components/common/form-text-field';
@@ -12,7 +13,7 @@ import { WarmHearthColors } from '@/components/common/paper-theme';
 import { parseDateGB } from '@/features/inventory/inventory.utils';
 import { useDatabase } from '@/lib/database/provider';
 import { VoiceInputButton } from '@/features/inventory/components/voice-input-button';
-import type { ParsedVoiceItem } from '@/lib/ai/voice-parser';
+import { parseExpiryFromImage, type ParsedVoiceItem } from '@/lib/ai/voice-parser';
 
 
 
@@ -85,15 +86,17 @@ type Props = {
   barcode: string | null;
   category: string | null;
   initialName: string;
+  initialQuantity?: string;
+  initialUnit?: string;
   onItemSaved?: () => void;
   requireExpiry?: boolean;
 };
 
-export function AddItemForm({ barcode, initialName, category, onItemSaved, requireExpiry = false }: Props) {
+export function AddItemForm({ barcode, initialName, initialQuantity, initialUnit, category, onItemSaved, requireExpiry = false }: Props) {
   const db = useDatabase();
   const [name, setName] = useState(initialName);
-  const [quantity, setQuantity] = useState('');
-  const [unit, setUnit] = useState('items');
+  const [quantity, setQuantity] = useState(initialQuantity ?? '');
+  const [unit, setUnit] = useState(initialUnit ?? 'items');
   const [location, setLocation] = useState<ItemLocation>('fridge');
   const [expiryType, setExpiryType] = useState<ExpiryType | ''>(requireExpiry ? 'use_by' : '');
   const [expiryDate, setExpiryDate] = useState('');
@@ -113,8 +116,36 @@ export function AddItemForm({ barcode, initialName, category, onItemSaved, requi
     if (parsed.expiryDate) setExpiryDate(parsed.expiryDate);
   };
   const [submitting, setSubmitting] = useState(false);
+  const [scanningDate, setScanningDate] = useState(false);
   const [qtyDialogVisible, setQtyDialogVisible] = useState(false);
   const [qtyDraft, setQtyDraft] = useState(quantity);
+
+  async function handleScanDate() {
+    const permission = await ImagePicker.requestCameraPermissionsAsync();
+    if (permission.status !== 'granted')
+      return;
+    const result = await ImagePicker.launchCameraAsync({
+      base64: true,
+      quality: 0.8,
+      allowsEditing: false,
+    });
+    if (result.canceled || !result.assets[0]?.base64)
+      return;
+    setScanningDate(true);
+    try {
+      const parsed = await parseExpiryFromImage(result.assets[0].base64);
+      if (parsed.expiryDate) {
+        setExpiryDate(parsed.expiryDate);
+        setExpiryType(parsed.expiryType || 'use_by');
+      }
+    }
+    catch {
+      // Silent fail — user can enter the date manually
+    }
+    finally {
+      setScanningDate(false);
+    }
+  }
   async function handleSubmit() {
     if (!name.trim()) {
       setNameError('Name is required');
@@ -202,9 +233,23 @@ export function AddItemForm({ barcode, initialName, category, onItemSaved, requi
         onValueChange={v => setLocation(v as ItemLocation)}
         buttons={LOCATION_BUTTONS}
       />
-      <Text variant="labelMedium" style={styles.fieldLabel}>
-        {requireExpiry ? 'Expiry type' : 'Expiry type (optional)'}
-      </Text>
+      <View style={styles.expiryLabelRow}>
+        <Text variant="labelMedium" style={styles.fieldLabel}>
+          {requireExpiry ? 'Expiry type' : 'Expiry type (optional)'}
+        </Text>
+        {scanningDate
+          ? <ActivityIndicator size="small" color={WarmHearthColors.primary} style={styles.scanSpinner} />
+          : (
+            <IconButton
+              icon="camera"
+              size={18}
+              iconColor={WarmHearthColors.primary}
+              style={styles.scanDateButton}
+              onPress={handleScanDate}
+              accessibilityLabel="Scan expiry date from packaging"
+            />
+          )}
+      </View>
       <SegmentedButtons
         value={expiryType}
         onValueChange={v => setExpiryType(v as ExpiryType | '')}
@@ -245,10 +290,22 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 20,
   },
+  expiryLabelRow: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 4,
+  },
   fieldLabel: {
     color: WarmHearthColors.textSecondary,
     fontFamily: 'Nunito_600SemiBold',
     marginTop: 4,
+  },
+  scanDateButton: {
+    margin: 0,
+  },
+  scanSpinner: {
+    marginRight: 10,
   },
   expiryError: {
     color: WarmHearthColors.expiryUrgent,
