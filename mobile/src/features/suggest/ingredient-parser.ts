@@ -43,13 +43,30 @@ const STAPLE_KEYWORDS = [
 
 /** Maps common unit spellings to a normalised form. */
 const UNIT_ALIASES: Record<string, string> = {
-  g: 'g', gram: 'g', grams: 'g',
-  kg: 'kg', kilogram: 'kg', kilograms: 'kg',
-  ml: 'ml', millilitre: 'ml', millilitres: 'ml', milliliter: 'ml', milliliters: 'ml',
-  l: 'l', litre: 'l', litres: 'l', liter: 'l', liters: 'l',
-  tbsp: 'tbsp', tablespoon: 'tbsp', tablespoons: 'tbsp',
-  tsp: 'tsp', teaspoon: 'tsp', teaspoons: 'tsp',
-  clove: 'cloves', cloves: 'cloves',
+  g: 'g',
+  gram: 'g',
+  grams: 'g',
+  kg: 'kg',
+  kilogram: 'kg',
+  kilograms: 'kg',
+  ml: 'ml',
+  millilitre: 'ml',
+  millilitres: 'ml',
+  milliliter: 'ml',
+  milliliters: 'ml',
+  l: 'l',
+  litre: 'l',
+  litres: 'l',
+  liter: 'l',
+  liters: 'l',
+  tbsp: 'tbsp',
+  tablespoon: 'tbsp',
+  tablespoons: 'tbsp',
+  tsp: 'tsp',
+  teaspoon: 'tsp',
+  teaspoons: 'tsp',
+  clove: 'cloves',
+  cloves: 'cloves',
 };
 
 /** Descriptors to strip from the beginning of an ingredient name. */
@@ -80,7 +97,7 @@ export function parseIngredient(raw: string): ParsedIngredient {
   }
 
   const [, quantityStr, possibleUnit, rest] = match;
-  const quantity = parseFloat(quantityStr.replace(',', '.'));
+  const quantity = Number.parseFloat(quantityStr.replace(',', '.'));
   const normUnit = possibleUnit ? UNIT_ALIASES[possibleUnit.toLowerCase()] : undefined;
 
   if (normUnit) {

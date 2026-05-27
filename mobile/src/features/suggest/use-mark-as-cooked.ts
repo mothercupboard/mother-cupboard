@@ -23,7 +23,8 @@ const VOLUME_UNITS = new Set(['ml', 'l']);
 
 /** Returns true if two units can be arithmetically compared / converted. */
 function sameUnitFamily(unit1: string, unit2: string): boolean {
-  if (unit1 === unit2) return true;
+  if (unit1 === unit2)
+    return true;
   return (
     (WEIGHT_UNITS.has(unit1) && WEIGHT_UNITS.has(unit2))
     || (VOLUME_UNITS.has(unit1) && VOLUME_UNITS.has(unit2))
@@ -32,15 +33,19 @@ function sameUnitFamily(unit1: string, unit2: string): boolean {
 
 /** Converts a quantity to the base unit (g for weight, ml for volume). */
 function toBase(quantity: number, unit: string): number {
-  if (unit === 'kg') return quantity * 1000;
-  if (unit === 'l') return quantity * 1000;
+  if (unit === 'kg')
+    return quantity * 1000;
+  if (unit === 'l')
+    return quantity * 1000;
   return quantity;
 }
 
 /** Converts from the base unit back to the target unit. */
 function fromBase(base: number, unit: string): number {
-  if (unit === 'kg') return base / 1000;
-  if (unit === 'l') return base / 1000;
+  if (unit === 'kg')
+    return base / 1000;
+  if (unit === 'l')
+    return base / 1000;
   return base;
 }
 
@@ -84,14 +89,16 @@ export function useMarkAsCooked() {
         const ingredient = parseIngredient(raw);
 
         // Staples: always skip
-        if (ingredient.isStaple) continue;
+        if (ingredient.isStaple)
+          continue;
 
         const match = allItems.find(item =>
           matchesIngredient(item.name, ingredient.name),
         );
 
         // Not in inventory — nothing to deduct
-        if (!match) continue;
+        if (!match)
+          continue;
 
         // No quantity info on the ingredient side — soft-delete the matched item
         if (ingredient.quantity === null || ingredient.unit === null) {
@@ -100,14 +107,12 @@ export function useMarkAsCooked() {
         }
 
         // Inventory item has no quantity — can't do arithmetic, leave it alone
-        if (match.quantity === null || match.unit === null) {
+        if (match.quantity === null || match.unit === null)
           continue;
-        }
 
         // Units are from different families (e.g. "tbsp" vs "g") — skip, don't guess
-        if (!sameUnitFamily(ingredient.unit, match.unit)) {
+        if (!sameUnitFamily(ingredient.unit, match.unit))
           continue;
-        }
 
         // Convert both to base unit, subtract, convert back
         const recipeBase = toBase(ingredient.quantity, ingredient.unit);
@@ -117,10 +122,8 @@ export function useMarkAsCooked() {
         if (remaining <= 0) {
           // Fully used up (or went over)
           toDelete.push(match);
-          if (remaining < 0) {
-            // We didn't have quite enough — flag for shopping list
+          if (remaining < 0)
             shortfallItems.push(raw);
-          }
         }
         else {
           // Partial deduction — update quantity, rounded to 2 decimal places

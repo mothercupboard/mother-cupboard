@@ -52,7 +52,7 @@ function CookedConfirmDialog(
         <Dialog.Title style={dialogStyles.title}>Mark as cooked?</Dialog.Title>
         <Dialog.Content>
           <Text variant="bodyMedium" style={dialogStyles.text}>
-            {"We\u2019ll update your cupboard to show these items have been used:"}
+            {'We\u2019ll update your cupboard to show these items have been used:'}
           </Text>
           <View style={dialogStyles.list}>
             {ingredients.map(ing => (
