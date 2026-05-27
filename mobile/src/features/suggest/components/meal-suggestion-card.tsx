@@ -86,18 +86,18 @@ const dialogStyles = StyleSheet.create({
   item: { color: WarmHearthColors.textPrimary, fontFamily: 'Nunito_400Regular' },
 });
 
-function CookedBanner({ removedCount, addedToListCount }: { addedToListCount: number; removedCount: number }) {
+function CookedBanner({ affectedCount, addedToListCount }: { addedToListCount: number; affectedCount: number }) {
   return (
     <View style={styles.cookedBanner}>
       <MaterialCommunityIcons name="check-circle" size={20} color={WarmHearthColors.success} />
       <View style={styles.cookedTextCol}>
         <Text variant="labelMedium" style={styles.cookedText}>
           Cooked!
-          {removedCount > 0 && ` ${removedCount} item${removedCount !== 1 ? 's' : ''} removed from cupboard.`}
+          {affectedCount > 0 && ` ${affectedCount} item${affectedCount !== 1 ? 's' : ''} updated in your cupboard.`}
         </Text>
         {addedToListCount > 0 && (
           <Text variant="labelSmall" style={styles.shoppingAddedText}>
-            {`${addedToListCount} missing ingredient${addedToListCount !== 1 ? 's' : ''} added to shopping list.`}
+            {`${addedToListCount} ingredient${addedToListCount !== 1 ? 's' : ''} added to shopping list.`}
           </Text>
         )}
       </View>
@@ -194,15 +194,15 @@ type CardProps = {
 export function MealSuggestionCard({ suggestion, onViewRecipe }: CardProps) {
   const [dialogVisible, setDialogVisible] = useState(false);
   const [cooked, setCooked] = useState(false);
-  const [removedCount, setRemovedCount] = useState(0);
+  const [affectedCount, setAffectedCount] = useState(0);
   const [addedToListCount, setAddedToListCount] = useState(0);
   const { isMarking, markAsCooked } = useMarkAsCooked();
   const recordCooked = useSavedMealsStore(s => s.recordCooked);
   const addMissing = useShoppingListStore(s => s.addMissingIngredients);
 
   async function handleConfirm() {
-    const count = await markAsCooked(suggestion.ingredients);
-    setRemovedCount(count);
+    const result = await markAsCooked(suggestion.ingredients);
+    setAffectedCount(result.removedCount + result.updatedCount);
     setCooked(true);
     setDialogVisible(false);
     recordCooked(suggestion);
@@ -210,6 +210,7 @@ export function MealSuggestionCard({ suggestion, onViewRecipe }: CardProps) {
     const toAdd = [
       ...suggestion.missingIngredients,
       ...(suggestion.insufficientIngredients ?? []),
+      ...result.shortfallItems,
     ];
     if (toAdd.length > 0) {
       const added = addMissing(toAdd, suggestion.id);
@@ -261,7 +262,7 @@ export function MealSuggestionCard({ suggestion, onViewRecipe }: CardProps) {
       )}
 
       {cooked
-        ? <CookedBanner removedCount={removedCount} addedToListCount={addedToListCount} />
+        ? <CookedBanner affectedCount={affectedCount} addedToListCount={addedToListCount} />
         : (
             <View style={styles.actionRow}>
               <Button
