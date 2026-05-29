@@ -306,6 +306,19 @@ export default function SettingsScreen() {
 
       <Divider />
 
+      <List.Section>
+        <List.Subheader style={styles.subheader}>Kitchen</List.Subheader>
+        <List.Item
+          title="Staples"
+          description="Ingredients always on hand — skipped when marking meals cooked"
+          left={props => <List.Icon {...props} icon="silverware-fork-knife" />}
+          right={props => <List.Icon {...props} icon="chevron-right" />}
+          onPress={() => router.push('/settings/staples' as any)}
+        />
+      </List.Section>
+
+      <Divider />
+
       <NotificationSection enabled={notificationsEnabled} />
 
       <Divider />

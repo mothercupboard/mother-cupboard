@@ -6,6 +6,7 @@ import { useState } from 'react';
 import { useDatabase } from '@/lib/database/provider';
 
 import { parseIngredient } from './ingredient-parser';
+import { isStaple, useStaplesStore } from './staples-store';
 
 export type CookResult = {
   /** Items fully depleted and soft-deleted. */
@@ -63,7 +64,7 @@ function matchesIngredient(itemName: string, ingredientName: string): boolean {
  * Deducts recipe ingredients from inventory when a meal is marked as cooked.
  *
  * Rules:
- *  - Staples (salt, pepper, oil, water, herbs…): skipped entirely.
+ *  - Staples (user-configurable in Settings → Kitchen Staples): skipped entirely.
  *  - Measured ingredients with matching units: quantity is deducted.
  *    · If stock runs out: item is soft-deleted and raw string added to shortfallItems.
  *    · If units are incompatible (e.g. "1 tbsp" vs "500g"): skipped, not deleted.
@@ -71,6 +72,7 @@ function matchesIngredient(itemName: string, ingredientName: string): boolean {
  */
 export function useMarkAsCooked() {
   const db = useDatabase();
+  const staples = useStaplesStore(s => s.enabled);
   const [isMarking, setIsMarking] = useState(false);
 
   async function markAsCooked(ingredientStrings: string[]): Promise<CookResult> {
@@ -88,8 +90,8 @@ export function useMarkAsCooked() {
       for (const raw of ingredientStrings) {
         const ingredient = parseIngredient(raw);
 
-        // Staples: always skip
-        if (ingredient.isStaple)
+        // Staples (user-configurable): always skip
+        if (isStaple(ingredient.name, staples))
           continue;
 
         const match = allItems.find(item =>
