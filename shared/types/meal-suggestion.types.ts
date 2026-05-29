@@ -18,6 +18,10 @@ export interface MealSuggestion {
   description: string;
   ingredients: string[];
   missingIngredients: string[];
+  /** Ingredients the user has, but not in sufficient quantity for the recipe. */
+  insufficientIngredients?: string[];
+  /** Pans, dishes, appliances the recipe assumes (e.g. "frying pan", "baking dish"). */
+  equipment?: string[];
   adventurousness: AdventurousnessLevel;
   estimatedCookTime: number; // minutes
   usesExpiringItems: boolean;
