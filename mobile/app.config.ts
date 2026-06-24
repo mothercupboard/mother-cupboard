@@ -129,6 +129,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     'expo-sqlite',
     ['expo-camera', { cameraPermission: 'Mother Cupboard needs camera access to scan product barcodes.' }],
     ['expo-notifications'],
+    '@react-native-community/datetimepicker',
     ['@sentry/react-native/expo', { organization: 'mother-cupboard-ltd', project: 'react-native' }],
   ],
   extra: {
