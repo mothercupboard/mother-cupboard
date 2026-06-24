@@ -19,7 +19,7 @@ export interface LocalSuggestRequest {
   dislikedMeals?: string[];
 }
 
-const API_URL = 'https://fyq97migw7.execute-api.eu-west-2.amazonaws.com/preview';
+const API_URL = Env.EXPO_PUBLIC_API_URL;
 
 export async function suggestMealsLocal(req: LocalSuggestRequest) {
   const apiUrl = API_URL;

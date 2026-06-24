@@ -2,7 +2,7 @@ import type { SuggestMealsRequest } from '@shared/types/meal-suggestion.types';
 
 const VALID_MOODS = new Set([
   'quick', 'comfort', 'healthy', 'leftover-rescue',
-  'batch-cook', 'budget', 'one-pot', 'kid-friendly',
+  'batch-cook', 'budget', 'one-pot', 'kid-friendly', 'favourite',
 ]);
 
 const MAX_INVENTORY_IDS = 500;
