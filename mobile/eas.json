@@ -50,7 +50,7 @@
       "env": {
         "EXPO_PUBLIC_APP_ENV": "production",
         "OVERRIDE_BUNDLE_ID": "com.mothercupboard.app.preview",
-        "SENTRY_DISABLE_AUTO_UPLOAD": "false",
+        "SENTRY_DISABLE_AUTO_UPLOAD": "true",
         "EXPO_PUBLIC_SENTRY_DSN": "https://5d1281a1f498b2ea6f5db408ff2828ad@o4511615565430784.ingest.de.sentry.io/4511615594659920",
         "EXPO_PUBLIC_SUPABASE_URL": "https://niryabiodltfisbohzth.supabase.co",
         "EXPO_PUBLIC_SUPABASE_ANON_KEY": "sb_publishable_tCrRS0Md13gZNH2HAlJAOA_Lz0T0oI3",
