@@ -11,6 +11,11 @@ import Env from './env';
 const EAS_PROJECT_ID = '4073602c-9476-4b92-972d-bf5d92746606';
 const EXPO_ACCOUNT_OWNER = 'mothercupboard';
 
+// Resolve bundled font files by package specifier so the paths work regardless
+// of node_modules layout (pnpm hoisted at the workspace root vs nested).
+const nunitoFont = (sub: string): string =>
+  require.resolve(`@expo-google-fonts/nunito/${sub}`);
+
 const appIconBadgeConfig: AppIconBadgeConfig = {
   enabled: Env.EXPO_PUBLIC_APP_ENV !== 'production',
   badges: [
@@ -84,11 +89,11 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       {
         ios: {
           fonts: [
-            'node_modules/@expo-google-fonts/nunito/400Regular/Nunito_400Regular.ttf',
-            'node_modules/@expo-google-fonts/nunito/400Regular_Italic/Nunito_400Regular_Italic.ttf',
-            'node_modules/@expo-google-fonts/nunito/600SemiBold/Nunito_600SemiBold.ttf',
-            'node_modules/@expo-google-fonts/nunito/700Bold/Nunito_700Bold.ttf',
-            'node_modules/@expo-google-fonts/nunito/800ExtraBold/Nunito_800ExtraBold.ttf',
+            nunitoFont('400Regular/Nunito_400Regular.ttf'),
+            nunitoFont('400Regular_Italic/Nunito_400Regular_Italic.ttf'),
+            nunitoFont('600SemiBold/Nunito_600SemiBold.ttf'),
+            nunitoFont('700Bold/Nunito_700Bold.ttf'),
+            nunitoFont('800ExtraBold/Nunito_800ExtraBold.ttf'),
           ],
         },
         android: {
@@ -97,24 +102,24 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
               fontFamily: 'Nunito',
               fontDefinitions: [
                 {
-                  path: 'node_modules/@expo-google-fonts/nunito/400Regular/Nunito_400Regular.ttf',
+                  path: nunitoFont('400Regular/Nunito_400Regular.ttf'),
                   weight: 400,
                 },
                 {
-                  path: 'node_modules/@expo-google-fonts/nunito/400Regular_Italic/Nunito_400Regular_Italic.ttf',
+                  path: nunitoFont('400Regular_Italic/Nunito_400Regular_Italic.ttf'),
                   weight: 400,
                   style: 'italic',
                 },
                 {
-                  path: 'node_modules/@expo-google-fonts/nunito/600SemiBold/Nunito_600SemiBold.ttf',
+                  path: nunitoFont('600SemiBold/Nunito_600SemiBold.ttf'),
                   weight: 600,
                 },
                 {
-                  path: 'node_modules/@expo-google-fonts/nunito/700Bold/Nunito_700Bold.ttf',
+                  path: nunitoFont('700Bold/Nunito_700Bold.ttf'),
                   weight: 700,
                 },
                 {
-                  path: 'node_modules/@expo-google-fonts/nunito/800ExtraBold/Nunito_800ExtraBold.ttf',
+                  path: nunitoFont('800ExtraBold/Nunito_800ExtraBold.ttf'),
                   weight: 800,
                 },
               ],
