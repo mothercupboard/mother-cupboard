@@ -127,6 +127,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     'expo-router',
     ['app-icon-badge', appIconBadgeConfig],
     'expo-sqlite',
+    ['@morrowdigital/watermelondb-expo-plugin', { disableJsi: false }],
     ['expo-camera', { cameraPermission: 'Mother Cupboard needs camera access to scan product barcodes.' }],
     ['expo-notifications'],
     '@react-native-community/datetimepicker',

@@ -53,6 +53,9 @@ importers:
       '@gorhom/bottom-sheet':
         specifier: ^5.2.8
         version: 5.2.8(@types/react@19.1.17)(react-native-gesture-handler@2.28.0(react-native@0.81.5(@babel/core@7.29.0)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0))(react-native-reanimated@4.1.7(react-native-worklets@0.7.4(@babel/core@7.29.0)(react-native@0.81.5(@babel/core@7.29.0)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0))(react-native@0.81.5(@babel/core@7.29.0)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0))(react-native@0.81.5(@babel/core@7.29.0)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)
+      '@morrowdigital/watermelondb-expo-plugin':
+        specifier: 2.4.0-beta.0
+        version: 2.4.0-beta.0
       '@nozbe/watermelondb':
         specifier: ^0.28.0
         version: 0.28.0
@@ -2222,6 +2225,9 @@ packages:
 
   '@kwsites/promise-deferred@1.1.1':
     resolution: {integrity: sha512-GaHYm+c0O9MjZRu0ongGBRbinu8gVAMd2UZjji6jVmqKtZluZnptXGWhz1E8j8D2HJ3f/yMxKAUC0b+57wncIw==}
+
+  '@morrowdigital/watermelondb-expo-plugin@2.4.0-beta.0':
+    resolution: {integrity: sha512-pSZGv71W4s88ibYfxiUwjwo5TvEfl55CzqQDLqguzU4XxanZ5s3UEQwXWTWfl0AFb0pjAtNje7q73edlwKNxFw==}
 
   '@motionone/animation@10.18.0':
     resolution: {integrity: sha512-9z2p5GFGCm0gBsZbi8rVMOAJCtw1WqBTIPw3ozk06gDvZInBPIsQcHgYogEJ4yuHJ+akuW8g1SEIOpTOvYs8hw==}
@@ -13363,6 +13369,8 @@ snapshots:
       - supports-color
 
   '@kwsites/promise-deferred@1.1.1': {}
+
+  '@morrowdigital/watermelondb-expo-plugin@2.4.0-beta.0': {}
 
   '@motionone/animation@10.18.0':
     dependencies:

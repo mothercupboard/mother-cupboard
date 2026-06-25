@@ -1,4 +1,4 @@
-import DateTimePicker from '@react-native-community/datetimepicker';
+import DateTimePicker, { type DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import { useState } from 'react';
 import { Platform, Pressable, StyleSheet, View } from 'react-native';
 import { Button, Dialog, Portal, Text, TextInput as PaperTextInput } from 'react-native-paper';
@@ -55,6 +55,16 @@ export function ExpiryDateField({ value, onChangeText, errors = [], isTouched = 
     setPickerVisible(false);
   }
 
+  // Android's native picker is its own modal dialog — it must NOT be nested
+  // inside a Paper Dialog/Portal (that causes it to hang). It manages its own
+  // OK/Cancel and fires onChange once with event.type 'set' or 'dismissed'.
+  function handleAndroidChange(event: DateTimePickerEvent, date?: Date) {
+    setPickerVisible(false);
+    if (event.type === 'set' && date) {
+      onChangeText(formatDateGB(date));
+    }
+  }
+
   return (
     <>
       <Pressable onPress={handleOpen}>
@@ -75,28 +85,40 @@ export function ExpiryDateField({ value, onChangeText, errors = [], isTouched = 
       {hasError && (
         <Text variant="bodySmall" style={styles.errorText}>{errors[0]}</Text>
       )}
-      <Portal>
-        <Dialog visible={pickerVisible} onDismiss={handleCancel}>
-          <Dialog.Title style={styles.dialogTitle}>{label}</Dialog.Title>
-          <Dialog.Content style={styles.dialogContent}>
-            <DateTimePicker
-              value={pickerDate}
-              mode="date"
-              display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-              onChange={(_event, date) => {
-                if (date) setPickerDate(date);
-              }}
-              minimumDate={new Date()}
-              locale="en-GB"
-              style={styles.picker}
-            />
-          </Dialog.Content>
-          <Dialog.Actions>
-            <Button onPress={handleCancel}>Cancel</Button>
-            <Button onPress={handleConfirm}>OK</Button>
-          </Dialog.Actions>
-        </Dialog>
-      </Portal>
+      {Platform.OS === 'android'
+        ? pickerVisible && (
+          <DateTimePicker
+            value={pickerDate}
+            mode="date"
+            display="default"
+            onChange={handleAndroidChange}
+            minimumDate={new Date()}
+          />
+        )
+        : (
+          <Portal>
+            <Dialog visible={pickerVisible} onDismiss={handleCancel}>
+              <Dialog.Title style={styles.dialogTitle}>{label}</Dialog.Title>
+              <Dialog.Content style={styles.dialogContent}>
+                <DateTimePicker
+                  value={pickerDate}
+                  mode="date"
+                  display="spinner"
+                  onChange={(_event, date) => {
+                    if (date) setPickerDate(date);
+                  }}
+                  minimumDate={new Date()}
+                  locale="en-GB"
+                  style={styles.picker}
+                />
+              </Dialog.Content>
+              <Dialog.Actions>
+                <Button onPress={handleCancel}>Cancel</Button>
+                <Button onPress={handleConfirm}>OK</Button>
+              </Dialog.Actions>
+            </Dialog>
+          </Portal>
+        )}
     </>
   );
 }
