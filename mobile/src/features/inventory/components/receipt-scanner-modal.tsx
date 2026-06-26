@@ -68,6 +68,17 @@ export function ReceiptScannerModal({ visible, initialBase64, onDismiss }: Props
   }, [visible, initialBase64]);
   const [parseError, setParseError] = useState<string | null>(null);
 
+  // Reset transient state whenever the modal opens, so a previous session can't
+  // leave the buttons stuck (e.g. saving=true) when scanning a second receipt.
+  useEffect(() => {
+    if (visible && !initialBase64) {
+      setSaving(false);
+      setParseError(null);
+      setState('idle');
+      setItems([]);
+    }
+  }, [visible, initialBase64]);
+
   async function handleTakePhoto() {
     const permission = await ImagePicker.requestCameraPermissionsAsync();
     if (permission.status !== 'granted') {
@@ -186,7 +197,7 @@ export function ReceiptScannerModal({ visible, initialBase64, onDismiss }: Props
         visible={visible}
         onDismiss={handleClose}
         dismissable={true}
-        contentContainerStyle={[styles.modal, { marginBottom: Math.max(20, insets.bottom + 16) }]}
+        contentContainerStyle={styles.modal}
       >
         {/* Idle — prompt to take photo */}
         {state === 'idle' && (
@@ -293,7 +304,7 @@ export function ReceiptScannerModal({ visible, initialBase64, onDismiss }: Props
               )}
             />
 
-            <View style={styles.reviewActions}>
+            <View style={[styles.reviewActions, { paddingBottom: insets.bottom + 16 }]}>
               <Button mode="text" onPress={handleClose}>Cancel</Button>
               <Button
                 mode="contained"
