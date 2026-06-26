@@ -4,6 +4,7 @@ import { router } from 'expo-router';
 import { useState } from 'react';
 import { FlatList, StyleSheet, View } from 'react-native';
 import { ActivityIndicator, Button, Chip, IconButton, Text } from 'react-native-paper';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { WarmHearthColors } from '@/components/common/paper-theme';
 import { useDatabase } from '@/lib/database/provider';
 import type { InventoryItem, ItemLocation } from '@/lib/database/models/inventory-item';
@@ -22,6 +23,7 @@ const LOCATION_ICONS: Record<string, string> = {
 
 export default function ScanReceiptScreen() {
   const db = useDatabase();
+  const insets = useSafeAreaInsets();
   const [state, setState] = useState<ScreenState>('choose');
   const [items, setItems] = useState<EditableItem[]>([]);
   const [saving, setSaving] = useState(false);
@@ -55,7 +57,9 @@ export default function ScanReceiptScreen() {
         return;
       }
 
-      setItems(valid.map((p, i) => ({ ...p, id: String(i) })));
+      // Default any unrecognised location to "cupboard" so items are addable
+      // straight away; the user can still change it with the chips.
+      setItems(valid.map((p, i) => ({ ...p, location: p.location === 'unknown' ? 'cupboard' : p.location, id: String(i) })));
       setState('review');
     } catch (err) {
       setError('Failed: ' + (err instanceof Error ? err.message : 'Unknown error'));
@@ -171,7 +175,7 @@ export default function ScanReceiptScreen() {
             </View>
           )}
         />
-        <View style={styles.actions}>
+        <View style={[styles.actions, { paddingBottom: insets.bottom + 16 }]}>
           <Button mode="text" onPress={() => router.back()}>Cancel</Button>
           <Button
             mode="contained"
