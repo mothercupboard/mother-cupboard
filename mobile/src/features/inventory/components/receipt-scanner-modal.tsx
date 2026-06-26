@@ -3,6 +3,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { useEffect, useState } from 'react';
 import { Alert, FlatList, StyleSheet, View } from 'react-native';
 import { ActivityIndicator, Button, Chip, IconButton, Modal, Portal, Text } from 'react-native-paper';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { WarmHearthColors } from '@/components/common/paper-theme';
 import { useDatabase } from '@/lib/database/provider';
@@ -20,6 +21,17 @@ const LOCATION_ICONS: Record<string, string> = {
   unknown: 'help-circle-outline',
 };
 
+// Map parsed receipt items to editable rows, defaulting any unrecognised
+// location to "cupboard" so the item is addable straight away. The user can
+// still change it with the location chips.
+function toEditableItems(parsed: ReceiptItem[]): EditableItem[] {
+  return parsed.map((p, i) => ({
+    ...p,
+    location: p.location === 'unknown' ? 'cupboard' : p.location,
+    id: String(i),
+  }));
+}
+
 interface Props {
   visible: boolean;
   initialBase64?: string | null;
@@ -31,6 +43,7 @@ export function ReceiptScannerModal({ visible, initialBase64, onDismiss }: Props
   const [state, setState] = useState<ModalState>('idle');
   const [items, setItems] = useState<EditableItem[]>([]);
   const [saving, setSaving] = useState(false);
+  const insets = useSafeAreaInsets();
 
   useEffect(() => {
     if (visible && initialBase64) {
@@ -44,7 +57,7 @@ export function ReceiptScannerModal({ visible, initialBase64, onDismiss }: Props
             setState('idle');
             return;
           }
-          setItems(valid.map((p, i) => ({ ...p, id: String(i) })));
+          setItems(toEditableItems(valid));
           setState('review');
         })
         .catch(err => {
@@ -79,7 +92,7 @@ export function ReceiptScannerModal({ visible, initialBase64, onDismiss }: Props
         setState('idle');
         return;
       }
-      setItems(parsed.map((item, i) => ({ ...item, id: String(i) })));
+      setItems(toEditableItems(parsed));
       setState('review');
     } catch (e) {
       console.error('[Receipt] Parse error:', e);
@@ -109,7 +122,7 @@ export function ReceiptScannerModal({ visible, initialBase64, onDismiss }: Props
         setState('idle');
         return;
       }
-      setItems(valid.map((p, i) => ({ ...p, id: String(i) })));
+      setItems(toEditableItems(valid));
       setState('review');
     } catch (err) {
       setParseError('Parsing failed: ' + (err instanceof Error ? err.message : 'Unknown error'));
@@ -173,7 +186,7 @@ export function ReceiptScannerModal({ visible, initialBase64, onDismiss }: Props
         visible={visible}
         onDismiss={handleClose}
         dismissable={true}
-        contentContainerStyle={styles.modal}
+        contentContainerStyle={[styles.modal, { marginBottom: Math.max(20, insets.bottom + 16) }]}
       >
         {/* Idle — prompt to take photo */}
         {state === 'idle' && (
