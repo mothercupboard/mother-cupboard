@@ -202,10 +202,10 @@ export function ReceiptScannerModal({ visible, initialBase64, onDismiss }: Props
         {/* Idle — prompt to take photo */}
         {state === 'idle' && (
           <View style={styles.centredContent}>
-            <MaterialCommunityIcons name="receipt" size={52} color={WarmHearthColors.primary} />
-            <Text variant="titleMedium" style={styles.title}>Scan a Receipt</Text>
+            <MaterialCommunityIcons name="camera-plus-outline" size={52} color={WarmHearthColors.primary} />
+            <Text variant="titleMedium" style={styles.title}>Snap to add items</Text>
             <Text variant="bodyMedium" style={styles.body}>
-              Photograph your shopping receipt and we’ll add all the food items to your inventory automatically.
+              Snap your shelves, a till receipt, or a supermarket-app screenshot, and we'll add the food items to your inventory automatically.
             </Text>
             {parseError && (
             <Text variant="bodyMedium" style={{ color: '#B03A2E', fontFamily: 'Nunito_400Regular', textAlign: 'center', marginBottom: 8 }}>

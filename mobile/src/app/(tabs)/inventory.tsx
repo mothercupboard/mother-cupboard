@@ -70,19 +70,19 @@ export default function InventoryScreen() {
   const items = useInventoryItems(activeLocation);
   const sortedItems = sortByExpiry(items);
 
-  const tipSeen = useOnboardingStore(s => s.inventoryTipSeen);
+  const snapTipSeen = useOnboardingStore(s => s.snapTipSeen);
   const dismissTip = useOnboardingStore(s => s.dismissTip);
 
   return (
     <View style={styles.container}>
       <SyncBanner />
 
-      {!tipSeen && (
+      {!snapTipSeen && (
         <FeatureTip
-          icon="archive-outline"
-          title="Your digital cupboard"
-          body="Add items by scanning a barcode, snapping a receipt, or typing manually. We'll keep track of dates and gently remind you when items are coming up."
-          onDismiss={() => dismissTip('inventoryTipSeen')}
+          icon="camera-plus-outline"
+          title="Tip: snap to add"
+          body="Snap a photo of your fridge, freezer or cupboard shelves and we'll add everything at once — the fastest way to fill your cupboard. You can also upload a photo of a till receipt or a screenshot from your supermarket app."
+          onDismiss={() => dismissTip('snapTipSeen')}
         />
       )}
 
@@ -109,7 +109,7 @@ export default function InventoryScreen() {
         actions={[
           { icon: 'pencil-outline', label: 'Add manually', onPress: () => router.push({ pathname: '/inventory/add-item', params: { manual: '1' } }) },
           { icon: 'barcode-scan', label: 'Scan barcode', onPress: () => router.push('/inventory/scan') },
-          { icon: 'receipt', label: 'Scan receipt', onPress: () => router.push('/inventory/scan-receipt' as any) },
+          { icon: 'camera-plus-outline', label: 'Snap to add', onPress: () => router.push('/inventory/scan-receipt' as any) },
         ]}
         onStateChange={({ open }) => setFabOpen(open)}
         style={styles.fab} testID="fab-group"

@@ -23,8 +23,9 @@ type OnboardingStore = {
   inventoryTipSeen: boolean;
   suggestTipSeen: boolean;
   shoppingTipSeen: boolean;
+  snapTipSeen: boolean;
   dismissWelcome: () => void;
-  dismissTip: (tip: 'inventoryTipSeen' | 'shoppingTipSeen' | 'suggestTipSeen') => void;
+  dismissTip: (tip: 'inventoryTipSeen' | 'shoppingTipSeen' | 'suggestTipSeen' | 'snapTipSeen') => void;
 };
 
 export const useOnboardingStore = create<OnboardingStore>()(
@@ -41,6 +42,7 @@ export const useOnboardingStore = create<OnboardingStore>()(
       inventoryTipSeen: false,
       suggestTipSeen: false,
       shoppingTipSeen: false,
+      snapTipSeen: false,
       dismissWelcome: () => set({ welcomeSeen: true }),
       dismissTip: tip => set({ [tip]: true }),
     }),

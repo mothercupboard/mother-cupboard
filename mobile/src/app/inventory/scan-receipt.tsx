@@ -195,10 +195,10 @@ export default function ScanReceiptScreen() {
   // choose state
   return (
     <View style={styles.centred}>
-      <MaterialCommunityIcons name="receipt" size={52} color={WarmHearthColors.primary} />
-      <Text variant="titleMedium" style={styles.title}>Scan a Receipt</Text>
+      <MaterialCommunityIcons name="camera-plus-outline" size={52} color={WarmHearthColors.primary} />
+      <Text variant="titleMedium" style={styles.title}>Snap to add items</Text>
       <Text variant="bodyMedium" style={styles.subtext}>
-        Take a photo or choose an existing image of your receipt.
+        Snap your fridge, freezer or cupboard shelves to add everything at once — or use a photo of a till receipt or a screenshot from your supermarket app. We'll read it and add the items to your inventory.
       </Text>
       {error && <Text variant="bodyMedium" style={styles.errorText}>{error}</Text>}
       <Button mode="contained" icon="camera" onPress={() => pickAndParse(true)} style={styles.fullBtn} labelStyle={styles.btnLabel}>

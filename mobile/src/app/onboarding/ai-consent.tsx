@@ -82,10 +82,10 @@ export default function AIConsentScreen() {
           <View style={styles.divider} />
 
           <AIFeatureRow
-            icon="receipt"
+            icon="camera-plus-outline"
             iconColor="#5C6BC0"
-            title="Receipt scanning"
-            detail="Photos of receipts or shopping lists are read to extract food items automatically. Images are processed on OpenAI's servers and are not stored."
+            title="Photo scanning"
+            detail="Photos of your shelves, receipts, shopping lists, or supermarket-app screenshots are read to extract food items automatically. Images are processed on OpenAI's servers and are not stored."
             provider="OpenAI GPT-4o"
           />
 
