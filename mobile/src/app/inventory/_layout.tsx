@@ -29,7 +29,7 @@ export default function InventoryLayout() {
       <Stack.Screen name="search"    options={{ title: 'Search by Name', headerRight: () => cancelBtn }} />
       <Stack.Screen name="add-item"  options={{ title: 'Add Item',       headerRight: () => cancelBtn }} />
       <Stack.Screen name="edit-item" options={{ title: 'Edit Item',      headerRight: () => cancelBtn }} />
-      <Stack.Screen name="scan-receipt" options={{ title: 'Scan Receipt', headerRight: () => cancelBtn }} />
+      <Stack.Screen name="scan-receipt" options={{ title: 'Snap to add', headerRight: () => cancelBtn }} />
     </Stack>
   );
 }
