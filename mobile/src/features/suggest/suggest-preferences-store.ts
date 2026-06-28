@@ -15,10 +15,14 @@ type SuggestPreferencesStore = {
   adventurousness: AdventurousnessLevel;
   servings: number;
   moods: MoodFilter[];
+  featuredItem: string | null;
+  vegetarian: boolean;
   setAdventurousness: (level: AdventurousnessLevel) => void;
   setServings: (servings: number) => void;
   toggleMood: (mood: MoodFilter) => void;
   clearMoods: () => void;
+  setFeaturedItem: (name: string | null) => void;
+  setVegetarian: (on: boolean) => void;
 };
 
 export const useSuggestPreferences = create<SuggestPreferencesStore>()(
@@ -27,6 +31,8 @@ export const useSuggestPreferences = create<SuggestPreferencesStore>()(
       adventurousness: 3 as AdventurousnessLevel,
       servings: 2,
       moods: [],
+      featuredItem: null,
+      vegetarian: false,
       setAdventurousness: (adventurousness: AdventurousnessLevel) => set({ adventurousness }),
       setServings: (servings: number) => set({ servings }),
       toggleMood: (mood: MoodFilter) =>
@@ -35,6 +41,8 @@ export const useSuggestPreferences = create<SuggestPreferencesStore>()(
           return { moods: exists ? state.moods.filter(m => m !== mood) : [...state.moods, mood] };
         }),
       clearMoods: () => set({ moods: [] }),
+      setFeaturedItem: (featuredItem: string | null) => set({ featuredItem }),
+      setVegetarian: (vegetarian: boolean) => set({ vegetarian }),
     }),
     {
       name: 'suggest-preferences',

@@ -3,11 +3,12 @@ import type { AdventurousnessLevel, MealSuggestion, MoodFilter } from '../../../
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useState } from 'react';
 import { FlatList, ScrollView, StyleSheet, View } from 'react-native';
-import { Button, Chip, Divider, SegmentedButtons, Text } from 'react-native-paper';
+import { Button, Chip, Dialog, Divider, Portal, RadioButton, SegmentedButtons, Switch, Text } from 'react-native-paper';
 
 import { WarmHearthColors } from '@/components/common/paper-theme';
 import { PaywallGate } from '@/features/auth/components/paywall-gate';
 import { useEntitlements } from '@/features/auth/entitlements';
+import { useInventoryItems } from '@/features/inventory/use-inventory-items';
 import { FeatureTip } from '@/features/onboarding/components/feature-tip';
 import { useOnboardingStore } from '@/features/onboarding/onboarding-store';
 import { FullRecipeSheet } from '@/features/suggest/components/full-recipe-sheet';
@@ -78,6 +79,54 @@ function MoodChips() {
   );
 }
 
+function FeaturedItemPicker() {
+  const items = useInventoryItems();
+  const featuredItem = useSuggestPreferences(s => s.featuredItem);
+  const setFeaturedItem = useSuggestPreferences(s => s.setFeaturedItem);
+  const [pickerVisible, setPickerVisible] = useState(false);
+
+  return (
+    <>
+      <Chip
+        icon="food-variant"
+        onPress={() => setPickerVisible(true)}
+        compact
+        style={[styles.moodChip, !!featuredItem && styles.moodChipSelected]}
+        textStyle={[styles.moodChipText, !!featuredItem && styles.moodChipTextSelected]}
+      >
+        {featuredItem ? `Using: ${featuredItem}` : 'Pick an ingredient'}
+      </Chip>
+      <Portal>
+        <Dialog visible={pickerVisible} onDismiss={() => setPickerVisible(false)}>
+          <Dialog.Title style={{ fontFamily: 'Nunito_700Bold' }}>Keen to use?</Dialog.Title>
+          <Dialog.ScrollArea style={{ maxHeight: 340, paddingHorizontal: 0 }}>
+            <ScrollView>
+              <RadioButton.Item
+                label="No preference"
+                value=""
+                status={!featuredItem ? 'checked' : 'unchecked'}
+                onPress={() => { setFeaturedItem(null); setPickerVisible(false); }}
+              />
+              {items.map(i => (
+                <RadioButton.Item
+                  key={i.id}
+                  label={i.name}
+                  value={i.name}
+                  status={featuredItem === i.name ? 'checked' : 'unchecked'}
+                  onPress={() => { setFeaturedItem(i.name); setPickerVisible(false); }}
+                />
+              ))}
+            </ScrollView>
+          </Dialog.ScrollArea>
+          <Dialog.Actions>
+            <Button onPress={() => setPickerVisible(false)}>Done</Button>
+          </Dialog.Actions>
+        </Dialog>
+      </Portal>
+    </>
+  );
+}
+
 function EmptyState() {
   return (
     <View style={styles.emptyState}>
@@ -112,6 +161,8 @@ function ControlsPanel({ hasItems, isOffline, isPending, error, onGenerate }: Co
   const servings = useSuggestPreferences(s => s.servings);
   const setAdventurousness = useSuggestPreferences(s => s.setAdventurousness);
   const setServings = useSuggestPreferences(s => s.setServings);
+  const vegetarian = useSuggestPreferences(s => s.vegetarian);
+  const setVegetarian = useSuggestPreferences(s => s.setVegetarian);
 
   return (
     <View style={styles.controls}>
@@ -151,6 +202,16 @@ function ControlsPanel({ hasItems, isOffline, isPending, error, onGenerate }: Co
           {'What\u2019s the mood?'}
         </Text>
         <MoodChips />
+      </View>
+
+      <View style={styles.controlRow}>
+        <Text variant="labelLarge" style={styles.label}>Keen to use something?</Text>
+        <FeaturedItemPicker />
+      </View>
+
+      <View style={styles.veggieRow}>
+        <Text variant="labelLarge" style={styles.label}>Vegetarian</Text>
+        <Switch value={vegetarian} onValueChange={setVegetarian} color={WarmHearthColors.primary} />
       </View>
 
       <Button
@@ -340,6 +401,12 @@ const styles = StyleSheet.create({
   },
   controlRow: {
     gap: 6,
+  },
+  veggieRow: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 4,
   },
   label: {
     color: WarmHearthColors.textPrimary,

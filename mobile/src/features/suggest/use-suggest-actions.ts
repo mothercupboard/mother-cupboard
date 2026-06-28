@@ -17,6 +17,8 @@ export function useSuggestActions() {
   const adventurousness = useSuggestPreferences(s => s.adventurousness);
   const servings = useSuggestPreferences(s => s.servings);
   const moods = useSuggestPreferences(s => s.moods);
+  const featuredItem = useSuggestPreferences(s => s.featuredItem);
+  const vegetarian = useSuggestPreferences(s => s.vegetarian);
   const cookedTitles = useSavedMealsStore(s => s.cookedTitles);
   const savedTitles = useSavedMealsStore(s => s.savedTitles);
   const rejectedTitlesStore = useSavedMealsStore(s => s.rejectedTitles);
@@ -28,6 +30,15 @@ export function useSuggestActions() {
   const likedMeals = [...new Set([...cookedTitles, ...savedTitles])];
 
   function buildRequest(extraHint?: string): LocalSuggestRequest {
+    const hintParts: string[] = [];
+    if (featuredItem)
+      hintParts.push(`The user especially wants to use up their ${featuredItem} — make sure at least one suggestion features it prominently.`);
+    if (vegetarian)
+      hintParts.push('Only suggest vegetarian meals — no meat, poultry or fish (eggs and dairy are fine).');
+    if (extraHint)
+      hintParts.push(extraHint);
+    const hint = hintParts.length > 0 ? hintParts.join(' ') : undefined;
+
     return {
       items: items.map(i => ({
         name: i.name,
@@ -40,7 +51,7 @@ export function useSuggestActions() {
       adventurousness,
       servings,
       moods: moods.length > 0 ? moods : undefined,
-      hint: extraHint,
+      hint,
       likedMeals: likedMeals.length > 0 ? likedMeals : undefined,
       dislikedMeals: rejectedTitlesStore.length > 0 ? rejectedTitlesStore : undefined,
     };
