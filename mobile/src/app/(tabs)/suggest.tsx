@@ -246,13 +246,14 @@ type ResultsListProps = {
   isPending: boolean;
   isOffline: boolean;
   onRegenerate: () => void;
+  onStartAgain: () => void;
   onSurpriseMe: () => void;
   onTweakAndRetry: () => void;
   onViewRecipe: (suggestion: MealSuggestion) => void;
 };
 
 function ResultsList(props: ResultsListProps) {
-  const { suggestions, isPending, isOffline, onRegenerate, onSurpriseMe, onTweakAndRetry, onViewRecipe } = props;
+  const { suggestions, isPending, isOffline, onRegenerate, onStartAgain, onSurpriseMe, onTweakAndRetry, onViewRecipe } = props;
   return (
     <FlatList
       data={suggestions}
@@ -263,6 +264,17 @@ function ResultsList(props: ResultsListProps) {
         <View style={styles.resultsHeader}>
           {isOffline && <OfflineBanner />}
           <View style={styles.resultsHeaderButtons}>
+            <Button
+              mode="text"
+              onPress={onStartAgain}
+              disabled={isPending}
+              icon="tune-variant"
+              compact
+              style={styles.regenerateButton}
+              labelStyle={styles.regenerateLabel}
+            >
+              Start again
+            </Button>
             <Button
               mode="outlined"
               onPress={onRegenerate}
@@ -334,6 +346,10 @@ function SuggestScreenContent() {
     setView('recipe');
   }
 
+  function handleStartAgain() {
+    setView('controls');
+  }
+
   const hasResults = view === 'results' && suggestions && suggestions.length > 0;
 
   if (view === 'saved')
@@ -354,6 +370,7 @@ function SuggestScreenContent() {
           isPending={isPending}
           isOffline={isOffline}
           onRegenerate={handleGenerate}
+          onStartAgain={handleStartAgain}
           onSurpriseMe={handleSurpriseMe}
           onTweakAndRetry={handleTweakAndRetry}
           onViewRecipe={handleViewRecipe}
