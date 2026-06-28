@@ -162,11 +162,11 @@ export async function parseReceiptImage(base64Image: string): Promise<ReceiptIte
           content: [
             {
               type: 'text',
-              text: `You are a UK grocery receipt and shopping list parser. Extract food and drink items from this image. The image may be a paper receipt, a screenshot from a store loyalty app (such as Smartpay, Tesco Clubcard, Sainsbury's Nectar, etc.), a digital receipt, or a photo of a shopping list. Look for product names, quantities, and prices.
+              text: `You are a UK grocery parser. Extract food and drink items from this image. The image may be a paper receipt, a screenshot from a store loyalty/shopping app (such as Smartpay, Tesco Clubcard, Sainsbury's Nectar, etc.), a digital receipt, a photo of a shopping list, OR a photo of grocery products, packaging, or fridge/freezer/cupboard shelves. Look for product names, quantities, sizes/weights, and prices.
 Return JSON with "items" array. Each item:
 - name: string — food item name, properly capitalised (e.g. "Semi-Skimmed Milk", "Baked Beans")
-- quantity: number — quantity purchased (default 1)
-- unit: string — packaging unit if clear (e.g. "tin", "bottle", "pack", "bag") or ""
+- quantity: number — if a size/weight is printed on the packaging or listed (e.g. a tin labelled "400g", a "500ml" bottle, a "1kg" bag), use that number; otherwise use the quantity purchased; default 1
+- unit: string — the size unit when visible (e.g. "g", "kg", "ml", "litre"), otherwise the packaging unit if clear (e.g. "tin", "bottle", "pack", "bag"), or ""
 - location: "fridge" for dairy/fresh meat/veg/deli; "freezer" for frozen items; "cupboard" for dry/canned/ambient goods; "unknown" if genuinely unsure
 - expiryType: "use_by" for fresh items (meat, fish, ready meals, fresh dairy); "best_before" for dry goods and long-life; "" for most non-perishables
 

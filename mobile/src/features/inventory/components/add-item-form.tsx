@@ -211,6 +211,8 @@ export function AddItemForm({ barcode, initialName, initialQuantity, initialUnit
               onChangeText={setQtyDraft}
               mode="outlined"
               keyboardType="decimal-pad"
+              autoFocus
+              selectTextOnFocus
               style={{ backgroundColor: WarmHearthColors.background }}
               theme={{ fonts: { bodyLarge: { fontFamily: 'Nunito_400Regular' } } }}
             />

@@ -124,7 +124,7 @@ export default function ScanReceiptScreen() {
     return (
       <View style={styles.centred}>
         <ActivityIndicator size="large" color={WarmHearthColors.primary} />
-        <Text variant="bodyMedium" style={styles.loadingText}>Reading your receipt...</Text>
+        <Text variant="bodyMedium" style={styles.loadingText}>Reading your image...</Text>
         <Text variant="bodySmall" style={styles.subtext}>This takes a few seconds</Text>
       </View>
     );

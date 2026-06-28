@@ -241,7 +241,7 @@ export function ReceiptScannerModal({ visible, initialBase64, onDismiss }: Props
           <View style={styles.centredContent}>
             <ActivityIndicator size="large" color={WarmHearthColors.primary} />
             <Text variant="bodyMedium" style={styles.loadingText}>
-              Reading your receipt…
+              Reading your image…
             </Text>
             <Text variant="bodySmall" style={styles.loadingSubtext}>
               This takes a few seconds
