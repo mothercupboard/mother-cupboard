@@ -4,6 +4,7 @@ import type { LocalSuggestRequest } from '@/lib/ai/suggest-meals';
 import { useRef } from 'react';
 
 import { useInventoryItems } from '@/features/inventory/use-inventory-items';
+import { isLikelyMeat } from '@/features/suggest/is-meat';
 import { useSavedMealsStore } from '@/features/suggest/saved-meals-store';
 import { useSuggestPreferences } from '@/features/suggest/suggest-preferences-store';
 import { useSuggestMeals } from '@/features/suggest/use-suggest-meals';
@@ -31,7 +32,10 @@ export function useSuggestActions() {
 
   function buildRequest(extraHint?: string): LocalSuggestRequest {
     const hintParts: string[] = [];
-    if (featuredItem)
+    // If the featured item is meat/fish but vegetarian is on, vegetarian wins —
+    // don't send a contradictory "use the meat" instruction to the AI.
+    const featureConflictsWithVeg = vegetarian && isLikelyMeat(featuredItem);
+    if (featuredItem && !featureConflictsWithVeg)
       hintParts.push(`The user especially wants to use up their ${featuredItem} — make sure at least one suggestion features it prominently.`);
     if (vegetarian)
       hintParts.push('Only suggest vegetarian meals — no meat, poultry or fish (eggs and dairy are fine).');

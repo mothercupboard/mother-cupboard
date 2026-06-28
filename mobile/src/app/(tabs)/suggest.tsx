@@ -17,6 +17,7 @@ import { MealSuggestionCard } from '@/features/suggest/components/meal-suggestio
 import { NoneOfTheseFooter } from '@/features/suggest/components/none-of-these-footer';
 import { OfflineBanner } from '@/features/suggest/components/offline-banner';
 import { SavedMealsSheet } from '@/features/suggest/components/saved-meals-sheet';
+import { isLikelyMeat } from '@/features/suggest/is-meat';
 import { useSavedMealsStore } from '@/features/suggest/saved-meals-store';
 import { useSuggestPreferences } from '@/features/suggest/suggest-preferences-store';
 import { useSuggestActions } from '@/features/suggest/use-suggest-actions';
@@ -163,6 +164,7 @@ function ControlsPanel({ hasItems, isOffline, isPending, error, onGenerate }: Co
   const setServings = useSuggestPreferences(s => s.setServings);
   const vegetarian = useSuggestPreferences(s => s.vegetarian);
   const setVegetarian = useSuggestPreferences(s => s.setVegetarian);
+  const featuredItem = useSuggestPreferences(s => s.featuredItem);
 
   return (
     <View style={styles.controls}>
@@ -213,6 +215,12 @@ function ControlsPanel({ hasItems, isOffline, isPending, error, onGenerate }: Co
         <Text variant="labelLarge" style={styles.label}>Vegetarian</Text>
         <Switch value={vegetarian} onValueChange={setVegetarian} color={WarmHearthColors.primary} />
       </View>
+
+      {vegetarian && isLikelyMeat(featuredItem) && (
+        <Text variant="bodySmall" style={styles.conflictNote}>
+          {`Vegetarian's on, so we'll save the ${featuredItem} for another day and find you something meat-free. 🥕`}
+        </Text>
+      )}
 
       <Button
         mode="contained"
@@ -424,6 +432,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginTop: 4,
+  },
+  conflictNote: {
+    color: WarmHearthColors.primary,
+    fontFamily: 'Nunito_400Regular',
+    marginTop: -2,
   },
   label: {
     color: WarmHearthColors.textPrimary,
