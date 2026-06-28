@@ -1,10 +1,16 @@
+import { Platform } from 'react-native';
 import Purchases, {
   type CustomerInfo,
   type PurchasesPackage,
   LOG_LEVEL,
 } from 'react-native-purchases';
 
-const RC_API_KEY = 'appl_gmJqzRgAYvYSqvGayDBORwCZgHS';
+// Platform-specific RevenueCat public SDK keys — Android must use its own
+// `goog_` key; the iOS `appl_` key is invalid on Android (no offerings load).
+const RC_API_KEY = Platform.select({
+  ios: 'appl_gmJqzRgAYvYSqvGayDBORwCZgHS',
+  android: 'goog_DwsVCaKIuPRuvAqYWhLllcqFqgc',
+}) ?? 'appl_gmJqzRgAYvYSqvGayDBORwCZgHS';
 const ENTITLEMENT_ID = 'Mother Cupboard Pro';
 
 /**
