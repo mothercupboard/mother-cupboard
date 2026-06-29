@@ -15,12 +15,23 @@ export type CookResult = {
   updatedCount: number;
   /** Raw ingredient strings where stock ran short (for adding to shopping list). */
   shortfallItems: string[];
+  /**
+   * Whole/discrete items (e.g. a celery, a lettuce) that a recipe used part of
+   * but we couldn't measure precisely — surfaced so the user can confirm whether
+   * they're actually used up.
+   */
+  ambiguousItems: { id: string; name: string }[];
 };
 
 // ─── Unit helpers ────────────────────────────────────────────────────────────
 
 const WEIGHT_UNITS = new Set(['g', 'kg']);
 const VOLUME_UNITS = new Set(['ml', 'l']);
+
+/** True when a unit is a measurable amount (weight/volume) rather than a count of whole things. */
+function isMeasured(unit: string | null): boolean {
+  return unit !== null && (WEIGHT_UNITS.has(unit) || VOLUME_UNITS.has(unit));
+}
 
 /** Returns true if two units can be arithmetically compared / converted. */
 function sameUnitFamily(unit1: string, unit2: string): boolean {
@@ -86,6 +97,7 @@ export function useMarkAsCooked() {
       const toDelete: InventoryItem[] = [];
       const toUpdate: Array<{ item: InventoryItem; newQuantity: number }> = [];
       const shortfallItems: string[] = [];
+      const ambiguous = new Map<string, string>(); // item id -> name (deduped)
 
       for (const raw of ingredientStrings) {
         const ingredient = parseIngredient(raw);
@@ -108,13 +120,22 @@ export function useMarkAsCooked() {
           continue;
         }
 
-        // Inventory item has no quantity — can't do arithmetic, leave it alone
-        if (match.quantity === null || match.unit === null)
+        // Inventory item has no quantity — can't do arithmetic. It's a whole/
+        // discrete item (e.g. a celery) the recipe used part of — ask the user.
+        if (match.quantity === null || match.unit === null) {
+          ambiguous.set(match.id, match.name);
           continue;
+        }
 
-        // Units are from different families (e.g. "tbsp" vs "g") — skip, don't guess
-        if (!sameUnitFamily(ingredient.unit, match.unit))
+        // Units are from different families (e.g. "tbsp" vs "g") — can't convert.
+        // If the inventory item is a whole/discrete thing (not weighed/measured),
+        // ask whether it's used up; if it's measured (e.g. 500ml oil vs a tbsp)
+        // there's clearly plenty, so leave it silently.
+        if (!sameUnitFamily(ingredient.unit, match.unit)) {
+          if (!isMeasured(match.unit))
+            ambiguous.set(match.id, match.name);
           continue;
+        }
 
         // Convert both to base unit, subtract, convert back
         const recipeBase = toBase(ingredient.quantity, ingredient.unit);
@@ -149,10 +170,16 @@ export function useMarkAsCooked() {
         });
       }
 
+      const deletedIds = new Set(toDelete.map(i => i.id));
+      const ambiguousItems = [...ambiguous]
+        .filter(([id]) => !deletedIds.has(id))
+        .map(([id, name]) => ({ id, name }));
+
       return {
         removedCount: toDelete.length,
         updatedCount: toUpdate.length,
         shortfallItems,
+        ambiguousItems,
       };
     }
     finally {
@@ -160,5 +187,20 @@ export function useMarkAsCooked() {
     }
   }
 
-  return { isMarking, markAsCooked };
+  /** Soft-deletes the items the user confirmed they've used up (from the prompt). */
+  async function removeFinishedItems(ids: string[]): Promise<void> {
+    if (ids.length === 0)
+      return;
+    const items = await db
+      .get<InventoryItem>('inventory_items')
+      .query(Q.where('id', Q.oneOf(ids)))
+      .fetch();
+    if (items.length === 0)
+      return;
+    await db.write(async () => {
+      await db.batch(...items.map(item => item.prepareMarkAsDeleted()));
+    });
+  }
+
+  return { isMarking, markAsCooked, removeFinishedItems };
 }

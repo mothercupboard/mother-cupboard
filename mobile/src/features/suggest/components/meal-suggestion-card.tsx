@@ -7,6 +7,7 @@ import { Button, Chip, Dialog, Portal, Text } from 'react-native-paper';
 
 import { WarmHearthColors } from '@/components/common/paper-theme';
 import { useShoppingListStore } from '@/features/shopping-list/shopping-list-store';
+import { CookedFinishDialog } from '@/features/suggest/components/cooked-finish-dialog';
 import { useSavedMealsStore } from '@/features/suggest/saved-meals-store';
 import { useMarkAsCooked } from '@/features/suggest/use-mark-as-cooked';
 
@@ -196,7 +197,9 @@ export function MealSuggestionCard({ suggestion, onViewRecipe }: CardProps) {
   const [cooked, setCooked] = useState(false);
   const [affectedCount, setAffectedCount] = useState(0);
   const [addedToListCount, setAddedToListCount] = useState(0);
-  const { isMarking, markAsCooked } = useMarkAsCooked();
+  const [ambiguousItems, setAmbiguousItems] = useState<{ id: string; name: string }[]>([]);
+  const [finishDialogVisible, setFinishDialogVisible] = useState(false);
+  const { isMarking, markAsCooked, removeFinishedItems } = useMarkAsCooked();
   const recordCooked = useSavedMealsStore(s => s.recordCooked);
   const addMissing = useShoppingListStore(s => s.addMissingIngredients);
 
@@ -215,6 +218,19 @@ export function MealSuggestionCard({ suggestion, onViewRecipe }: CardProps) {
     if (toAdd.length > 0) {
       const added = addMissing(toAdd, suggestion.id);
       setAddedToListCount(added);
+    }
+
+    if (result.ambiguousItems.length > 0) {
+      setAmbiguousItems(result.ambiguousItems);
+      setFinishDialogVisible(true);
+    }
+  }
+
+  async function handleFinishConfirm(finishedIds: string[]) {
+    setFinishDialogVisible(false);
+    if (finishedIds.length > 0) {
+      await removeFinishedItems(finishedIds);
+      setAffectedCount(c => c + finishedIds.length);
     }
   }
 
@@ -286,6 +302,12 @@ export function MealSuggestionCard({ suggestion, onViewRecipe }: CardProps) {
         isMarking={isMarking}
         onDismiss={() => setDialogVisible(false)}
         onConfirm={handleConfirm}
+      />
+
+      <CookedFinishDialog
+        visible={finishDialogVisible}
+        items={ambiguousItems}
+        onConfirm={handleFinishConfirm}
       />
     </View>
   );
