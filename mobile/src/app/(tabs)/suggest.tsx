@@ -1,7 +1,7 @@
 import type { AdventurousnessLevel, MealSuggestion, MoodFilter } from '../../../../shared/types/meal-suggestion.types';
 
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { FlatList, ScrollView, StyleSheet, View } from 'react-native';
 import { Button, Chip, Dialog, Divider, Portal, RadioButton, SegmentedButtons, Switch, Text } from 'react-native-paper';
 
@@ -85,6 +85,12 @@ function FeaturedItemPicker() {
   const featuredItem = useSuggestPreferences(s => s.featuredItem);
   const setFeaturedItem = useSuggestPreferences(s => s.setFeaturedItem);
   const [pickerVisible, setPickerVisible] = useState(false);
+
+  // If the featured item is no longer in the cupboard (used up / removed), drop it.
+  useEffect(() => {
+    if (featuredItem && !items.some(i => i.name === featuredItem))
+      setFeaturedItem(null);
+  }, [featuredItem, items, setFeaturedItem]);
 
   return (
     <>

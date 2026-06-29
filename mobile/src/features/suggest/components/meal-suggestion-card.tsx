@@ -9,6 +9,7 @@ import { WarmHearthColors } from '@/components/common/paper-theme';
 import { useShoppingListStore } from '@/features/shopping-list/shopping-list-store';
 import { CookedFinishDialog } from '@/features/suggest/components/cooked-finish-dialog';
 import { useSavedMealsStore } from '@/features/suggest/saved-meals-store';
+import { useSuggestPreferences } from '@/features/suggest/suggest-preferences-store';
 import { useMarkAsCooked } from '@/features/suggest/use-mark-as-cooked';
 
 const ADVENTUROUSNESS_LABEL: Record<number, string> = {
@@ -202,6 +203,7 @@ export function MealSuggestionCard({ suggestion, onViewRecipe }: CardProps) {
   const { isMarking, markAsCooked, removeFinishedItems } = useMarkAsCooked();
   const recordCooked = useSavedMealsStore(s => s.recordCooked);
   const addMissing = useShoppingListStore(s => s.addMissingIngredients);
+  const resetFeaturedItem = useSuggestPreferences(s => s.setFeaturedItem);
 
   async function handleConfirm() {
     const result = await markAsCooked(suggestion.ingredients);
@@ -209,6 +211,8 @@ export function MealSuggestionCard({ suggestion, onViewRecipe }: CardProps) {
     setCooked(true);
     setDialogVisible(false);
     recordCooked(suggestion);
+    // You've just cooked a meal — clear any "keen to use" pick so it doesn't linger.
+    resetFeaturedItem(null);
 
     const toAdd = [
       ...suggestion.missingIngredients,
