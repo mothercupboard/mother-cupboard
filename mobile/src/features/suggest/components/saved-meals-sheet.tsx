@@ -7,22 +7,28 @@ import { Text } from 'react-native-paper';
 import { WarmHearthColors } from '@/components/common/paper-theme';
 import { useSavedMealsStore } from '@/features/suggest/saved-meals-store';
 
-function SavedMealRow({ meal }: { meal: MealSuggestion }) {
+function SavedMealRow({ meal, onView }: { meal: MealSuggestion; onView: (meal: MealSuggestion) => void }) {
   const unsaveMeal = useSavedMealsStore(s => s.unsaveMeal);
+  const ingredientCount = meal.ingredients?.length ?? 0;
 
   return (
     <View style={styles.row}>
-      <View style={styles.rowContent}>
+      <Pressable
+        style={styles.rowContent}
+        onPress={() => onView(meal)}
+        accessibilityLabel={`Open ${meal.title}`}
+        accessibilityRole="button"
+      >
         <Text variant="bodyLarge" style={styles.mealTitle} numberOfLines={1}>
           {meal.title}
         </Text>
         <Text variant="bodySmall" style={styles.mealMeta}>
           {meal.estimatedCookTime}
           {' min • '}
-          {meal.ingredients.length}
+          {ingredientCount}
           {' ingredients'}
         </Text>
-      </View>
+      </Pressable>
       <Pressable
         onPress={() => unsaveMeal(meal.id)}
         hitSlop={16}
@@ -50,7 +56,7 @@ function EmptySavedState() {
  * Displays the user's saved/bookmarked meal suggestions.
  * Shown inline within the suggest screen when the user taps the saved meals button.
  */
-export function SavedMealsSheet({ onClose }: { onClose: () => void }) {
+export function SavedMealsSheet({ onClose, onView }: { onClose: () => void; onView: (meal: MealSuggestion) => void }) {
   const savedMeals = useSavedMealsStore(s => s.savedMeals);
 
   return (
@@ -68,7 +74,7 @@ export function SavedMealsSheet({ onClose }: { onClose: () => void }) {
             <FlatList
               data={savedMeals}
               keyExtractor={m => m.id}
-              renderItem={({ item }) => <SavedMealRow meal={item} />}
+              renderItem={({ item }) => <SavedMealRow meal={item} onView={onView} />}
               contentContainerStyle={styles.list}
             />
           )}

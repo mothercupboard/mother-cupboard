@@ -13,7 +13,9 @@ export function frozenItemsUsedByRecipe(
   frozenItems: { name: string }[],
   ingredients: string[],
 ): string[] {
-  const ings = ingredients.map(i => i.toLowerCase());
+  if (!Array.isArray(ingredients) || !Array.isArray(frozenItems))
+    return [];
+  const ings = ingredients.map(i => String(i).toLowerCase());
   const matched = new Set<string>();
   for (const item of frozenItems) {
     const name = item.name.trim();

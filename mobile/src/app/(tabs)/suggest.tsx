@@ -369,6 +369,7 @@ function SuggestScreenContent() {
   const savedCount = useSavedMealsStore(s => s.savedMeals.length);
   const [view, setView] = useState<'controls' | 'history' | 'recipe' | 'results' | 'saved'>('controls');
   const [activeRecipe, setActiveRecipe] = useState<MealSuggestion | null>(null);
+  const [recipeReturn, setRecipeReturn] = useState<'results' | 'saved'>('results');
   const isConnected = useNetworkStatus();
   const isOffline = isConnected === false;
 
@@ -388,6 +389,13 @@ function SuggestScreenContent() {
 
   function handleViewRecipe(s: MealSuggestion) {
     setActiveRecipe(s);
+    setRecipeReturn('results');
+    setView('recipe');
+  }
+
+  function handleViewSavedRecipe(s: MealSuggestion) {
+    setActiveRecipe(s);
+    setRecipeReturn('saved');
     setView('recipe');
   }
 
@@ -398,11 +406,11 @@ function SuggestScreenContent() {
   const hasResults = view === 'results' && suggestions && suggestions.length > 0;
 
   if (view === 'saved')
-    return <SavedMealsSheet onClose={() => setView('controls')} />;
+    return <SavedMealsSheet onClose={() => setView('controls')} onView={handleViewSavedRecipe} />;
   if (view === 'history')
     return <MealHistorySheet onClose={() => setView('controls')} />;
   if (view === 'recipe' && activeRecipe)
-    return <FullRecipeSheet suggestion={activeRecipe} onClose={() => setView('results')} />;
+    return <FullRecipeSheet suggestion={activeRecipe} onClose={() => setView(recipeReturn)} />;
   if (hasResults)
     return renderResults();
   return renderControls();
