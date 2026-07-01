@@ -13,7 +13,8 @@ export type OffProduct = {
 let _db: SQLite.SQLiteDatabase | null = null;
 
 async function openDb(): Promise<SQLite.SQLiteDatabase> {
-  if (_db) return _db;
+  if (_db)
+    return _db;
   _db = await SQLite.openDatabaseAsync('off_cache.db');
   await _db.execAsync(
     `CREATE TABLE IF NOT EXISTS off_cache (
@@ -54,7 +55,8 @@ export async function lookupByBarcode(barcode: string): Promise<OffProduct | nul
     'SELECT barcode, name, category, product_quantity AS productQuantity FROM off_cache WHERE barcode = ?',
     [barcode],
   );
-  if (cached) return cached;
+  if (cached)
+    return cached;
 
   // 2. Fetch from Open Food Facts
   try {
@@ -62,9 +64,11 @@ export async function lookupByBarcode(barcode: string): Promise<OffProduct | nul
       `https://world.openfoodfacts.org/api/v0/product/${barcode}.json`,
       { headers: { 'User-Agent': 'MotherCupboard/1.0' } },
     );
-    if (!res.ok) return null;
+    if (!res.ok)
+      return null;
     const data = await res.json() as { status: number; product?: { product_name?: string; categories_tags?: string[] } };
-    if (data.status !== 1 || !data.product?.product_name) return null;
+    if (data.status !== 1 || !data.product?.product_name)
+      return null;
 
     const product: OffProduct = {
       barcode,
@@ -74,7 +78,8 @@ export async function lookupByBarcode(barcode: string): Promise<OffProduct | nul
     };
     await cacheProducts(db, [product]);
     return product;
-  } catch {
+  }
+  catch {
     return null;
   }
 }
@@ -93,14 +98,16 @@ export async function searchByName(query: string): Promise<OffProduct[]> {
     'SELECT barcode, name, category, product_quantity AS productQuantity FROM off_cache WHERE name LIKE ? LIMIT 20',
     [q],
   );
-  if (cached.length >= 3) return cached;
+  if (cached.length >= 3)
+    return cached;
   // 2. Fallback: search Open Food Facts API
   try {
     const res = await fetch(
       `https://world.openfoodfacts.org/cgi/search.pl?search_terms=${encodeURIComponent(query)}&search_simple=1&action=process&json=1&page_size=15&fields=code,product_name,categories_tags`,
       { signal: (() => { const ac = new AbortController(); setTimeout(() => ac.abort(), 5000); return ac.signal; })() },
     );
-    if (!res.ok) return cached;
+    if (!res.ok)
+      return cached;
     const data = await res.json();
     const products: OffProduct[] = (data.products ?? [])
       .filter((p: any) => p.product_name && p.code)
@@ -110,12 +117,14 @@ export async function searchByName(query: string): Promise<OffProduct[]> {
         category: p.categories_tags?.[0]?.replace('en:', '') ?? null,
         productQuantity: p.product_quantity ?? null,
       }));
-    if (products.length > 0) await cacheProducts(db, products);
+    if (products.length > 0)
+      await cacheProducts(db, products);
     // Merge cached + online, deduplicate by barcode
     const merged = new Map<string, OffProduct>();
     for (const p of [...cached, ...products]) merged.set(p.barcode, p);
     return [...merged.values()].slice(0, 20);
-  } catch {
+  }
+  catch {
     return cached;
   }
 }
@@ -123,7 +132,8 @@ export async function searchByName(query: string): Promise<OffProduct[]> {
 // ─── Helpers ─────────────────────────────────────────────────────────────
 
 function cleanCategory(raw: string | null): string | null {
-  if (!raw) return null;
+  if (!raw)
+    return null;
   // OFF tags look like "en:dairy-products" → "Dairy products"
   return raw
     .replace(/^[a-z]{2}:/, '')

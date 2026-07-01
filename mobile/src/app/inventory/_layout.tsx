@@ -1,4 +1,4 @@
-import { Stack, router } from 'expo-router';
+import { router, Stack } from 'expo-router';
 import { StyleSheet, Text, TouchableOpacity } from 'react-native';
 
 export default function InventoryLayout() {
@@ -19,16 +19,16 @@ export default function InventoryLayout() {
     <Stack
       screenOptions={{
         // '#7B5EA7' matches WarmHearthColors.primary — keep in sync if theme changes
-      headerStyle: { backgroundColor: '#7B5EA7' },
+        headerStyle: { backgroundColor: '#7B5EA7' },
         headerTintColor: '#FFFFFF',
         headerTitleStyle: { fontFamily: 'Nunito_700Bold', color: '#FFFFFF' },
         headerBackTitle: '',
       }}
     >
-      <Stack.Screen name="scan"      options={{ title: 'Scan Barcode',   headerRight: () => cancelBtn }} />
-      <Stack.Screen name="search"    options={{ title: 'Search by Name', headerRight: () => cancelBtn }} />
-      <Stack.Screen name="add-item"  options={{ title: 'Add Item',       headerRight: () => cancelBtn }} />
-      <Stack.Screen name="edit-item" options={{ title: 'Edit Item',      headerRight: () => cancelBtn }} />
+      <Stack.Screen name="scan" options={{ title: 'Scan Barcode', headerRight: () => cancelBtn }} />
+      <Stack.Screen name="search" options={{ title: 'Search by Name', headerRight: () => cancelBtn }} />
+      <Stack.Screen name="add-item" options={{ title: 'Add Item', headerRight: () => cancelBtn }} />
+      <Stack.Screen name="edit-item" options={{ title: 'Edit Item', headerRight: () => cancelBtn }} />
       <Stack.Screen name="scan-receipt" options={{ title: 'Snap to add', headerRight: () => cancelBtn }} />
     </Stack>
   );

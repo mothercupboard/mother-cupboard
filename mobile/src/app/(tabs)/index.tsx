@@ -5,8 +5,8 @@ import { WarmHearthColors } from '@/components/common/paper-theme';
 import { TrialBanner } from '@/features/auth/components/trial-banner';
 import { StaleInventoryNudge } from '@/features/inventory/components/stale-inventory-nudge';
 import { ExpiryNudgeCard } from '@/features/notifications/expiry-nudge-card';
-import { WelcomeCard } from '@/features/onboarding/components/welcome-card';
 import { HomeGuideCard } from '@/features/onboarding/components/home-guide-card';
+import { WelcomeCard } from '@/features/onboarding/components/welcome-card';
 
 export default function HomeScreen() {
   return (

@@ -1,21 +1,20 @@
 import type { Database } from '@nozbe/watermelondb';
-import type { ExpiryType, InventoryItem, ItemLocation } from '@/lib/database/models/inventory-item';
+import type { ParsedVoiceItem } from '@/lib/ai/voice-parser';
 
+import type { ExpiryType, InventoryItem, ItemLocation } from '@/lib/database/models/inventory-item';
 import * as ImagePicker from 'expo-image-picker';
 import { router } from 'expo-router';
 import { useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, View } from 'react-native';
-import { Button, Dialog, IconButton, Portal, SegmentedButtons, Text, TextInput as PaperTextInput } from 'react-native-paper';
 
+import { Button, Dialog, IconButton, TextInput as PaperTextInput, Portal, SegmentedButtons, Text } from 'react-native-paper';
 import { ExpiryDateField } from '@/components/common/expiry-date-field';
 import { FormTextField } from '@/components/common/form-text-field';
 import { WarmHearthColors } from '@/components/common/paper-theme';
-import { parseDateGB } from '@/features/inventory/inventory.utils';
-import { useDatabase } from '@/lib/database/provider';
 import { VoiceInputButton } from '@/features/inventory/components/voice-input-button';
-import { parseExpiryFromImage, type ParsedVoiceItem } from '@/lib/ai/voice-parser';
-
-
+import { parseDateGB } from '@/features/inventory/inventory.utils';
+import { parseExpiryFromImage } from '@/lib/ai/voice-parser';
+import { useDatabase } from '@/lib/database/provider';
 
 const LOCATION_BUTTONS = [
   { label: 'Fridge', value: 'fridge' },
@@ -100,20 +99,21 @@ export function AddItemForm({ barcode, initialName, initialQuantity, initialUnit
   const [location, setLocation] = useState<ItemLocation>('fridge');
   const [expiryType, setExpiryType] = useState<ExpiryType | ''>(requireExpiry ? 'use_by' : '');
   const [expiryDate, setExpiryDate] = useState('');
-  const handleExpiryDateChange = (text: string) => {
-    // Accept digits and slashes, max 8 chars (DD/MM/YY)
-    const cleaned = text.replace(/[^0-9\/]/g, '').slice(0, 8);
-    setExpiryDate(cleaned);
-  };
   const [nameError, setNameError] = useState<string | null>(null);
   const [expiryError, setExpiryError] = useState<string | null>(null);
   const handleVoiceParsed = (parsed: ParsedVoiceItem) => {
-    if (parsed.name) setName(parsed.name);
-    if (parsed.quantity) setQuantity(String(parsed.quantity));
-    if (parsed.unit) setUnit(parsed.unit);
-    if (parsed.location) setLocation(parsed.location as ItemLocation);
-    if (parsed.expiryType) setExpiryType(parsed.expiryType as ExpiryType);
-    if (parsed.expiryDate) setExpiryDate(parsed.expiryDate);
+    if (parsed.name)
+      setName(parsed.name);
+    if (parsed.quantity)
+      setQuantity(String(parsed.quantity));
+    if (parsed.unit)
+      setUnit(parsed.unit);
+    if (parsed.location)
+      setLocation(parsed.location as ItemLocation);
+    if (parsed.expiryType)
+      setExpiryType(parsed.expiryType as ExpiryType);
+    if (parsed.expiryDate)
+      setExpiryDate(parsed.expiryDate);
   };
   const [submitting, setSubmitting] = useState(false);
   const [scanningDate, setScanningDate] = useState(false);
@@ -170,7 +170,7 @@ export function AddItemForm({ barcode, initialName, initialQuantity, initialUnit
   }
 
   return (
-      <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={styles.container}>
+    <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={styles.container}>
       <FormTextField
         label="Item name"
         value={name}
@@ -188,17 +188,17 @@ export function AddItemForm({ barcode, initialName, initialQuantity, initialUnit
       />
       <Pressable onPress={() => { setQtyDraft(quantity); setQtyDialogVisible(true); }}>
         <View pointerEvents="none">
-        <PaperTextInput
-          label="Quantity (optional)"
-          value={quantity}
-          mode="outlined"
-          editable={false}
-          right={<PaperTextInput.Icon icon="pencil" />}
-          style={styles.paperInput}
-          outlineColor={WarmHearthColors.outline}
-          activeOutlineColor={WarmHearthColors.primary}
-          theme={{ fonts: { bodyLarge: { fontFamily: 'Nunito_400Regular' } } }}
-        />
+          <PaperTextInput
+            label="Quantity (optional)"
+            value={quantity}
+            mode="outlined"
+            editable={false}
+            right={<PaperTextInput.Icon icon="pencil" />}
+            style={styles.paperInput}
+            outlineColor={WarmHearthColors.outline}
+            activeOutlineColor={WarmHearthColors.primary}
+            theme={{ fonts: { bodyLarge: { fontFamily: 'Nunito_400Regular' } } }}
+          />
         </View>
       </Pressable>
       <Portal>
@@ -242,15 +242,15 @@ export function AddItemForm({ barcode, initialName, initialQuantity, initialUnit
         {scanningDate
           ? <ActivityIndicator size="small" color={WarmHearthColors.primary} style={styles.scanSpinner} />
           : (
-            <IconButton
-              icon="camera"
-              size={18}
-              iconColor={WarmHearthColors.primary}
-              style={styles.scanDateButton}
-              onPress={handleScanDate}
-              accessibilityLabel="Scan expiry date from packaging"
-            />
-          )}
+              <IconButton
+                icon="camera"
+                size={18}
+                iconColor={WarmHearthColors.primary}
+                style={styles.scanDateButton}
+                onPress={handleScanDate}
+                accessibilityLabel="Scan expiry date from packaging"
+              />
+            )}
       </View>
       <SegmentedButtons
         value={expiryType}
@@ -318,6 +318,3 @@ const styles = StyleSheet.create({
   buttonContent: { paddingVertical: 6 },
   buttonLabel: { fontFamily: 'Nunito_700Bold', fontSize: 16 },
 });
-
-
-

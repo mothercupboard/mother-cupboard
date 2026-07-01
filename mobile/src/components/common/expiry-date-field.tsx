@@ -1,7 +1,8 @@
-import DateTimePicker, { type DateTimePickerEvent } from '@react-native-community/datetimepicker';
+import type { DateTimePickerEvent } from '@react-native-community/datetimepicker';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import { useState } from 'react';
 import { Platform, Pressable, StyleSheet, View } from 'react-native';
-import { Button, Dialog, Portal, Text, TextInput as PaperTextInput } from 'react-native-paper';
+import { Button, Dialog, TextInput as PaperTextInput, Portal, Text } from 'react-native-paper';
 
 import { WarmHearthColors } from '@/components/common/paper-theme';
 import { parseDateGB } from '@/features/inventory/inventory.utils';
@@ -23,7 +24,8 @@ function formatDateGB(date: Date): string {
 
 function parseInitialDate(value: string): Date {
   const ms = parseDateGB(value);
-  if (ms !== null) return new Date(ms);
+  if (ms !== null)
+    return new Date(ms);
   // Default to tomorrow for new items
   const tomorrow = new Date();
   tomorrow.setDate(tomorrow.getDate() + 1);
@@ -96,29 +98,30 @@ export function ExpiryDateField({ value, onChangeText, errors = [], isTouched = 
           />
         )
         : (
-          <Portal>
-            <Dialog visible={pickerVisible} onDismiss={handleCancel}>
-              <Dialog.Title style={styles.dialogTitle}>{label}</Dialog.Title>
-              <Dialog.Content style={styles.dialogContent}>
-                <DateTimePicker
-                  value={pickerDate}
-                  mode="date"
-                  display="spinner"
-                  onChange={(_event, date) => {
-                    if (date) setPickerDate(date);
-                  }}
-                  minimumDate={new Date()}
-                  locale="en-GB"
-                  style={styles.picker}
-                />
-              </Dialog.Content>
-              <Dialog.Actions>
-                <Button onPress={handleCancel}>Cancel</Button>
-                <Button onPress={handleConfirm}>OK</Button>
-              </Dialog.Actions>
-            </Dialog>
-          </Portal>
-        )}
+            <Portal>
+              <Dialog visible={pickerVisible} onDismiss={handleCancel}>
+                <Dialog.Title style={styles.dialogTitle}>{label}</Dialog.Title>
+                <Dialog.Content style={styles.dialogContent}>
+                  <DateTimePicker
+                    value={pickerDate}
+                    mode="date"
+                    display="spinner"
+                    onChange={(_event, date) => {
+                      if (date)
+                        setPickerDate(date);
+                    }}
+                    minimumDate={new Date()}
+                    locale="en-GB"
+                    style={styles.picker}
+                  />
+                </Dialog.Content>
+                <Dialog.Actions>
+                  <Button onPress={handleCancel}>Cancel</Button>
+                  <Button onPress={handleConfirm}>OK</Button>
+                </Dialog.Actions>
+              </Dialog>
+            </Portal>
+          )}
     </>
   );
 }

@@ -17,7 +17,8 @@ function PermissionScreen({ onAddManually }: { onAddManually: () => void }) {
   async function handlePress() {
     if (canAsk) {
       await requestPermission();
-    } else {
+    }
+    else {
       await Linking.openSettings();
     }
   }

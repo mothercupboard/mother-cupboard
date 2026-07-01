@@ -1,4 +1,4 @@
-﻿import type { AdventurousnessLevel, MoodFilter } from '../../../../shared/types/meal-suggestion.types';
+import type { AdventurousnessLevel, MoodFilter } from '../../../../shared/types/meal-suggestion.types';
 
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
@@ -50,7 +50,3 @@ export const useSuggestPreferences = create<SuggestPreferencesStore>()(
     },
   ),
 );
-
-
-
-

@@ -125,7 +125,7 @@ function FeaturedItemPicker() {
                 onChangeText={setSearch}
                 autoCapitalize="none"
                 autoCorrect={false}
-                style={{ backgroundColor: WarmHearthColors.surfaceVariant }}
+                style={{ backgroundColor: WarmHearthColors.background }}
                 inputStyle={{ fontFamily: 'Nunito_400Regular', minHeight: 0 }}
               />
             </View>
@@ -151,7 +151,9 @@ function FeaturedItemPicker() {
               ))}
               {query && filtered.length === 0 && (
                 <Text variant="bodyMedium" style={{ padding: 16, color: WarmHearthColors.textSecondary, fontFamily: 'Nunito_400Regular' }}>
-                  Nothing matches “{search.trim()}”.
+                  Nothing matches “
+                  {search.trim()}
+                  ”.
                 </Text>
               )}
             </ScrollView>

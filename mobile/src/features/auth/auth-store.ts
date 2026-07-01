@@ -1,4 +1,4 @@
-﻿import type { Session, User } from '@supabase/supabase-js';
+import type { Session, User } from '@supabase/supabase-js';
 
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
@@ -26,7 +26,7 @@ export const useAuthStore = create<AuthStore>()(
       user: null,
       session: null,
       isLoading: false,
-      setSession: session => {
+      setSession: (session) => {
         // Cache email in MMKV so it survives session refreshes that strip the email field
         if (session?.user?.email) {
           storage.set('user-email', session.user.email);
@@ -43,7 +43,3 @@ export const useAuthStore = create<AuthStore>()(
     },
   ),
 );
-
-
-
-

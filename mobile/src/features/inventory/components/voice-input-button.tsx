@@ -1,16 +1,17 @@
-import { Audio } from 'expo-av';
+import type { Audio } from 'expo-av';
+import type { ParsedVoiceItem } from '@/lib/ai/voice-parser';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import React, { useRef, useState } from 'react';
+import * as React from 'react';
+import { useRef, useState } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
-import { Text } from 'react-native-paper';
 
+import { Text } from 'react-native-paper';
 import { WarmHearthColors } from '@/components/common/paper-theme';
 import { parseVoiceItem, startVoiceRecording, stopAndTranscribe } from '@/lib/ai/voice-parser';
-import type { ParsedVoiceItem } from '@/lib/ai/voice-parser';
 
-interface Props {
+type Props = {
   onParsed: (item: ParsedVoiceItem) => void;
-}
+};
 
 type State = 'idle' | 'recording' | 'processing' | 'error' | 'tooshort';
 
@@ -26,7 +27,8 @@ export function VoiceInputButton({ onParsed }: Props) {
       recordingRef.current = rec;
       startTimeRef.current = Date.now();
       setUiState('recording');
-    } catch (e: unknown) {
+    }
+    catch (e: unknown) {
       const msg = e instanceof Error ? e.message : String(e);
       console.error('[Voice] Failed to start recording:', msg);
       setErrorMsg(msg);
@@ -37,15 +39,17 @@ export function VoiceInputButton({ onParsed }: Props) {
 
   const handlePressOut = async () => {
     const rec = recordingRef.current;
-    if (!rec) return;
+    if (!rec)
+      return;
     recordingRef.current = null;
 
     const heldMs = Date.now() - startTimeRef.current;
     if (heldMs < 600) {
       // Too short — user tapped rather than held
-      try { await rec.stopAndUnloadAsync(); } catch {}
+      try { await rec.stopAndUnloadAsync(); }
+      catch {}
       setUiState('tooshort');
-      setTimeout(() => setUiState('idle'), 2000);
+      setTimeout(setUiState, 2000, 'idle');
       return;
     }
 
@@ -57,7 +61,8 @@ export function VoiceInputButton({ onParsed }: Props) {
       console.log('[Voice] Parsed:', JSON.stringify(parsed));
       onParsed(parsed);
       setUiState('idle');
-    } catch (e: unknown) {
+    }
+    catch (e: unknown) {
       const msg = e instanceof Error ? e.message : String(e);
       console.error('[Voice] Processing error:', msg);
       setErrorMsg(msg);
@@ -66,17 +71,23 @@ export function VoiceInputButton({ onParsed }: Props) {
     }
   };
 
-  const iconName =
-    uiState === 'error' ? 'microphone-off' :
-    uiState === 'tooshort' ? 'microphone-outline' :
-    'microphone';
+  const iconName
+    = uiState === 'error'
+      ? 'microphone-off'
+      : uiState === 'tooshort'
+        ? 'microphone-outline'
+        : 'microphone';
 
-  const label =
-    uiState === 'idle' ? 'Hold to speak' :
-    uiState === 'recording' ? 'Listening…' :
-    uiState === 'processing' ? 'Processing…' :
-    uiState === 'tooshort' ? 'Hold longer' :
-    'Try again';
+  const label
+    = uiState === 'idle'
+      ? 'Hold to speak'
+      : uiState === 'recording'
+        ? 'Listening…'
+        : uiState === 'processing'
+          ? 'Processing…'
+          : uiState === 'tooshort'
+            ? 'Hold longer'
+            : 'Try again';
 
   return (
     <View style={styles.wrapper}>
@@ -92,11 +103,13 @@ export function VoiceInputButton({ onParsed }: Props) {
         accessibilityLabel="Hold to add item by voice"
         accessibilityRole="button"
       >
-        {uiState === 'processing' ? (
-          <ActivityIndicator color={WarmHearthColors.background} size="small" />
-        ) : (
-          <MaterialCommunityIcons name={iconName} size={26} color={WarmHearthColors.background} />
-        )}
+        {uiState === 'processing'
+          ? (
+              <ActivityIndicator color={WarmHearthColors.background} size="small" />
+            )
+          : (
+              <MaterialCommunityIcons name={iconName} size={26} color={WarmHearthColors.background} />
+            )}
       </Pressable>
       <Text variant="bodySmall" style={styles.hint}>{label}</Text>
       {errorMsg ? <Text variant="bodySmall" style={styles.errorDetail}>{errorMsg}</Text> : null}
@@ -142,5 +155,3 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
 });
-
-

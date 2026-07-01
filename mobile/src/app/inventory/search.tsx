@@ -1,10 +1,10 @@
 import type { OffProduct } from '@/lib/barcode/off-database';
 
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
 import { FlatList, StyleSheet, TextInput, TouchableOpacity, View } from 'react-native';
 import { Divider, List, Text } from 'react-native-paper';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 import { WarmHearthColors } from '@/components/common/paper-theme';
 import { searchByName } from '@/lib/barcode/off-database';
@@ -101,7 +101,7 @@ export default function SearchScreen() {
             {['No results for "', query, '".'].join('')}
           </Text>
           <List.Item
-            title={'Add "' + query + '" manually'}
+            title={`Add "${query}" manually`}
             left={props => <List.Icon {...props} icon="plus-circle-outline" color={WarmHearthColors.primary} />}
             onPress={() => navigateManual(query)}
             titleStyle={styles.addManuallyTitle}

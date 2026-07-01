@@ -19,7 +19,8 @@ export function frozenItemsUsedByRecipe(
   const matched = new Set<string>();
   for (const item of frozenItems) {
     const name = item.name.trim();
-    if (!name) continue;
+    if (!name)
+      continue;
     const n = name.toLowerCase();
     if (ings.some(ing => ing.includes(n) || n.includes(ing.replace(/^[\d.,/\s]+(g|kg|ml|l|tbsp|tsp|cloves?|cans?|tins?|slices?|pieces?)?\s*/i, '').trim())))
       matched.add(name);
@@ -68,7 +69,7 @@ export async function scheduleDefrostReminder(
     ? names[0]
     : names.length === 2
       ? `${names[0]} and ${names[1]}`
-      : `${names.slice(0, -1).join(', ')} and ${names[names.length - 1]}`;
+      : `${names.slice(0, -1).join(', ')} and ${names.at(-1)}`;
 
   await Notifications.scheduleNotificationAsync({
     content: {

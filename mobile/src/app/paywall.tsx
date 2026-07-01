@@ -97,7 +97,8 @@ export default function PaywallScreen() {
   }, [offering, selectedPkg]);
 
   async function handlePurchase() {
-    if (!selectedPkg) return;
+    if (!selectedPkg)
+      return;
     // Guests must create an account before subscribing
     if (isGuest) {
       router.replace('/(auth)/register');
@@ -171,11 +172,13 @@ export default function PaywallScreen() {
         })}
       </View>
 
-      {error ? (
-        <View style={styles.errorBanner}>
-          <Text variant="bodySmall" style={styles.errorText}>{error}</Text>
-        </View>
-      ) : null}
+      {error
+        ? (
+            <View style={styles.errorBanner}>
+              <Text variant="bodySmall" style={styles.errorText}>{error}</Text>
+            </View>
+          )
+        : null}
 
       <View style={styles.actions}>
         <Button

@@ -1,4 +1,4 @@
-﻿import { create } from 'zustand';
+import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 
 import { storage } from '@/lib/storage';
@@ -52,7 +52,3 @@ export const useOnboardingStore = create<OnboardingStore>()(
     },
   ),
 );
-
-
-
-

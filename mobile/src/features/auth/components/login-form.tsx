@@ -1,6 +1,6 @@
 import { useForm } from '@tanstack/react-form';
 import { router } from 'expo-router';
-import { useRef, useState } from 'react';
+import { useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { Button, Dialog, Portal, Text, TextInput } from 'react-native-paper';
 import z from 'zod';
@@ -9,8 +9,8 @@ import { FormTextField } from '@/components/common/form-text-field';
 import { WarmHearthColors } from '@/components/common/paper-theme';
 import { useAuthStore } from '@/features/auth/auth-store';
 import { signIn } from '@/features/auth/auth.service';
-import { supabase } from '@/lib/supabase/client';
 import { storage } from '@/lib/storage';
+import { supabase } from '@/lib/supabase/client';
 
 const emailSchema = z.string().email('Please enter a valid email address');
 const passwordSchema = z.string().min(1, 'Password is required');
@@ -34,7 +34,8 @@ export function LoginForm() {
       const { data } = await supabase.auth.getSession();
       setSession(data.session);
       // Persist email separately so it survives session expiry
-      if (value.email) storage.set('user-email', value.email);
+      if (value.email)
+        storage.set('user-email', value.email);
       router.replace('/(tabs)');
     },
   });

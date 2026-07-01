@@ -44,7 +44,8 @@ export default function AIConsentScreen() {
     acceptAIConsent();
     if (session) {
       router.replace('/(tabs)/inventory');
-    } else {
+    }
+    else {
       router.replace('/(auth)/login');
     }
   }

@@ -95,7 +95,8 @@ function DefrostReminder({ suggestion }: { suggestion: MealSuggestion }) {
   const [state, setState] = useState<'idle' | 'set' | 'denied'>('idle');
 
   const names = frozenItemsUsedByRecipe(frozen, suggestion.ingredients);
-  if (names.length === 0) return null;
+  if (names.length === 0)
+    return null;
 
   const label = names.length === 1 ? names[0] : `${names.length} frozen items`;
 
@@ -109,7 +110,11 @@ function DefrostReminder({ suggestion }: { suggestion: MealSuggestion }) {
       <View style={styles.defrostBanner}>
         <MaterialCommunityIcons name="check-circle-outline" size={18} color={WarmHearthColors.primary} />
         <Text variant="bodyMedium" style={styles.defrostBannerText}>
-          We’ll remind you tomorrow morning to take {names.length === 1 ? 'it' : 'them'} out to defrost.
+          We’ll remind you tomorrow morning to take
+          {' '}
+          {names.length === 1 ? 'it' : 'them'}
+          {' '}
+          out to defrost.
         </Text>
       </View>
     );
@@ -120,7 +125,15 @@ function DefrostReminder({ suggestion }: { suggestion: MealSuggestion }) {
       <View style={styles.defrostHeader}>
         <MaterialCommunityIcons name="snowflake" size={18} color={WarmHearthColors.primary} />
         <Text variant="bodyMedium" style={styles.defrostText}>
-          This uses {label} from your freezer — {names.length === 1 ? 'it needs' : 'they need'} defrosting first.
+          This uses
+          {' '}
+          {label}
+          {' '}
+          from your freezer —
+          {' '}
+          {names.length === 1 ? 'it needs' : 'they need'}
+          {' '}
+          defrosting first.
         </Text>
       </View>
       <Button
@@ -144,7 +157,8 @@ function DefrostReminder({ suggestion }: { suggestion: MealSuggestion }) {
 }
 
 function EquipmentSection({ suggestion }: { suggestion: MealSuggestion }) {
-  if (!suggestion.equipment || suggestion.equipment.length === 0) return null;
+  if (!suggestion.equipment || suggestion.equipment.length === 0)
+    return null;
   return (
     <View style={styles.section}>
       <Text variant="titleSmall" style={styles.sectionTitle}>Equipment needed</Text>

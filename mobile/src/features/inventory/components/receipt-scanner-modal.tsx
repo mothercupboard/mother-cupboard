@@ -1,15 +1,15 @@
+import type { ReceiptItem } from '@/lib/ai/voice-parser';
+import type { InventoryItem, ItemLocation } from '@/lib/database/models/inventory-item';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { useEffect, useState } from 'react';
 import { Alert, FlatList, StyleSheet, View } from 'react-native';
+
 import { ActivityIndicator, Button, Chip, IconButton, Modal, Portal, Text } from 'react-native-paper';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-
 import { WarmHearthColors } from '@/components/common/paper-theme';
-import { useDatabase } from '@/lib/database/provider';
-import type { InventoryItem, ItemLocation } from '@/lib/database/models/inventory-item';
 import { parseReceiptImage } from '@/lib/ai/voice-parser';
-import type { ReceiptItem } from '@/lib/ai/voice-parser';
+import { useDatabase } from '@/lib/database/provider';
 
 type EditableItem = ReceiptItem & { id: string };
 type ModalState = 'idle' | 'parsing' | 'review';
@@ -32,11 +32,11 @@ function toEditableItems(parsed: ReceiptItem[]): EditableItem[] {
   }));
 }
 
-interface Props {
+type Props = {
   visible: boolean;
   initialBase64?: string | null;
   onDismiss: () => void;
-}
+};
 
 export function ReceiptScannerModal({ visible, initialBase64, onDismiss }: Props) {
   const db = useDatabase();
@@ -50,7 +50,7 @@ export function ReceiptScannerModal({ visible, initialBase64, onDismiss }: Props
       setParseError(null);
       setState('parsing');
       parseReceiptImage(initialBase64)
-        .then(parsed => {
+        .then((parsed) => {
           const valid = parsed.filter(p => p.name && p.name.trim().length > 0);
           if (valid.length === 0) {
             setParseError('No food items found. Try a clearer image.');
@@ -60,8 +60,8 @@ export function ReceiptScannerModal({ visible, initialBase64, onDismiss }: Props
           setItems(toEditableItems(valid));
           setState('review');
         })
-        .catch(err => {
-          setParseError('Parsing failed: ' + (err instanceof Error ? err.message : 'Unknown error'));
+        .catch((err) => {
+          setParseError(`Parsing failed: ${err instanceof Error ? err.message : 'Unknown error'}`);
           setState('idle');
         });
     }
@@ -92,7 +92,8 @@ export function ReceiptScannerModal({ visible, initialBase64, onDismiss }: Props
       base64: true,
     });
 
-    if (result.canceled || !result.assets[0]?.base64) return;
+    if (result.canceled || !result.assets[0]?.base64)
+      return;
 
     setParseError(null);
     setState('parsing');
@@ -105,7 +106,8 @@ export function ReceiptScannerModal({ visible, initialBase64, onDismiss }: Props
       }
       setItems(toEditableItems(parsed));
       setState('review');
-    } catch (e) {
+    }
+    catch (e) {
       console.error('[Receipt] Parse error:', e);
       setParseError('Could not read receipt. Please try again with a clearer photo.');
       setState('idle');
@@ -123,7 +125,8 @@ export function ReceiptScannerModal({ visible, initialBase64, onDismiss }: Props
       base64: true,
       quality: 0.8,
     });
-    if (result.canceled || !result.assets[0]?.base64) return;
+    if (result.canceled || !result.assets[0]?.base64)
+      return;
     setState('parsing');
     try {
       const parsed = await parseReceiptImage(result.assets[0].base64);
@@ -135,16 +138,18 @@ export function ReceiptScannerModal({ visible, initialBase64, onDismiss }: Props
       }
       setItems(toEditableItems(valid));
       setState('review');
-    } catch (err) {
-      setParseError('Parsing failed: ' + (err instanceof Error ? err.message : 'Unknown error'));
+    }
+    catch (err) {
+      setParseError(`Parsing failed: ${err instanceof Error ? err.message : 'Unknown error'}`);
       setState('idle');
     }
   }
 
   function removeItem(id: string) {
-    setItems(prev => {
+    setItems((prev) => {
       const next = prev.filter(i => i.id !== id);
-      if (next.length === 0) setState('idle');
+      if (next.length === 0)
+        setState('idle');
       return next;
     });
   }
@@ -159,7 +164,7 @@ export function ReceiptScannerModal({ visible, initialBase64, onDismiss }: Props
     try {
       await db.write(async () => {
         for (const item of toAdd) {
-          await db.get<InventoryItem>('inventory_items').create(inv => {
+          await db.get<InventoryItem>('inventory_items').create((inv) => {
             inv.name = item.name;
             inv.quantity = item.quantity ?? 1;
             inv.unit = item.unit || 'items';
@@ -175,10 +180,12 @@ export function ReceiptScannerModal({ visible, initialBase64, onDismiss }: Props
         }
       });
       handleClose();
-    } catch (e) {
+    }
+    catch (e) {
       console.error('[Receipt] Save error:', e);
       Alert.alert('Save failed', 'Could not save items. Please try again.');
-    } finally {
+    }
+    finally {
       setSaving(false);
     }
   }
@@ -208,11 +215,11 @@ export function ReceiptScannerModal({ visible, initialBase64, onDismiss }: Props
               Snap your shelves, a till receipt, or a supermarket-app screenshot, and we'll add the food items to your inventory automatically.
             </Text>
             {parseError && (
-            <Text variant="bodyMedium" style={{ color: '#B03A2E', fontFamily: 'Nunito_400Regular', textAlign: 'center', marginBottom: 8 }}>
-              {parseError}
-            </Text>
-          )}
-          <Button
+              <Text variant="bodyMedium" style={{ color: '#B03A2E', fontFamily: 'Nunito_400Regular', textAlign: 'center', marginBottom: 8 }}>
+                {parseError}
+              </Text>
+            )}
+            <Button
               mode="contained"
               icon="camera"
               onPress={handleTakePhoto}
@@ -256,7 +263,12 @@ export function ReceiptScannerModal({ visible, initialBase64, onDismiss }: Props
         {state === 'review' && (
           <View style={styles.reviewContainer}>
             <Text variant="titleMedium" style={styles.title}>
-              {items.length} item{items.length !== 1 ? 's' : ''} found
+              {items.length}
+              {' '}
+              item
+              {items.length !== 1 ? 's' : ''}
+              {' '}
+              found
             </Text>
             <Text variant="bodySmall" style={styles.subtitle}>
               Tap a location to change it. Tap ✕ to remove an item.
@@ -271,7 +283,8 @@ export function ReceiptScannerModal({ visible, initialBase64, onDismiss }: Props
                 <View style={styles.itemRow}>
                   <View style={styles.itemInfo}>
                     <Text variant="bodyMedium" style={styles.itemName}>
-                      {item.quantity > 1 ? `${item.quantity}× ` : ''}{item.name}
+                      {item.quantity > 1 ? `${item.quantity}× ` : ''}
+                      {item.name}
                     </Text>
                     <View style={styles.chipRow}>
                       {(['fridge', 'freezer', 'cupboard'] as const).map(loc => (
@@ -404,7 +417,7 @@ const styles = StyleSheet.create({
     height: 28,
   },
   chipActive: {
-    backgroundColor: WarmHearthColors.primary + '22',
+    backgroundColor: `${WarmHearthColors.primary}22`,
   },
   chipText: {
     fontFamily: 'Nunito_400Regular',

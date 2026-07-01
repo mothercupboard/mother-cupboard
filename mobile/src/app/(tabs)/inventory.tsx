@@ -133,7 +133,8 @@ export default function InventoryScreen() {
           { icon: 'camera-plus-outline', label: 'Snap to add', onPress: () => router.push('/inventory/scan-receipt' as any) },
         ]}
         onStateChange={({ open }) => setFabOpen(open)}
-        style={styles.fab} testID="fab-group"
+        style={styles.fab}
+        testID="fab-group"
       />
 
       {sortedItems.length === 0
@@ -156,7 +157,7 @@ export default function InventoryScreen() {
             />
           )}
 
-      </View>
+    </View>
   );
 }
 
@@ -198,4 +199,3 @@ const styles = StyleSheet.create({
   list: { paddingBottom: 96, paddingTop: 8 },
   fab: { bottom: 24, position: 'absolute', right: 16, zIndex: 10 },
 });
-

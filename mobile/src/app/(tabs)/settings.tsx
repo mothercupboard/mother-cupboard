@@ -1,19 +1,18 @@
 import * as Notifications from 'expo-notifications';
 import { router } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
-import { Alert, AppState, Linking, ScrollView, StyleSheet, View } from 'react-native';
+import { AppState, Linking, ScrollView, StyleSheet, View } from 'react-native';
 import { Button, Dialog, Divider, List, Portal, SegmentedButtons, Switch, Text } from 'react-native-paper';
 
 import { WarmHearthColors } from '@/components/common/paper-theme';
 import { useAuthStore } from '@/features/auth/auth-store';
-import { supabase } from '@/lib/supabase/client';
-import { storage } from '@/lib/storage';
 import { deleteAccount, signOut } from '@/features/auth/auth.service';
 import { useEntitlements } from '@/features/auth/entitlements';
 import { useTrialStatus } from '@/features/auth/trial-store';
-import { useRevenueCatStore } from '@/lib/revenuecat/store';
 import { useNotificationStore } from '@/features/notifications/notification-store';
 import { database } from '@/lib/database';
+import { useRevenueCatStore } from '@/lib/revenuecat/store';
+import { storage } from '@/lib/storage';
 
 type DialogStep = 'warn' | 'confirm' | null;
 
@@ -251,7 +250,7 @@ const planStyles = StyleSheet.create({
 });
 
 export default function SettingsScreen() {
-    // Read email from every possible source
+  // Read email from every possible source
   const authUser = useAuthStore(s => s.user);
   const authSession = useAuthStore(s => s.session);
   const mmkvEmail = storage.getString('user-email');
@@ -264,7 +263,8 @@ export default function SettingsScreen() {
         const payload = JSON.parse(atob(parts[1].replace(/-/g, '+').replace(/_/g, '/')));
         derivedEmail = payload.email ?? null;
       }
-    } catch {}
+    }
+    catch {}
   }
   const email = derivedEmail;
   const notificationsEnabled = useNotificationStatus();

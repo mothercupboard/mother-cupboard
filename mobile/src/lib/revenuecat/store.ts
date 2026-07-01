@@ -1,4 +1,4 @@
-import type { CustomerInfo, PurchasesOffering, PurchasesPackage } from 'react-native-purchases';
+import type { PurchasesOffering, PurchasesPackage } from 'react-native-purchases';
 
 import { create } from 'zustand';
 
@@ -30,7 +30,7 @@ type RevenueCatState = {
   clearError: () => void;
 };
 
-export const useRevenueCatStore = create<RevenueCatState>((set) => ({
+export const useRevenueCatStore = create<RevenueCatState>(set => ({
   hasPremium: false,
   offering: null,
   isProcessing: false,
@@ -46,7 +46,8 @@ export const useRevenueCatStore = create<RevenueCatState>((set) => ({
         hasPremium: isPremium(info),
         offering: offering ?? null,
       });
-    } catch (err: any) {
+    }
+    catch (err: any) {
       console.warn('[RevenueCat] refresh failed:', err?.message);
     }
   },
@@ -58,7 +59,8 @@ export const useRevenueCatStore = create<RevenueCatState>((set) => ({
       const premium = isPremium(info);
       set({ hasPremium: premium, isProcessing: false });
       return premium;
-    } catch (err: any) {
+    }
+    catch (err: any) {
       const cancelled = err?.userCancelled === true;
       set({
         isProcessing: false,
@@ -79,7 +81,8 @@ export const useRevenueCatStore = create<RevenueCatState>((set) => ({
         error: premium ? null : 'No active subscription found.',
       });
       return premium;
-    } catch (err: any) {
+    }
+    catch (err: any) {
       set({
         isProcessing: false,
         error: err?.message ?? 'Restore failed. Please try again.',

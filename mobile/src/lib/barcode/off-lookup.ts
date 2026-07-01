@@ -35,7 +35,8 @@ const SIMPLE_QTY_RE = /(\d+(?:[.,]\d+)?)\s*(g|kg|ml|l)\b/i;
  *   "6 x 330 ml" → { quantity: 330,  unit: 'ml' } (per-unit)
  */
 export function parseOffQuantity(raw: string | null): { quantity: number; unit: 'g' | 'ml' } | null {
-  if (!raw) return null;
+  if (!raw)
+    return null;
 
   // Multi-pack: take per-unit quantity
   const multi = raw.match(MULTI_QTY_RE);
@@ -54,10 +55,14 @@ export function parseOffQuantity(raw: string | null): { quantity: number; unit: 
 }
 
 function normalise(qty: number, unit: string): { quantity: number; unit: 'g' | 'ml' } | null {
-  if (unit === 'g') return { quantity: qty, unit: 'g' };
-  if (unit === 'kg') return { quantity: Math.round(qty * 1000), unit: 'g' };
-  if (unit === 'ml') return { quantity: qty, unit: 'ml' };
-  if (unit === 'l') return { quantity: Math.round(qty * 1000), unit: 'ml' };
+  if (unit === 'g')
+    return { quantity: qty, unit: 'g' };
+  if (unit === 'kg')
+    return { quantity: Math.round(qty * 1000), unit: 'g' };
+  if (unit === 'ml')
+    return { quantity: qty, unit: 'ml' };
+  if (unit === 'l')
+    return { quantity: Math.round(qty * 1000), unit: 'ml' };
   return null;
 }
 
@@ -74,7 +79,8 @@ function extractCategory(tags: string[] | undefined): string | null {
 async function fetchFromApi(barcode: string): Promise<OffProduct | null> {
   try {
     const res = await fetch(`${OFF_API_BASE}/${barcode}.json`, {
-      headers: { 'User-Agent': 'MotherCupboard/1.0 (https://mothercupboard.app)' } });
+      headers: { 'User-Agent': 'MotherCupboard/1.0 (https://mothercupboard.app)' },
+    });
     if (!res.ok)
       return null;
     const json = await res.json() as ApiResponse;

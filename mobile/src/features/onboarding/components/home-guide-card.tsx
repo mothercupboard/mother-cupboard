@@ -32,7 +32,8 @@ const TABS = [
  */
 export function HomeGuideCard() {
   const welcomeSeen = useOnboardingStore(s => s.welcomeSeen);
-  if (!welcomeSeen) return null;
+  if (!welcomeSeen)
+    return null;
 
   return (
     <View style={styles.card}>

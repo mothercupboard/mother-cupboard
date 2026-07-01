@@ -1,7 +1,7 @@
+import type { CustomerInfo, PurchasesPackage } from 'react-native-purchases';
 import { Platform } from 'react-native';
 import Purchases, {
-  type CustomerInfo,
-  type PurchasesPackage,
+
   LOG_LEVEL,
 } from 'react-native-purchases';
 

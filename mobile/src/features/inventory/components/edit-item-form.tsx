@@ -4,7 +4,7 @@ import type { ExpiryType, InventoryItem, ItemLocation } from '@/lib/database/mod
 import { router } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
-import { Button, Dialog, Portal, SegmentedButtons, Text, TextInput as PaperTextInput } from 'react-native-paper';
+import { Button, Dialog, TextInput as PaperTextInput, Portal, SegmentedButtons, Text } from 'react-native-paper';
 
 import { ExpiryDateField } from '@/components/common/expiry-date-field';
 import { FormTextField } from '@/components/common/form-text-field';
@@ -214,17 +214,17 @@ export function EditItemForm({ item }: { item: InventoryItem }) {
       />
       <Pressable onPress={() => { setQtyDraft(quantity); setQtyDialogVisible(true); }}>
         <View pointerEvents="none">
-        <PaperTextInput
-          label="Quantity (optional)"
-          value={quantity}
-          mode="outlined"
-          editable={false}
-          right={<PaperTextInput.Icon icon="pencil" />}
-          style={styles.paperInput}
-          outlineColor={WarmHearthColors.outline}
-          activeOutlineColor={WarmHearthColors.primary}
-          theme={{ fonts: { bodyLarge: { fontFamily: 'Nunito_400Regular' } } }}
-        />
+          <PaperTextInput
+            label="Quantity (optional)"
+            value={quantity}
+            mode="outlined"
+            editable={false}
+            right={<PaperTextInput.Icon icon="pencil" />}
+            style={styles.paperInput}
+            outlineColor={WarmHearthColors.outline}
+            activeOutlineColor={WarmHearthColors.primary}
+            theme={{ fonts: { bodyLarge: { fontFamily: 'Nunito_400Regular' } } }}
+          />
         </View>
       </Pressable>
       <Portal>
@@ -303,4 +303,3 @@ const styles = StyleSheet.create({
   },
   deleteLabel: { fontFamily: 'Nunito_700Bold', fontSize: 16 },
 });
-

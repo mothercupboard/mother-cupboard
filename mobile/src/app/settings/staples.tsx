@@ -107,7 +107,9 @@ export default function StaplesScreen() {
         </View>
         {isDuplicate && (
           <HelperText type="info" visible>
-            "{trimmed}" is already in your list.
+            "
+            {trimmed}
+            " is already in your list.
           </HelperText>
         )}
       </View>

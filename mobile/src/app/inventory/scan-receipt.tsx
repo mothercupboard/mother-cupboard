@@ -1,3 +1,5 @@
+import type { ReceiptItem } from '@/lib/ai/voice-parser';
+import type { InventoryItem, ItemLocation } from '@/lib/database/models/inventory-item';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { router } from 'expo-router';
@@ -6,10 +8,8 @@ import { FlatList, StyleSheet, View } from 'react-native';
 import { ActivityIndicator, Button, Chip, IconButton, Text } from 'react-native-paper';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { WarmHearthColors } from '@/components/common/paper-theme';
-import { useDatabase } from '@/lib/database/provider';
-import type { InventoryItem, ItemLocation } from '@/lib/database/models/inventory-item';
 import { parseReceiptImage } from '@/lib/ai/voice-parser';
-import type { ReceiptItem } from '@/lib/ai/voice-parser';
+import { useDatabase } from '@/lib/database/provider';
 
 type EditableItem = ReceiptItem & { id: string };
 type ScreenState = 'choose' | 'parsing' | 'review' | 'done';
@@ -34,7 +34,8 @@ export default function ScanReceiptScreen() {
       if (useCamera) {
         const perm = await ImagePicker.requestCameraPermissionsAsync();
         if (perm.status !== 'granted') { setError('Camera permission needed'); return; }
-      } else {
+      }
+      else {
         const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
         if (perm.status !== 'granted') { setError('Photo library permission needed'); return; }
       }
@@ -43,7 +44,8 @@ export default function ScanReceiptScreen() {
         ? await ImagePicker.launchCameraAsync({ mediaTypes: ImagePicker.MediaTypeOptions.Images, base64: true, quality: 0.85 })
         : await ImagePicker.launchImageLibraryAsync({ mediaTypes: ImagePicker.MediaTypeOptions.Images, base64: true, quality: 0.8 });
 
-      if (result.canceled || !result.assets[0]?.base64) return;
+      if (result.canceled || !result.assets[0]?.base64)
+        return;
 
       setError(null);
       setState('parsing');
@@ -61,16 +63,18 @@ export default function ScanReceiptScreen() {
       // straight away; the user can still change it with the chips.
       setItems(valid.map((p, i) => ({ ...p, location: p.location === 'unknown' ? 'cupboard' : p.location, id: String(i) })));
       setState('review');
-    } catch (err) {
-      setError('Failed: ' + (err instanceof Error ? err.message : 'Unknown error'));
+    }
+    catch (err) {
+      setError(`Failed: ${err instanceof Error ? err.message : 'Unknown error'}`);
       setState('choose');
     }
   }
 
   function removeItem(id: string) {
-    setItems(prev => {
+    setItems((prev) => {
       const next = prev.filter(i => i.id !== id);
-      if (next.length === 0) setState('choose');
+      if (next.length === 0)
+        setState('choose');
       return next;
     });
   }
@@ -85,7 +89,7 @@ export default function ScanReceiptScreen() {
     try {
       await db.write(async () => {
         for (const item of toAdd) {
-          await db.get<InventoryItem>('inventory_items').create(inv => {
+          await db.get<InventoryItem>('inventory_items').create((inv) => {
             inv.name = item.name;
             inv.quantity = item.quantity ?? 1;
             inv.unit = item.unit || 'items';
@@ -102,9 +106,11 @@ export default function ScanReceiptScreen() {
       });
       setState('done');
       setTimeout(() => router.replace('/(tabs)/inventory'), 1500);
-    } catch {
+    }
+    catch {
       setError('Could not save items. Please try again.');
-    } finally {
+    }
+    finally {
       setSaving(false);
     }
   }
@@ -134,7 +140,12 @@ export default function ScanReceiptScreen() {
     return (
       <View style={styles.container}>
         <Text variant="titleMedium" style={styles.title}>
-          {items.length} item{items.length !== 1 ? 's' : ''} found
+          {items.length}
+          {' '}
+          item
+          {items.length !== 1 ? 's' : ''}
+          {' '}
+          found
         </Text>
         <Text variant="bodySmall" style={styles.subtext}>
           Tap a location to change it. Tap x to remove.
@@ -148,7 +159,8 @@ export default function ScanReceiptScreen() {
             <View style={styles.itemRow}>
               <View style={styles.itemInfo}>
                 <Text variant="bodyMedium" style={styles.itemName}>
-                  {item.quantity > 1 ? item.quantity + 'x ' : ''}{item.name}
+                  {item.quantity > 1 ? `${item.quantity}x ` : ''}
+                  {item.name}
                 </Text>
                 <View style={styles.chipRow}>
                   {(['fridge', 'freezer', 'cupboard'] as const).map(loc => (
@@ -185,7 +197,7 @@ export default function ScanReceiptScreen() {
             style={styles.addBtn}
             labelStyle={styles.btnLabel}
           >
-            {addableCount === 0 ? 'No items selected' : 'Add ' + addableCount + ' to inventory'}
+            {addableCount === 0 ? 'No items selected' : `Add ${addableCount} to inventory`}
           </Button>
         </View>
       </View>
@@ -227,7 +239,7 @@ const styles = StyleSheet.create({
   itemName: { color: WarmHearthColors.textPrimary, fontFamily: 'Nunito_600SemiBold' },
   chipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 4 },
   chip: { height: 28 },
-  chipActive: { backgroundColor: WarmHearthColors.primary + '22' },
+  chipActive: { backgroundColor: `${WarmHearthColors.primary}22` },
   chipText: { fontFamily: 'Nunito_400Regular', fontSize: 11 },
   unknownHint: { color: WarmHearthColors.expiryUrgent, fontFamily: 'Nunito_400Regular', fontStyle: 'italic' },
   separator: { backgroundColor: WarmHearthColors.outline, height: StyleSheet.hairlineWidth, opacity: 0.4 },

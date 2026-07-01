@@ -36,13 +36,15 @@ export const useGuestStore = create<GuestStore>()(
 
 /** Returns true if the guest trial has expired (> 7 days since start). */
 export function isGuestExpired(guestStartedAt: string | null): boolean {
-  if (!guestStartedAt) return false;
+  if (!guestStartedAt)
+    return false;
   return Date.now() - new Date(guestStartedAt).getTime() >= GUEST_TRIAL_DAYS * MS_PER_DAY;
 }
 
 /** Returns whole days remaining in the guest trial (0 if expired). */
 export function guestDaysRemaining(guestStartedAt: string | null): number {
-  if (!guestStartedAt) return 0;
+  if (!guestStartedAt)
+    return 0;
   const elapsed = Date.now() - new Date(guestStartedAt).getTime();
   return Math.max(0, GUEST_TRIAL_DAYS - Math.floor(elapsed / MS_PER_DAY));
 }

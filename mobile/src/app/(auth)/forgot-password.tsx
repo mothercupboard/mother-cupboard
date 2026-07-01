@@ -2,7 +2,7 @@ import { useForm } from '@tanstack/react-form';
 import { router } from 'expo-router';
 import { useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
-import { Button, Dialog, Portal, Text, TextInput } from 'react-native-paper';
+import { Button, Text } from 'react-native-paper';
 import z from 'zod';
 
 import { FormTextField } from '@/components/common/form-text-field';
@@ -134,7 +134,10 @@ export default function ForgotPasswordScreen() {
       <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
         <Text variant="headlineMedium" style={styles.heading}>Check your email</Text>
         <Text variant="bodyMedium" style={styles.subtext}>
-          We've sent a 6-digit code to {email}. Enter it below to reset your password.
+          We've sent a 6-digit code to
+          {' '}
+          {email}
+          . Enter it below to reset your password.
         </Text>
         {serverError !== null && (
           <View style={styles.errorBanner}>

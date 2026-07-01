@@ -1,14 +1,14 @@
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useState } from 'react';
 import { StyleSheet, TextInput, TouchableOpacity, View } from 'react-native';
 import { IconButton } from 'react-native-paper';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 import { WarmHearthColors } from '@/components/common/paper-theme';
 import { useShoppingListStore } from '@/features/shopping-list/shopping-list-store';
 
-interface Props {
+type Props = {
   onScanReceipt?: () => void;
-}
+};
 
 export function AddItemInput({ onScanReceipt }: Props) {
   const [text, setText] = useState('');
@@ -16,11 +16,13 @@ export function AddItemInput({ onScanReceipt }: Props) {
 
   function handleSubmit() {
     const trimmed = text.trim();
-    if (!trimmed) return;
+    if (!trimmed)
+      return;
     const commaIdx = trimmed.indexOf(',');
     if (commaIdx > 0) {
       addItem(trimmed.slice(0, commaIdx).trim(), trimmed.slice(commaIdx + 1).trim());
-    } else {
+    }
+    else {
       addItem(trimmed);
     }
     setText('');

@@ -74,9 +74,11 @@ export function PaywallGate({ feature, description, icon }: Props) {
         Restore purchases
       </Button>
 
-      {restoreMsg ? (
-        <Text variant="bodySmall" style={styles.restoreMsg}>{restoreMsg}</Text>
-      ) : null}
+      {restoreMsg
+        ? (
+            <Text variant="bodySmall" style={styles.restoreMsg}>{restoreMsg}</Text>
+          )
+        : null}
     </View>
   );
 }

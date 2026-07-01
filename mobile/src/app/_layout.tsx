@@ -1,4 +1,4 @@
-﻿import {
+import {
   Nunito_400Regular,
   Nunito_400Regular_Italic,
   Nunito_600SemiBold,
@@ -12,19 +12,19 @@ import * as Notifications from 'expo-notifications';
 import { Slot, useRouter } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect, useRef, useState } from 'react';
+import { KeyboardProvider } from 'react-native-keyboard-controller';
 import { PaperProvider } from 'react-native-paper';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
 
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { WarmHearthTheme } from '@/components/common/paper-theme';
 import { useAuthStore } from '@/features/auth/auth-store';
 import { isGuestExpired, useGuestStore } from '@/features/guest/guest-store';
 import { useOnboardingStore } from '@/features/onboarding/onboarding-store';
 import { APIProvider } from '@/lib/api/provider';
 import { DatabaseProvider } from '@/lib/database/provider';
-import { configureRevenueCat, identifyUser, logOutRevenueCat } from '@/lib/revenuecat/client';
+import { configureRevenueCat, identifyUser } from '@/lib/revenuecat/client';
 import { useRevenueCatStore } from '@/lib/revenuecat/store';
 import { supabase } from '@/lib/supabase/client';
-import { KeyboardProvider } from 'react-native-keyboard-controller';
 
 // Show expiry-alert notifications even while the app is foregrounded
 Notifications.setNotificationHandler({
@@ -104,7 +104,8 @@ export default function RootLayout() {
 
   // Initialise RevenueCat and sync user identity
   useEffect(() => {
-    if (!sessionChecked) return;
+    if (!sessionChecked)
+      return;
 
     configureRevenueCat().then(async () => {
       if (session?.user?.id) {
@@ -175,15 +176,14 @@ export default function RootLayout() {
   return (
     <KeyboardProvider>
       <SafeAreaProvider>
-      <PaperProvider theme={WarmHearthTheme}>
-        <APIProvider>
-          <DatabaseProvider>
-            <Slot />
-          </DatabaseProvider>
-        </APIProvider>
-      </PaperProvider>
-    </SafeAreaProvider>
-      </KeyboardProvider>
+        <PaperProvider theme={WarmHearthTheme}>
+          <APIProvider>
+            <DatabaseProvider>
+              <Slot />
+            </DatabaseProvider>
+          </APIProvider>
+        </PaperProvider>
+      </SafeAreaProvider>
+    </KeyboardProvider>
   );
 }
-

@@ -1,4 +1,4 @@
-﻿import type { ConfigContext, ExpoConfig } from '@expo/config';
+import type { ConfigContext, ExpoConfig } from '@expo/config';
 
 import type { AppIconBadgeConfig } from 'app-icon-badge/types';
 
@@ -13,8 +13,9 @@ const EXPO_ACCOUNT_OWNER = 'mothercupboard';
 
 // Resolve bundled font files by package specifier so the paths work regardless
 // of node_modules layout (pnpm hoisted at the workspace root vs nested).
-const nunitoFont = (sub: string): string =>
-  require.resolve(`@expo-google-fonts/nunito/${sub}`);
+function nunitoFont(sub: string): string {
+  return require.resolve(`@expo-google-fonts/nunito/${sub}`);
+}
 
 const appIconBadgeConfig: AppIconBadgeConfig = {
   enabled: Env.EXPO_PUBLIC_APP_ENV !== 'production',
@@ -56,7 +57,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     supportsTablet: true,
     bundleIdentifier: process.env.OVERRIDE_BUNDLE_ID ?? Env.EXPO_PUBLIC_BUNDLE_ID,
     infoPlist: {
-          NSPhotoLibraryUsageDescription: 'Mother Cupboard needs access to your photos to import receipt images.',
+      NSPhotoLibraryUsageDescription: 'Mother Cupboard needs access to your photos to import receipt images.',
       ITSAppUsesNonExemptEncryption: false,
       NSMicrophoneUsageDescription: 'Mother Cupboard uses your microphone so you can add items by voice.',
     },
@@ -144,8 +145,3 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     },
   },
 });
-
-
-
-
-
