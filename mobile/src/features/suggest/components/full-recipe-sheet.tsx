@@ -7,6 +7,9 @@ import { Button, Chip, Divider, Text } from 'react-native-paper';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { WarmHearthColors } from '@/components/common/paper-theme';
+import { useInventoryItems } from '@/features/inventory/use-inventory-items';
+import { useNotificationStore } from '@/features/notifications/notification-store';
+import { frozenItemsUsedByRecipe, scheduleDefrostReminder } from '@/features/notifications/schedule-defrost-reminder';
 import { useShoppingListStore } from '@/features/shopping-list/shopping-list-store';
 
 const ADVENTUROUSNESS_LABEL: Record<number, string> = {
@@ -83,6 +86,60 @@ function AddToListButton({ suggestion }: { suggestion: MealSuggestion }) {
     >
       Add missing to shopping list
     </Button>
+  );
+}
+
+function DefrostReminder({ suggestion }: { suggestion: MealSuggestion }) {
+  const frozen = useInventoryItems('freezer');
+  const alertHour = useNotificationStore(s => s.alertHour);
+  const [state, setState] = useState<'idle' | 'set' | 'denied'>('idle');
+
+  const names = frozenItemsUsedByRecipe(frozen, suggestion.ingredients);
+  if (names.length === 0) return null;
+
+  const label = names.length === 1 ? names[0] : `${names.length} frozen items`;
+
+  async function handlePress() {
+    const result = await scheduleDefrostReminder(names, alertHour);
+    setState(result === 'scheduled' ? 'set' : 'denied');
+  }
+
+  if (state === 'set') {
+    return (
+      <View style={styles.defrostBanner}>
+        <MaterialCommunityIcons name="check-circle-outline" size={18} color={WarmHearthColors.primary} />
+        <Text variant="bodyMedium" style={styles.defrostBannerText}>
+          We’ll remind you tomorrow morning to take {names.length === 1 ? 'it' : 'them'} out to defrost.
+        </Text>
+      </View>
+    );
+  }
+
+  return (
+    <View style={styles.defrostCard}>
+      <View style={styles.defrostHeader}>
+        <MaterialCommunityIcons name="snowflake" size={18} color={WarmHearthColors.primary} />
+        <Text variant="bodyMedium" style={styles.defrostText}>
+          This uses {label} from your freezer — {names.length === 1 ? 'it needs' : 'they need'} defrosting first.
+        </Text>
+      </View>
+      <Button
+        mode="outlined"
+        icon="bell-outline"
+        onPress={handlePress}
+        style={styles.defrostButton}
+        labelStyle={styles.defrostButtonLabel}
+        textColor={WarmHearthColors.primary}
+        compact
+      >
+        Remind me in the morning
+      </Button>
+      {state === 'denied' && (
+        <Text variant="bodySmall" style={styles.defrostDenied}>
+          Turn on notifications in Settings to get defrost reminders.
+        </Text>
+      )}
+    </View>
   );
 }
 
@@ -209,6 +266,8 @@ export function FullRecipeSheet({ suggestion, onClose }: { onClose: () => void; 
         </Text>
 
         <MetaRow suggestion={suggestion} />
+
+        <DefrostReminder suggestion={suggestion} />
 
         <Divider style={styles.divider} />
 
@@ -341,6 +400,47 @@ const styles = StyleSheet.create({
   addedText: {
     color: WarmHearthColors.shoppingList,
     fontFamily: 'Nunito_400Regular',
+  },
+  defrostCard: {
+    backgroundColor: WarmHearthColors.surface,
+    borderColor: WarmHearthColors.primary,
+    borderRadius: 12,
+    borderWidth: 1,
+    gap: 10,
+    padding: 12,
+  },
+  defrostHeader: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: 8,
+  },
+  defrostText: {
+    color: WarmHearthColors.textPrimary,
+    flex: 1,
+    fontFamily: 'Nunito_600SemiBold',
+  },
+  defrostButton: {
+    alignSelf: 'flex-start',
+    borderColor: WarmHearthColors.primary,
+    borderRadius: 12,
+  },
+  defrostButtonLabel: {
+    fontFamily: 'Nunito_600SemiBold',
+    fontSize: 13,
+  },
+  defrostDenied: {
+    color: WarmHearthColors.textSecondary,
+    fontFamily: 'Nunito_400Regular',
+  },
+  defrostBanner: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: 8,
+  },
+  defrostBannerText: {
+    color: WarmHearthColors.primary,
+    flex: 1,
+    fontFamily: 'Nunito_600SemiBold',
   },
   stepRow: {
     flexDirection: 'row',

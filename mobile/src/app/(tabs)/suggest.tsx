@@ -3,7 +3,7 @@ import type { AdventurousnessLevel, MealSuggestion, MoodFilter } from '../../../
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useEffect, useState } from 'react';
 import { FlatList, ScrollView, StyleSheet, View } from 'react-native';
-import { Button, Chip, Dialog, Divider, Portal, RadioButton, SegmentedButtons, Switch, Text } from 'react-native-paper';
+import { Button, Chip, Dialog, Divider, Portal, RadioButton, Searchbar, SegmentedButtons, Switch, Text } from 'react-native-paper';
 
 import { WarmHearthColors } from '@/components/common/paper-theme';
 import { PaywallGate } from '@/features/auth/components/paywall-gate';
@@ -85,12 +85,23 @@ function FeaturedItemPicker() {
   const featuredItem = useSuggestPreferences(s => s.featuredItem);
   const setFeaturedItem = useSuggestPreferences(s => s.setFeaturedItem);
   const [pickerVisible, setPickerVisible] = useState(false);
+  const [search, setSearch] = useState('');
 
   // If the featured item is no longer in the cupboard (used up / removed), drop it.
   useEffect(() => {
     if (featuredItem && !items.some(i => i.name === featuredItem))
       setFeaturedItem(null);
   }, [featuredItem, items, setFeaturedItem]);
+
+  function close() {
+    setPickerVisible(false);
+    setSearch('');
+  }
+
+  const query = search.trim().toLowerCase();
+  const filtered = query
+    ? items.filter(i => i.name.toLowerCase().includes(query))
+    : items;
 
   return (
     <>
@@ -104,29 +115,49 @@ function FeaturedItemPicker() {
         {featuredItem ? `Using: ${featuredItem}` : 'Pick an ingredient'}
       </Chip>
       <Portal>
-        <Dialog visible={pickerVisible} onDismiss={() => setPickerVisible(false)}>
+        <Dialog visible={pickerVisible} onDismiss={close}>
           <Dialog.Title style={{ fontFamily: 'Nunito_700Bold' }}>Keen to use?</Dialog.Title>
-          <Dialog.ScrollArea style={{ maxHeight: 340, paddingHorizontal: 0 }}>
-            <ScrollView>
-              <RadioButton.Item
-                label="No preference"
-                value=""
-                status={!featuredItem ? 'checked' : 'unchecked'}
-                onPress={() => { setFeaturedItem(null); setPickerVisible(false); }}
+          {items.length > 6 && (
+            <View style={{ paddingHorizontal: 24, paddingBottom: 8 }}>
+              <Searchbar
+                placeholder="Search your cupboard"
+                value={search}
+                onChangeText={setSearch}
+                autoCapitalize="none"
+                autoCorrect={false}
+                style={{ backgroundColor: WarmHearthColors.surfaceVariant }}
+                inputStyle={{ fontFamily: 'Nunito_400Regular', minHeight: 0 }}
               />
-              {items.map(i => (
+            </View>
+          )}
+          <Dialog.ScrollArea style={{ maxHeight: 340, paddingHorizontal: 0 }}>
+            <ScrollView keyboardShouldPersistTaps="handled">
+              {!query && (
+                <RadioButton.Item
+                  label="No preference"
+                  value=""
+                  status={!featuredItem ? 'checked' : 'unchecked'}
+                  onPress={() => { setFeaturedItem(null); close(); }}
+                />
+              )}
+              {filtered.map(i => (
                 <RadioButton.Item
                   key={i.id}
                   label={i.name}
                   value={i.name}
                   status={featuredItem === i.name ? 'checked' : 'unchecked'}
-                  onPress={() => { setFeaturedItem(i.name); setPickerVisible(false); }}
+                  onPress={() => { setFeaturedItem(i.name); close(); }}
                 />
               ))}
+              {query && filtered.length === 0 && (
+                <Text variant="bodyMedium" style={{ padding: 16, color: WarmHearthColors.textSecondary, fontFamily: 'Nunito_400Regular' }}>
+                  Nothing matches “{search.trim()}”.
+                </Text>
+              )}
             </ScrollView>
           </Dialog.ScrollArea>
           <Dialog.Actions>
-            <Button onPress={() => setPickerVisible(false)}>Done</Button>
+            <Button onPress={close}>Done</Button>
           </Dialog.Actions>
         </Dialog>
       </Portal>

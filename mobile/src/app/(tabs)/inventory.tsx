@@ -3,7 +3,7 @@ import type { ItemLocation } from '@/lib/database/models/inventory-item';
 import { router } from 'expo-router';
 import { useState } from 'react';
 import { FlatList, StyleSheet, View } from 'react-native';
-import { Chip, Divider, FAB, Icon, Text } from 'react-native-paper';
+import { Chip, Divider, FAB, Icon, Searchbar, Text } from 'react-native-paper';
 
 import { WarmHearthColors } from '@/components/common/paper-theme';
 import { InventoryEmptyState } from '@/features/inventory/components/inventory-empty-state';
@@ -67,8 +67,15 @@ function SyncBanner() {
 export default function InventoryScreen() {
   const [activeLocation, setActiveLocation] = useState<ItemLocation>('fridge');
   const [fabOpen, setFabOpen] = useState(false);
-  const items = useInventoryItems(activeLocation);
-  const sortedItems = sortByExpiry(items);
+  const [search, setSearch] = useState('');
+  const allItems = useInventoryItems();
+
+  const query = search.trim().toLowerCase();
+  const isSearching = query.length > 0;
+  const visibleItems = isSearching
+    ? allItems.filter(i => i.name.toLowerCase().includes(query))
+    : allItems.filter(i => i.location === activeLocation);
+  const sortedItems = sortByExpiry(visibleItems);
 
   const snapTipSeen = useOnboardingStore(s => s.snapTipSeen);
   const dismissTip = useOnboardingStore(s => s.dismissTip);
@@ -77,7 +84,7 @@ export default function InventoryScreen() {
     <View style={styles.container}>
       <SyncBanner />
 
-      {!snapTipSeen && (
+      {!isSearching && !snapTipSeen && (
         <FeatureTip
           icon="camera-plus-outline"
           title="Tip: snap to add"
@@ -86,19 +93,33 @@ export default function InventoryScreen() {
         />
       )}
 
-      <View style={styles.locationTabs}>
-        {LOCATIONS.map(loc => (
-          <Chip
-            key={loc.value}
-            selected={activeLocation === loc.value}
-            onPress={() => setActiveLocation(loc.value)}
-            style={styles.locationChip}
-            textStyle={styles.chipText}
-          >
-            {loc.label}
-          </Chip>
-        ))}
-      </View>
+      {allItems.length > 0 && (
+        <Searchbar
+          placeholder="Search your cupboard"
+          value={search}
+          onChangeText={setSearch}
+          autoCapitalize="none"
+          autoCorrect={false}
+          style={styles.searchbar}
+          inputStyle={styles.searchbarInput}
+        />
+      )}
+
+      {!isSearching && (
+        <View style={styles.locationTabs}>
+          {LOCATIONS.map(loc => (
+            <Chip
+              key={loc.value}
+              selected={activeLocation === loc.value}
+              onPress={() => setActiveLocation(loc.value)}
+              style={styles.locationChip}
+              textStyle={styles.chipText}
+            >
+              {loc.label}
+            </Chip>
+          ))}
+        </View>
+      )}
 
       <Divider />
 
@@ -116,16 +137,25 @@ export default function InventoryScreen() {
       />
 
       {sortedItems.length === 0
-        ? <InventoryEmptyState location={activeLocation} />
+        ? (isSearching
+            ? (
+                <View style={styles.noResults}>
+                  <Text variant="bodyMedium" style={styles.noResultsText}>
+                    {`Nothing in your cupboard matches “${search.trim()}”.`}
+                  </Text>
+                </View>
+              )
+            : <InventoryEmptyState location={activeLocation} />)
         : (
             <FlatList
               data={sortedItems}
               keyExtractor={item => item.id}
-              renderItem={({ item }) => <InventoryItemCard item={item} />}
+              renderItem={({ item }) => <InventoryItemCard item={item} showLocation={isSearching} />}
               contentContainerStyle={styles.list}
+              keyboardShouldPersistTaps="handled"
             />
           )}
-    
+
       </View>
   );
 }
@@ -152,6 +182,19 @@ const styles = StyleSheet.create({
   },
   locationChip: { borderRadius: 20 },
   chipText: { fontFamily: 'Nunito_600SemiBold', fontSize: 13 },
+  searchbar: {
+    backgroundColor: WarmHearthColors.surface,
+    borderRadius: 12,
+    marginHorizontal: 16,
+    marginTop: 12,
+  },
+  searchbarInput: { fontFamily: 'Nunito_400Regular', minHeight: 0 },
+  noResults: { alignItems: 'center', flex: 1, justifyContent: 'center', padding: 32 },
+  noResultsText: {
+    color: WarmHearthColors.textSecondary,
+    fontFamily: 'Nunito_400Regular',
+    textAlign: 'center',
+  },
   list: { paddingBottom: 96, paddingTop: 8 },
   fab: { bottom: 24, position: 'absolute', right: 16, zIndex: 10 },
 });

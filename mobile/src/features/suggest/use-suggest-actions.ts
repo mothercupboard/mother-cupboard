@@ -36,7 +36,7 @@ export function useSuggestActions() {
     // don't send a contradictory "use the meat" instruction to the AI.
     const featureConflictsWithVeg = vegetarian && isLikelyMeat(featuredItem);
     if (featuredItem && !featureConflictsWithVeg)
-      hintParts.push(`The user especially wants to use up their ${featuredItem} — make sure at least one suggestion features it prominently.`);
+      hintParts.push(`The user especially wants to use up their ${featuredItem} — every suggestion you return MUST feature it prominently, and return at least 3 genuinely different meal ideas built around it (different cuisines or cooking methods, not variations of the same dish).`);
     if (vegetarian)
       hintParts.push('Only suggest vegetarian meals — no meat, poultry or fish (eggs and dairy are fine).');
     if (extraHint)

@@ -41,6 +41,8 @@ const SYSTEM_PROMPT = [
   '- Are realistic for home cooking in the UK',
   '- Match the requested adventurousness level (1 = simple comfort food, 5 = ambitious)',
   '- Always use UK English spelling (e.g. colour, flavour, minimise, centre)',
+  'RESPECT HOW ITEMS ARE ALREADY PREPARED: read each item name carefully. If a product is already seasoned, marinated, breaded, spiced, or clearly sold ready-to-cook (e.g. "Moroccan chicken kebabs", "marinated tofu", "garlic bread", "breaded fish"), do NOT tell the user to marinate, season or coat it again — just cook it as-is. Never add preparation steps that duplicate work the product already comes with. Getting this wrong is frustrating, so err towards simplicity for ready-made items.',
+  'FREEZER ITEMS ARE NOT URGENT: items tagged [freezer] are frozen and keep for a long time, so do NOT treat their expiry date as pressing or prioritise them the way you would fresh items about to go off. Only build a meal around a frozen item if the user specifically asks to use it. When a suggestion does use a frozen item, mention in the description or first step that it needs defrosting first (ideally overnight in the fridge, or taken out that morning).',
   'CRITICAL: The "ingredients" array must ONLY contain items that appear in the user\'s inventory. If a recipe needs chicken but the user has no chicken, it goes in "missingIngredients". Suggest meals that minimise missing ingredients.',
   'Respond with ONLY a valid JSON object matching this schema:',
   '{',

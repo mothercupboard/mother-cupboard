@@ -1,6 +1,7 @@
 import type { ExpiryBadge } from '@/features/inventory/inventory.utils';
 import type { InventoryItem } from '@/lib/database/models/inventory-item';
 
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { Text } from 'react-native-paper';
@@ -14,6 +15,12 @@ const BADGE_BG: Record<NonNullable<ExpiryBadge>['urgency'], string> = {
   red: WarmHearthColors.expiryUrgent,
 };
 
+const LOCATION_META: Record<string, { icon: string; label: string }> = {
+  fridge: { icon: 'fridge-outline', label: 'Fridge' },
+  freezer: { icon: 'snowflake', label: 'Freezer' },
+  cupboard: { icon: 'cupboard-outline', label: 'Cupboard' },
+};
+
 function BadgePill({ urgency, label }: { label: string; urgency: NonNullable<ExpiryBadge>['urgency'] }) {
   return (
     <View style={[styles.badge, { backgroundColor: BADGE_BG[urgency] }]}>
@@ -22,11 +29,12 @@ function BadgePill({ urgency, label }: { label: string; urgency: NonNullable<Exp
   );
 }
 
-export function InventoryItemCard({ item }: { item: InventoryItem }) {
+export function InventoryItemCard({ item, showLocation = false }: { item: InventoryItem; showLocation?: boolean }) {
   const badge = getExpiryState(item.expiryDate, item.expiryType);
   const expiryFormatted = item.expiryDate !== null
     ? new Date(item.expiryDate).toLocaleDateString('en-GB')
     : null;
+  const location = LOCATION_META[item.location];
 
   return (
     <Pressable
@@ -39,6 +47,13 @@ export function InventoryItemCard({ item }: { item: InventoryItem }) {
           <Text variant="bodyLarge" style={styles.name} numberOfLines={2}>{item.name}</Text>
           {badge !== null && <BadgePill urgency={badge.urgency} label={badge.label} />}
         </View>
+
+        {showLocation && location && (
+          <View style={styles.locationRow}>
+            <MaterialCommunityIcons name={location.icon as any} size={14} color={WarmHearthColors.primary} />
+            <Text variant="labelSmall" style={styles.locationText}>{location.label}</Text>
+          </View>
+        )}
 
         {item.quantity !== null && (
           <Text variant="bodySmall" style={styles.meta}>
@@ -105,5 +120,14 @@ const styles = StyleSheet.create({
     color: WarmHearthColors.textSecondary,
     fontFamily: 'Nunito_400Regular_Italic',
     marginTop: 4,
+  },
+  locationRow: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: 4,
+  },
+  locationText: {
+    color: WarmHearthColors.primary,
+    fontFamily: 'Nunito_600SemiBold',
   },
 });
