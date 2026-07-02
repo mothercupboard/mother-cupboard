@@ -16,6 +16,8 @@ export interface MealSuggestion {
   id: string;
   title: string;
   description: string;
+  /** Mother Cupboard's one-line "why this, for you, right now" note. Optional for backwards compatibility. */
+  reason?: string;
   ingredients: string[];
   missingIngredients: string[];
   /** Ingredients the user has, but not in sufficient quantity for the recipe. */

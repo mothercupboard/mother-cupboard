@@ -9,6 +9,12 @@ export type InventoryItemForAI = {
   expiryType: string | null;
 };
 
+export type CookTrackRecord = {
+  totalCooked: number;
+  boldCooks: number;
+  recentCooks: number;
+};
+
 export type LocalSuggestRequest = {
   items: InventoryItemForAI[];
   adventurousness: number;
@@ -17,6 +23,7 @@ export type LocalSuggestRequest = {
   hint?: string;
   likedMeals?: string[];
   dislikedMeals?: string[];
+  cookHistory?: CookTrackRecord;
 };
 
 const API_URL = Env.EXPO_PUBLIC_API_URL;

@@ -255,6 +255,15 @@ export function MealSuggestionCard({ suggestion, onViewRecipe }: CardProps) {
         {suggestion.description}
       </Text>
 
+      {suggestion.reason
+        ? (
+            <View style={styles.reasonNote}>
+              <MaterialCommunityIcons name="message-text-outline" size={14} color={WarmHearthColors.primary} />
+              <Text variant="bodySmall" style={styles.reasonText}>{suggestion.reason}</Text>
+            </View>
+          )
+        : null}
+
       <View style={styles.metaRow}>
         <View style={styles.metaItem}>
           <MaterialCommunityIcons name="timer-outline" size={16} color={WarmHearthColors.textSecondary} />
@@ -359,6 +368,21 @@ const styles = StyleSheet.create({
     color: WarmHearthColors.textSecondary,
     fontFamily: 'Nunito_400Regular',
     lineHeight: 20,
+  },
+  reasonNote: {
+    alignItems: 'flex-start',
+    backgroundColor: '#FBF2EA',
+    borderRadius: 8,
+    flexDirection: 'row',
+    gap: 6,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+  },
+  reasonText: {
+    color: WarmHearthColors.textPrimary,
+    flex: 1,
+    fontFamily: 'Nunito_400Regular_Italic',
+    lineHeight: 18,
   },
   metaRow: {
     alignItems: 'center',

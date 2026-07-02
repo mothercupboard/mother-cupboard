@@ -24,6 +24,7 @@ export function useSuggestActions() {
   const savedTitles = useSavedMealsStore(s => s.savedTitles);
   const rejectedTitlesStore = useSavedMealsStore(s => s.rejectedTitles);
   const recordRejected = useSavedMealsStore(s => s.recordRejected);
+  const cookedMeals = useSavedMealsStore(s => s.cookedMeals);
   const items = useInventoryItems();
   const mutation = useSuggestMeals();
   const rejectedRef = useRef<string[]>([]);
@@ -43,6 +44,17 @@ export function useSuggestActions() {
       hintParts.push(extraHint);
     const hint = hintParts.length > 0 ? hintParts.join(' ') : undefined;
 
+    // Track record: how much they cook, how often they go bold, recent momentum —
+    // so Mother Cupboard can talk to them like the cook they've shown themselves to be.
+    const weekAgo = Date.now() - 7 * 86_400_000;
+    const cookHistory = cookedMeals.length > 0
+      ? {
+          totalCooked: cookedMeals.length,
+          boldCooks: cookedMeals.filter(m => (m.adventurousness ?? 0) >= 4).length,
+          recentCooks: cookedMeals.filter(m => m.cookedAt >= weekAgo).length,
+        }
+      : undefined;
+
     return {
       items: items.map(i => ({
         name: i.name,
@@ -58,6 +70,7 @@ export function useSuggestActions() {
       hint,
       likedMeals: likedMeals.length > 0 ? likedMeals : undefined,
       dislikedMeals: rejectedTitlesStore.length > 0 ? rejectedTitlesStore : undefined,
+      cookHistory,
     };
   }
 
