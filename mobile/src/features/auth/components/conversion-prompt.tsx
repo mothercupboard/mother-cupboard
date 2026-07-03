@@ -28,7 +28,7 @@ const FEATURES: FeatureRowProps[] = [
   },
   {
     icon: 'lightbulb-on-outline',
-    title: 'AI meal suggestions',
+    title: 'Mother Cupboard meal ideas',
     description: 'Personalised recipes based on what you actually have',
   },
   {

@@ -25,7 +25,7 @@ function FeatureRow({ icon, label }: FeatureRowProps) {
 }
 
 const FEATURES: FeatureRowProps[] = [
-  { icon: 'lightbulb-on-outline', label: 'AI meal suggestions' },
+  { icon: 'lightbulb-on-outline', label: 'Mother Cupboard meal ideas' },
   { icon: 'bell-ring-outline', label: 'Expiry reminder alerts' },
   { icon: 'account-group-outline', label: 'Household sharing' },
   { icon: 'calendar-week', label: 'Weekly meal planning' },

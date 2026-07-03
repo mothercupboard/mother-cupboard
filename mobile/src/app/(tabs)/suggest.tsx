@@ -210,8 +210,8 @@ function ControlsPanel({ hasItems, isOffline, isPending, error, onGenerate }: Co
       {!suggestTipSeen && (
         <FeatureTip
           icon="lightbulb-on-outline"
-          title="AI-powered meal ideas"
-          body="Set your adventurousness, pick a mood, and we'll suggest meals based on what's actually in your cupboard. Save favourites and track what you cook."
+          title="Meal ideas from Mother Cupboard"
+          body="Set your adventurousness, pick a mood, and Mother Cupboard will suggest meals based on what's actually in your cupboard — leaning on whatever's about to go off. Save favourites and track what you cook."
           onDismiss={() => dismissTip('suggestTipSeen')}
         />
       )}
@@ -355,7 +355,7 @@ export default function SuggestScreen() {
     return (
       <View style={styles.container}>
         <PaywallGate
-          feature="AI Meal Suggestions"
+          feature="Mother Cupboard Meal Ideas"
           description="Get personalised meal ideas based on what's in your cupboard, with mood filters, favourites, and cooking history."
           icon="lightbulb-on-outline"
         />
