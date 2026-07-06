@@ -10,7 +10,6 @@ import { WarmHearthColors } from '@/components/common/paper-theme';
 import { useAuthStore } from '@/features/auth/auth-store';
 import { signUp } from '@/features/auth/auth.service';
 import { useGuestStore } from '@/features/guest/guest-store';
-import { supabase } from '@/lib/supabase/client';
 
 const emailSchema = z.string().email('Please enter a valid email address');
 const passwordSchema = z.string().min(8, 'Password must be at least 8 characters');
@@ -30,17 +29,19 @@ export function RegisterForm() {
         setServerError(result.error.message);
         return;
       }
-      const { data } = await supabase.auth.getSession();
+      // Use the session from THIS signup, not the ambient supabase session — a
+      // stale previous account could otherwise leak back in.
+      const session = result.data.session;
       // With email confirmation on, sign-up creates the account but returns no
       // session — the user must confirm via email first. Send them to the
       // "check your email" screen rather than pretending they're signed in.
-      if (!data.session) {
+      if (!session) {
         router.replace({ pathname: '/(auth)/check-email', params: { email: value.email } });
         return;
       }
       // Confirmation disabled — signed in straight away.
       endGuestSession(); // clear guest flag — local items will sync on first pull
-      setSession(data.session);
+      setSession(session);
       router.replace('/(tabs)');
     },
   });

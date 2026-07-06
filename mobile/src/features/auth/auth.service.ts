@@ -1,4 +1,4 @@
-import type { User } from '@supabase/supabase-js';
+import type { Session, User } from '@supabase/supabase-js';
 
 import type { ApiResponse } from 'shared/types/api.types';
 
@@ -13,7 +13,7 @@ import { supabase } from '@/lib/supabase/client';
 export async function signUp(
   email: string,
   password: string,
-): Promise<ApiResponse<User>> {
+): Promise<ApiResponse<{ session: Session | null; user: User }>> {
   const { ageGateAccepted, privacyDisclosureAccepted } = useOnboardingStore.getState();
   const now = new Date().toISOString();
 
@@ -58,7 +58,9 @@ export async function signUp(
     };
   }
 
-  return { data: data.user, error: null };
+  // Return the session from THIS signup — not the ambient supabase session,
+  // which could be a stale previous account when confirmation is pending.
+  return { data: { user: data.user, session: data.session }, error: null };
 }
 
 export async function signIn(email: string, password: string): Promise<ApiResponse<User>> {
@@ -74,7 +76,15 @@ export async function signIn(email: string, password: string): Promise<ApiRespon
 
 export async function signOut(): Promise<void> {
   await logOutRevenueCat().catch(() => {});
-  await supabase.auth.signOut();
+  // scope: 'local' clears the session on this device without needing the server
+  // to respond — so sign-out still works if the network (or Supabase) is down.
+  // Wrapped so a failure here never blocks the local clear below.
+  try {
+    await supabase.auth.signOut({ scope: 'local' });
+  }
+  catch (err) {
+    console.error('[signOut] supabase signOut failed — clearing locally anyway:', err);
+  }
   useAuthStore.getState().clearSession();
   // Wipe on-device data so the next account to sign in on this phone starts
   // clean, rather than seeing the previous account's cupboard. Their data is

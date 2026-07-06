@@ -90,8 +90,9 @@ export default function RootLayout() {
   // Restore persisted session and keep store in sync with Supabase auth events
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
-      if (data.session)
-        setSession(data.session);
+      // Always sync to Supabase's truth — including null. Otherwise a stale
+      // persisted session (e.g. a previous account) survives on launch.
+      setSession(data.session);
       setSessionChecked(true);
     });
 
