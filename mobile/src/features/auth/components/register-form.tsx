@@ -31,6 +31,14 @@ export function RegisterForm() {
         return;
       }
       const { data } = await supabase.auth.getSession();
+      // With email confirmation on, sign-up creates the account but returns no
+      // session — the user must confirm via email first. Send them to the
+      // "check your email" screen rather than pretending they're signed in.
+      if (!data.session) {
+        router.replace({ pathname: '/(auth)/check-email', params: { email: value.email } });
+        return;
+      }
+      // Confirmation disabled — signed in straight away.
       endGuestSession(); // clear guest flag — local items will sync on first pull
       setSession(data.session);
       router.replace('/(tabs)');

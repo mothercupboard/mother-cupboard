@@ -6,6 +6,7 @@ import * as Linking from 'expo-linking';
 
 import { useAuthStore } from '@/features/auth/auth-store';
 import { useOnboardingStore } from '@/features/onboarding/onboarding-store';
+import { database } from '@/lib/database';
 import { logOutRevenueCat } from '@/lib/revenuecat/client';
 import { supabase } from '@/lib/supabase/client';
 
@@ -75,6 +76,17 @@ export async function signOut(): Promise<void> {
   await logOutRevenueCat().catch(() => {});
   await supabase.auth.signOut();
   useAuthStore.getState().clearSession();
+  // Wipe on-device data so the next account to sign in on this phone starts
+  // clean, rather than seeing the previous account's cupboard. Their data is
+  // safe in the cloud and re-syncs on next sign-in.
+  try {
+    await database.write(async () => {
+      await database.unsafeResetDatabase();
+    });
+  }
+  catch (err) {
+    console.error('[signOut] failed to reset local database:', err);
+  }
 }
 
 export async function requestPasswordReset(email: string): Promise<ApiResponse<null>> {
