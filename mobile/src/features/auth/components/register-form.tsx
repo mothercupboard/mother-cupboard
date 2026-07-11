@@ -100,6 +100,7 @@ export function RegisterForm() {
             errors={field.state.meta.errors.map(String)}
             isTouched={field.state.meta.isTouched}
             secureTextEntry={!showPassword}
+            keyboardType="ascii-capable"
             textContentType="newPassword"
             accessibilityHint="Must be at least 8 characters"
             rightIcon={(

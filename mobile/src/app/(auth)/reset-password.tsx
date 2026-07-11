@@ -62,6 +62,7 @@ function NewPasswordForm() {
             errors={field.state.meta.errors.map(String)}
             isTouched={field.state.meta.isTouched}
             secureTextEntry
+            keyboardType="ascii-capable"
             textContentType="newPassword"
             accessibilityHint="Must be at least 8 characters"
           />
@@ -88,6 +89,7 @@ function NewPasswordForm() {
             errors={field.state.meta.errors.map(String)}
             isTouched={field.state.meta.isTouched}
             secureTextEntry
+            keyboardType="ascii-capable"
             textContentType="newPassword"
             accessibilityHint="Re-enter your new password"
           />

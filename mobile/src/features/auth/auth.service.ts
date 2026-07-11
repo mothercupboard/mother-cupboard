@@ -114,6 +114,19 @@ export async function requestPasswordReset(email: string): Promise<ApiResponse<n
 export async function updatePassword(password: string): Promise<ApiResponse<null>> {
   const { error } = await supabase.auth.updateUser({ password });
   if (error) {
+    // Surface specific, user-fixable causes rather than a generic failure.
+    if (error.code === 'same_password') {
+      return {
+        data: null,
+        error: { code: 'SAME_PASSWORD', message: 'Your new password must be different from your current one.', retryable: true },
+      };
+    }
+    if (error.code === 'weak_password') {
+      return {
+        data: null,
+        error: { code: 'WEAK_PASSWORD', message: 'That password is too weak. Please choose a stronger one.', retryable: true },
+      };
+    }
     return {
       data: null,
       error: { code: 'UPDATE_FAILED', message: 'Failed to update password. Please try again.', retryable: true },

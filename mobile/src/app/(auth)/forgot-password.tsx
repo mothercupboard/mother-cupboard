@@ -7,7 +7,7 @@ import z from 'zod';
 
 import { FormTextField } from '@/components/common/form-text-field';
 import { WarmHearthColors } from '@/components/common/paper-theme';
-import { requestPasswordReset } from '@/features/auth/auth.service';
+import { requestPasswordReset, updatePassword } from '@/features/auth/auth.service';
 import { supabase } from '@/lib/supabase/client';
 
 const emailSchema = z.string().email('Please enter a valid email address');
@@ -71,10 +71,10 @@ export default function ForgotPasswordScreen() {
     }
     setServerError(null);
     setIsLoading(true);
-    const { error } = await supabase.auth.updateUser({ password: newPassword });
+    const result = await updatePassword(newPassword);
     setIsLoading(false);
-    if (error) {
-      setServerError('Failed to update password. Please try again.');
+    if (result.error) {
+      setServerError(result.error.message);
       return;
     }
     router.replace('/(tabs)');
@@ -100,6 +100,7 @@ export default function ForgotPasswordScreen() {
           errors={[]}
           isTouched={false}
           secureTextEntry
+          keyboardType="ascii-capable"
           textContentType="newPassword"
           accessibilityHint="Must be at least 8 characters"
         />
@@ -111,6 +112,7 @@ export default function ForgotPasswordScreen() {
           errors={[]}
           isTouched={false}
           secureTextEntry
+          keyboardType="ascii-capable"
           textContentType="newPassword"
           accessibilityHint="Re-enter your new password"
         />

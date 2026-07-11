@@ -9,7 +9,10 @@ export type FormTextFieldProps = {
   onBlur: () => void;
   errors: string[];
   isTouched: boolean;
-  keyboardType?: 'default' | 'email-address' | 'numeric' | 'decimal-pad' | 'number-pad';
+  // 'ascii-capable' is iOS-only: forces a full letters keyboard. Android falls
+  // back to 'default'. Use it on password fields — iOS sometimes shows a digit
+  // keypad on secureTextEntry fields otherwise.
+  keyboardType?: 'default' | 'email-address' | 'numeric' | 'decimal-pad' | 'number-pad' | 'ascii-capable';
   textContentType?: 'emailAddress' | 'newPassword' | 'password';
   secureTextEntry?: boolean;
   rightIcon?: React.ReactNode;
@@ -38,7 +41,7 @@ export function FormTextField({
         value={value}
         onChangeText={onChangeText}
         onBlur={onBlur}
-        autoCapitalize={keyboardType === 'default' ? 'sentences' : 'none'}
+        autoCapitalize={keyboardType === 'default' && !secureTextEntry ? 'sentences' : 'none'}
         autoCorrect={keyboardType !== 'email-address' && keyboardType !== 'numeric'}
         keyboardType={keyboardType}
         textContentType={textContentType}

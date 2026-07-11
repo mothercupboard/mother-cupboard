@@ -1,7 +1,10 @@
+import type { ComponentRef } from 'react';
+import type { TextInput as RNTextInput } from 'react-native';
+
 import { useForm } from '@tanstack/react-form';
 import { router } from 'expo-router';
-import { useState } from 'react';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { useEffect, useRef, useState } from 'react';
+import { Keyboard, Pressable, StyleSheet, View } from 'react-native';
 import { Button, Dialog, Portal, Text, TextInput } from 'react-native-paper';
 import z from 'zod';
 
@@ -21,6 +24,28 @@ export function LoginForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [pwDialogVisible, setPwDialogVisible] = useState(false);
   const [pwDraft, setPwDraft] = useState('');
+  // Paper's TextInput ref must satisfy both RN's TextInput and Paper's own
+  // handle type, hence the intersection.
+  const pwInputRef = useRef<RNTextInput & ComponentRef<typeof TextInput>>(null);
+
+  // Focus the dialog's input as soon as the bubble opens. Without this the
+  // keyboard stays attached to whichever field was focused behind the dialog,
+  // so keystrokes land on the page underneath. autoFocus alone is unreliable
+  // inside a Paper Dialog (it fires before the open animation finishes), and a
+  // single delayed focus() can still be swallowed by the animation on iOS —
+  // so retry until the input reports focus.
+  useEffect(() => {
+    if (!pwDialogVisible)
+      return;
+    const timers = [50, 200, 450, 800].map(ms =>
+      setTimeout(() => {
+        const input = pwInputRef.current;
+        if (input && !input.isFocused())
+          input.focus();
+      }, ms),
+    );
+    return () => timers.forEach(clearTimeout);
+  }, [pwDialogVisible]);
 
   const form = useForm({
     defaultValues: { email: '', password: '' },
@@ -88,7 +113,7 @@ export function LoginForm() {
       >
         {field => (
           <>
-            <Pressable onPress={() => { setPwDraft(field.state.value); setPwDialogVisible(true); }}>
+            <Pressable onPress={() => { Keyboard.dismiss(); setPwDraft(field.state.value); setPwDialogVisible(true); }}>
               <View pointerEvents="none">
                 <FormTextField
                   label="Password"
@@ -106,8 +131,10 @@ export function LoginForm() {
                 <Dialog.Title style={{ fontFamily: 'Nunito_700Bold' }}>Password</Dialog.Title>
                 <Dialog.Content>
                   <TextInput
+                    ref={pwInputRef}
                     label="Enter password"
                     value={pwDraft}
+                    autoFocus
                     onChangeText={setPwDraft}
                     mode="outlined"
                     secureTextEntry={!showPassword}

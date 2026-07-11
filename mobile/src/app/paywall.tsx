@@ -3,7 +3,7 @@ import type { PurchasesPackage } from 'react-native-purchases';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, Linking, ScrollView, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, Linking, Platform, ScrollView, StyleSheet, View } from 'react-native';
 import { Button, Text } from 'react-native-paper';
 
 import { WarmHearthColors } from '@/components/common/paper-theme';
@@ -26,10 +26,9 @@ function FeatureRow({ icon, label }: FeatureRowProps) {
 
 const FEATURES: FeatureRowProps[] = [
   { icon: 'lightbulb-on-outline', label: 'Mother Cupboard meal ideas' },
+  { icon: 'chef-hat', label: 'Full step-by-step cooking methods' },
+  { icon: 'heart-outline', label: 'Saved meals and cooking history' },
   { icon: 'bell-ring-outline', label: 'Expiry reminder alerts' },
-  { icon: 'account-group-outline', label: 'Household sharing' },
-  { icon: 'calendar-week', label: 'Weekly meal planning' },
-  { icon: 'cart-outline', label: 'Consolidated shopping lists' },
   { icon: 'cloud-sync-outline', label: 'Cloud sync and backup' },
 ];
 
@@ -217,7 +216,9 @@ export default function PaywallScreen() {
       </View>
 
       <Text variant="bodySmall" style={styles.legal}>
-        Payment will be charged to your Apple ID account at confirmation of purchase. Subscription automatically renews unless cancelled at least 24 hours before the end of the current period. Manage subscriptions in your device Settings.
+        {Platform.OS === 'ios'
+          ? 'Payment will be charged to your Apple ID account at confirmation of purchase. Subscription automatically renews unless cancelled at least 24 hours before the end of the current period. Manage subscriptions in your device Settings.'
+          : 'Payment will be charged to your Google Play account at confirmation of purchase. Subscription automatically renews unless cancelled at least 24 hours before the end of the current period. Manage subscriptions in the Google Play app.'}
       </Text>
 
       <View style={styles.legalLinks}>
