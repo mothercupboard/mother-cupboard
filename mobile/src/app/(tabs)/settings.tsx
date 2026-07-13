@@ -9,6 +9,7 @@ import { useAuthStore } from '@/features/auth/auth-store';
 import { deleteAccount, signOut } from '@/features/auth/auth.service';
 import { useEntitlements } from '@/features/auth/entitlements';
 import { useTrialStatus } from '@/features/auth/trial-store';
+import { HouseholdSection } from '@/features/household/components/household-section';
 import { useNotificationStore } from '@/features/notifications/notification-store';
 import { database } from '@/lib/database';
 import { useRevenueCatStore } from '@/lib/revenuecat/store';
@@ -316,6 +317,10 @@ export default function SettingsScreen() {
           onPress={() => router.push('/settings/staples' as any)}
         />
       </List.Section>
+
+      <Divider />
+
+      <HouseholdSection />
 
       <Divider />
 

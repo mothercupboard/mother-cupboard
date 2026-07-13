@@ -28,6 +28,7 @@ const FEATURES: FeatureRowProps[] = [
   { icon: 'lightbulb-on-outline', label: 'Mother Cupboard meal ideas' },
   { icon: 'chef-hat', label: 'Full step-by-step cooking methods' },
   { icon: 'heart-outline', label: 'Saved meals and cooking history' },
+  { icon: 'account-group-outline', label: 'Household sharing — one cupboard for the whole house' },
   { icon: 'bell-ring-outline', label: 'Expiry reminder alerts' },
   { icon: 'cloud-sync-outline', label: 'Cloud sync and backup' },
 ];

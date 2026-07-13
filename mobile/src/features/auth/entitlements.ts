@@ -14,6 +14,8 @@ export type Entitlements = {
   canUseCloudSync: boolean;
   /** Save & favourite meals, cooking history */
   canUseMealHistory: boolean;
+  /** Create household invites so others can share the cupboard */
+  canUseHouseholdSharing: boolean;
 };
 
 const TRIAL_DAYS = 30;
@@ -47,7 +49,8 @@ function deriveTrialOrFree(meta: Record<string, unknown> | undefined): 'trial' |
  * so all features are unlocked for testing.
  *
  * **Free tier includes:** inventory management, manual shopping list,
- * expiry badge UI (but not scheduled push alerts).
+ * expiry badge UI (but not scheduled push alerts). Joining a household
+ * with an invite code is also free — only *creating* invites is premium.
  */
 export function useEntitlements(): Entitlements {
   const user = useAuthStore(s => s.user);
@@ -63,6 +66,7 @@ export function useEntitlements(): Entitlements {
       canUseScheduledAlerts: true,
       canUseCloudSync: false, // guests are local-only
       canUseMealHistory: true,
+      canUseHouseholdSharing: false, // sharing needs an account (cloud sync)
     };
   }
 
@@ -74,6 +78,7 @@ export function useEntitlements(): Entitlements {
       canUseScheduledAlerts: true,
       canUseCloudSync: true,
       canUseMealHistory: true,
+      canUseHouseholdSharing: true,
     };
   }
 
@@ -85,6 +90,7 @@ export function useEntitlements(): Entitlements {
       canUseScheduledAlerts: true,
       canUseCloudSync: true,
       canUseMealHistory: true,
+      canUseHouseholdSharing: true,
     };
   }
 
@@ -98,5 +104,6 @@ export function useEntitlements(): Entitlements {
     canUseScheduledAlerts: isPaid,
     canUseCloudSync: isPaid,
     canUseMealHistory: isPaid,
+    canUseHouseholdSharing: isPaid,
   };
 }
