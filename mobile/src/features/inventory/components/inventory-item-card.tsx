@@ -1,8 +1,11 @@
+import type { SwipeableMethods } from 'react-native-gesture-handler/ReanimatedSwipeable';
 import type { ExpiryBadge } from '@/features/inventory/inventory.utils';
+
 import type { InventoryItem } from '@/lib/database/models/inventory-item';
 
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { router } from 'expo-router';
+import { useRef } from 'react';
 import { Alert, Pressable, StyleSheet, View } from 'react-native';
 import ReanimatedSwipeable from 'react-native-gesture-handler/ReanimatedSwipeable';
 import { Text } from 'react-native-paper';
@@ -33,23 +36,41 @@ function BadgePill({ urgency, label }: { label: string; urgency: NonNullable<Exp
 
 export function InventoryItemCard({ item, showLocation = false }: { item: InventoryItem; showLocation?: boolean }) {
   const db = useDatabase();
+  // Track the swipe state so the tap that ends a swipe (or a tap meant to
+  // close an open row) doesn't fall through to the card and navigate away.
+  const swipeableRef = useRef<SwipeableMethods>(null);
+  const swipeOpenRef = useRef(false);
   const badge = getExpiryState(item.expiryDate, item.expiryType);
   const expiryFormatted = item.expiryDate !== null
     ? new Date(item.expiryDate).toLocaleDateString('en-GB')
     : null;
   const location = LOCATION_META[item.location];
 
+  function handleCardPress() {
+    if (swipeOpenRef.current) {
+      swipeableRef.current?.close();
+      return;
+    }
+    router.push({ pathname: '/inventory/edit-item', params: { id: item.id } });
+  }
+
   function confirmDelete() {
     Alert.alert(
       `Delete ${item.name}?`,
       'It will be removed from your cupboard.',
       [
-        { style: 'cancel', text: 'Cancel' },
+        {
+          onPress: () => swipeableRef.current?.close(),
+          style: 'cancel',
+          text: 'Cancel',
+        },
         {
           onPress: () => {
             db.write(async () => {
               await item.markAsDeleted();
-            }).catch(() => {});
+            }).catch(() => {
+              swipeableRef.current?.close();
+            });
           },
           style: 'destructive',
           text: 'Delete',
@@ -74,13 +95,16 @@ export function InventoryItemCard({ item, showLocation = false }: { item: Invent
 
   return (
     <ReanimatedSwipeable
+      ref={swipeableRef}
       friction={2}
       rightThreshold={40}
       overshootRight={false}
       renderRightActions={renderDeleteAction}
+      onSwipeableOpenStartDrag={() => { swipeOpenRef.current = true; }}
+      onSwipeableClose={() => { swipeOpenRef.current = false; }}
     >
       <Pressable
-        onPress={() => router.push({ pathname: '/inventory/edit-item', params: { id: item.id } })}
+        onPress={handleCardPress}
         accessibilityRole="button"
         accessibilityLabel={`Edit ${item.name}`}
       >
