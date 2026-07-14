@@ -12,6 +12,7 @@ import * as Notifications from 'expo-notifications';
 import { Slot, useRouter } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect, useRef, useState } from 'react';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { KeyboardProvider } from 'react-native-keyboard-controller';
 import { PaperProvider } from 'react-native-paper';
 
@@ -175,16 +176,18 @@ export default function RootLayout() {
     return null;
 
   return (
-    <KeyboardProvider>
-      <SafeAreaProvider>
-        <PaperProvider theme={WarmHearthTheme}>
-          <APIProvider>
-            <DatabaseProvider>
-              <Slot />
-            </DatabaseProvider>
-          </APIProvider>
-        </PaperProvider>
-      </SafeAreaProvider>
-    </KeyboardProvider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <KeyboardProvider>
+        <SafeAreaProvider>
+          <PaperProvider theme={WarmHearthTheme}>
+            <APIProvider>
+              <DatabaseProvider>
+                <Slot />
+              </DatabaseProvider>
+            </APIProvider>
+          </PaperProvider>
+        </SafeAreaProvider>
+      </KeyboardProvider>
+    </GestureHandlerRootView>
   );
 }

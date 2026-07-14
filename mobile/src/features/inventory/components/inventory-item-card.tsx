@@ -3,11 +3,13 @@ import type { InventoryItem } from '@/lib/database/models/inventory-item';
 
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { router } from 'expo-router';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { Alert, Pressable, StyleSheet, View } from 'react-native';
+import ReanimatedSwipeable from 'react-native-gesture-handler/ReanimatedSwipeable';
 import { Text } from 'react-native-paper';
 
 import { WarmHearthColors } from '@/components/common/paper-theme';
 import { getExpiryState } from '@/features/inventory/inventory.utils';
+import { useDatabase } from '@/lib/database/provider';
 
 const BADGE_BG: Record<NonNullable<ExpiryBadge>['urgency'], string> = {
   amber: WarmHearthColors.expiryWarning,
@@ -30,51 +32,92 @@ function BadgePill({ urgency, label }: { label: string; urgency: NonNullable<Exp
 }
 
 export function InventoryItemCard({ item, showLocation = false }: { item: InventoryItem; showLocation?: boolean }) {
+  const db = useDatabase();
   const badge = getExpiryState(item.expiryDate, item.expiryType);
   const expiryFormatted = item.expiryDate !== null
     ? new Date(item.expiryDate).toLocaleDateString('en-GB')
     : null;
   const location = LOCATION_META[item.location];
 
+  function confirmDelete() {
+    Alert.alert(
+      `Delete ${item.name}?`,
+      'It will be removed from your cupboard.',
+      [
+        { style: 'cancel', text: 'Cancel' },
+        {
+          onPress: () => {
+            db.write(async () => {
+              await item.markAsDeleted();
+            }).catch(() => {});
+          },
+          style: 'destructive',
+          text: 'Delete',
+        },
+      ],
+    );
+  }
+
+  function renderDeleteAction() {
+    return (
+      <Pressable
+        onPress={confirmDelete}
+        style={styles.deleteAction}
+        accessibilityRole="button"
+        accessibilityLabel={`Delete ${item.name}`}
+      >
+        <MaterialCommunityIcons name="delete-outline" size={24} color="#FFFFFF" />
+        <Text variant="labelSmall" style={styles.deleteText}>Delete</Text>
+      </Pressable>
+    );
+  }
+
   return (
-    <Pressable
-      onPress={() => router.push({ pathname: '/inventory/edit-item', params: { id: item.id } })}
-      accessibilityRole="button"
-      accessibilityLabel={`Edit ${item.name}`}
+    <ReanimatedSwipeable
+      friction={2}
+      rightThreshold={40}
+      overshootRight={false}
+      renderRightActions={renderDeleteAction}
     >
-      <View style={styles.card}>
-        <View style={styles.header}>
-          <Text variant="bodyLarge" style={styles.name} numberOfLines={2}>{item.name}</Text>
-          {badge !== null && <BadgePill urgency={badge.urgency} label={badge.label} />}
-        </View>
-
-        {showLocation && location && (
-          <View style={styles.locationRow}>
-            <MaterialCommunityIcons name={location.icon as any} size={14} color={WarmHearthColors.primary} />
-            <Text variant="labelSmall" style={styles.locationText}>{location.label}</Text>
+      <Pressable
+        onPress={() => router.push({ pathname: '/inventory/edit-item', params: { id: item.id } })}
+        accessibilityRole="button"
+        accessibilityLabel={`Edit ${item.name}`}
+      >
+        <View style={styles.card}>
+          <View style={styles.header}>
+            <Text variant="bodyLarge" style={styles.name} numberOfLines={2}>{item.name}</Text>
+            {badge !== null && <BadgePill urgency={badge.urgency} label={badge.label} />}
           </View>
-        )}
 
-        {item.quantity !== null && (
-          <Text variant="bodySmall" style={styles.meta}>
-            {item.quantity}
-            {item.unit ? ` ${item.unit}` : ''}
-          </Text>
-        )}
+          {showLocation && location && (
+            <View style={styles.locationRow}>
+              <MaterialCommunityIcons name={location.icon as any} size={14} color={WarmHearthColors.primary} />
+              <Text variant="labelSmall" style={styles.locationText}>{location.label}</Text>
+            </View>
+          )}
 
-        {expiryFormatted !== null && (
-          <Text variant="bodySmall" style={styles.meta}>
-            {item.expiryType === 'use_by' ? 'Use by' : 'Best before'}
-            {' '}
-            {expiryFormatted}
-          </Text>
-        )}
+          {item.quantity !== null && (
+            <Text variant="bodySmall" style={styles.meta}>
+              {item.quantity}
+              {item.unit ? ` ${item.unit}` : ''}
+            </Text>
+          )}
 
-        {badge?.note !== null && badge?.note !== undefined && (
-          <Text variant="bodySmall" style={styles.note}>{badge.note}</Text>
-        )}
-      </View>
-    </Pressable>
+          {expiryFormatted !== null && (
+            <Text variant="bodySmall" style={styles.meta}>
+              {item.expiryType === 'use_by' ? 'Use by' : 'Best before'}
+              {' '}
+              {expiryFormatted}
+            </Text>
+          )}
+
+          {badge?.note !== null && badge?.note !== undefined && (
+            <Text variant="bodySmall" style={styles.note}>{badge.note}</Text>
+          )}
+        </View>
+      </Pressable>
+    </ReanimatedSwipeable>
   );
 }
 
@@ -129,5 +172,19 @@ const styles = StyleSheet.create({
   locationText: {
     color: WarmHearthColors.primary,
     fontFamily: 'Nunito_600SemiBold',
+  },
+  deleteAction: {
+    alignItems: 'center',
+    backgroundColor: WarmHearthColors.expiryUrgent,
+    borderRadius: 12,
+    gap: 2,
+    justifyContent: 'center',
+    marginRight: 16,
+    marginVertical: 6,
+    width: 84,
+  },
+  deleteText: {
+    color: '#FFFFFF',
+    fontFamily: 'Nunito_700Bold',
   },
 });

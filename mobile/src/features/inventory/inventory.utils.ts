@@ -27,7 +27,15 @@ export type ExpiryBadge = {
   urgency: 'amber' | 'grey' | 'red';
 } | null;
 
-const PAST_NOTE = 'Past its use-by — worth a sniff, but probably fine';
+// Days past the date after which we stop being polite about it
+const LONG_PAST_DAYS = 14;
+
+// Use-by is a SAFETY date (bacteria don't smell) — never suggest the sniff test here
+const PAST_USE_BY_NOTE = 'Use-by is a safety date — if in doubt, chuck it out';
+const LONG_PAST_USE_BY_NOTE = 'Well past its use-by — one for the bin';
+// Best-before is a QUALITY date — the sniff test is fair game
+const PAST_BEST_NOTE = 'Probably still fine — give it a sniff';
+const LONG_PAST_BEST_NOTE = 'Long past its best — time to let it go';
 
 /**
  * Derives the expiry badge state for an item. Returns null when no badge
@@ -45,9 +53,11 @@ export function getExpiryState(
   if (expiryType === 'use_by') {
     if (days < 0) {
       const past = -days;
+      if (past >= LONG_PAST_DAYS)
+        return { label: 'You still have this?', note: LONG_PAST_USE_BY_NOTE, sortPriority: 3, urgency: 'grey' };
       return past >= 3
-        ? { label: 'Past use-by', note: PAST_NOTE, sortPriority: 3, urgency: 'grey' }
-        : { label: 'Past use-by', note: PAST_NOTE, sortPriority: 2, urgency: 'amber' };
+        ? { label: 'Past use-by', note: PAST_USE_BY_NOTE, sortPriority: 3, urgency: 'grey' }
+        : { label: 'Past use-by', note: PAST_USE_BY_NOTE, sortPriority: 2, urgency: 'amber' };
     }
     if (days < 1)
       return { label: 'Use by today', note: null, sortPriority: 0, urgency: 'red' };
@@ -56,8 +66,16 @@ export function getExpiryState(
     return null;
   }
 
-  if (expiryType === 'best_before' && days > 0 && days <= 3)
-    return { label: 'Best before soon', note: null, sortPriority: 4, urgency: 'amber' };
+  if (expiryType === 'best_before') {
+    if (days < 0) {
+      const past = -days;
+      if (past >= LONG_PAST_DAYS)
+        return { label: 'You still have this?', note: LONG_PAST_BEST_NOTE, sortPriority: 4, urgency: 'grey' };
+      return { label: 'Past its best', note: PAST_BEST_NOTE, sortPriority: 4, urgency: 'grey' };
+    }
+    if (days <= 3)
+      return { label: 'Best before soon', note: null, sortPriority: 4, urgency: 'amber' };
+  }
 
   return null;
 }
