@@ -1,8 +1,8 @@
 import type { Database } from '@nozbe/watermelondb';
 import type { NetInfoState } from '@react-native-community/netinfo';
 
-import NetInfo from '@react-native-community/netinfo';
 import { hasUnsyncedChanges } from '@nozbe/watermelondb/sync';
+import NetInfo from '@react-native-community/netinfo';
 import { createContext, use, useEffect, useRef } from 'react';
 import { AppState } from 'react-native';
 
