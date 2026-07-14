@@ -288,7 +288,10 @@ export default function SettingsScreen() {
       setStep(null);
       return;
     }
-    await database.unsafeResetDatabase();
+    // unsafeResetDatabase must run inside a writer block or WatermelonDB throws
+    await database.write(async () => {
+      await database.unsafeResetDatabase();
+    });
     await signOut();
     router.replace('/(auth)/register');
   }

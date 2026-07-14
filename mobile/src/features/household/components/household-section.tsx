@@ -88,7 +88,10 @@ export function HouseholdSection() {
   /** Wipe the local database and pull the (new) household's items fresh. */
   async function resetAndResync() {
     clearHouseholdCache();
-    await database.unsafeResetDatabase();
+    // unsafeResetDatabase must run inside a writer block or WatermelonDB throws
+    await database.write(async () => {
+      await database.unsafeResetDatabase();
+    });
     await syncDatabase(database);
   }
 
@@ -109,9 +112,15 @@ export function HouseholdSection() {
     try {
       await resetAndResync();
     }
-    finally {
+    catch {
+      // The join itself succeeded — only the local refresh failed. A restart
+      // (or the next sync) completes the switch, so tell the user rather
+      // than leaving a silent half-state.
       setIsBusy(false);
+      setError('Joined! But refreshing your cupboard failed — please close and reopen the app.');
+      return;
     }
+    setIsBusy(false);
     setDialog(null);
     setJoinInput('');
     await refresh();
@@ -129,9 +138,12 @@ export function HouseholdSection() {
     try {
       await resetAndResync();
     }
-    finally {
+    catch {
       setIsBusy(false);
+      setError('Left the household, but refreshing failed — please close and reopen the app.');
+      return;
     }
+    setIsBusy(false);
     setDialog(null);
     await refresh();
   }

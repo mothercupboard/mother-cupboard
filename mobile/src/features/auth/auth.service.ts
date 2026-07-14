@@ -7,6 +7,7 @@ import * as Linking from 'expo-linking';
 import { useAuthStore } from '@/features/auth/auth-store';
 import { useOnboardingStore } from '@/features/onboarding/onboarding-store';
 import { database } from '@/lib/database';
+import { syncDatabase } from '@/lib/database/sync';
 import { logOutRevenueCat } from '@/lib/revenuecat/client';
 import { supabase } from '@/lib/supabase/client';
 
@@ -75,6 +76,15 @@ export async function signIn(email: string, password: string): Promise<ApiRespon
 }
 
 export async function signOut(): Promise<void> {
+  // Push any unsynced local changes BEFORE the session goes away and the
+  // local database is wiped below — otherwise edits made since the last
+  // sync are lost forever. Best-effort: an offline sign-out still works.
+  try {
+    await syncDatabase(database);
+  }
+  catch (err) {
+    console.error('[signOut] final sync failed — signing out anyway:', err);
+  }
   await logOutRevenueCat().catch(() => {});
   // scope: 'local' clears the session on this device without needing the server
   // to respond — so sign-out still works if the network (or Supabase) is down.
