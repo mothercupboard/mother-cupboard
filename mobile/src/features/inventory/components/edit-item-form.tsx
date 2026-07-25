@@ -11,6 +11,7 @@ import { FormTextField } from '@/components/common/form-text-field';
 import { WarmHearthColors } from '@/components/common/paper-theme';
 import { parseDateGB } from '@/features/inventory/inventory.utils';
 import { useDatabase } from '@/lib/database/provider';
+import { formatDate } from '@/lib/region';
 
 const LOCATION_BUTTONS = [
   { label: 'Fridge', value: 'fridge' },
@@ -39,10 +40,6 @@ type EditParams = {
   quantity: string;
   unit: string;
 };
-
-function formatDateGB(ms: number): string {
-  return new Date(ms).toLocaleDateString('en-GB');
-}
 
 function DeleteDialog(
   { visible, itemName, deleting, onDismiss, onConfirm }:
@@ -172,7 +169,7 @@ export function EditItemForm({ item }: { item: InventoryItem }) {
   const [unit, setUnit] = useState(item.unit ?? 'items');
   const [location, setLocation] = useState<ItemLocation>(item.location);
   const [expiryType, setExpiryType] = useState<ExpiryType | ''>(item.expiryType ?? '');
-  const [expiryDate, setExpiryDate] = useState(() => item.expiryDate !== null ? formatDateGB(item.expiryDate) : '');
+  const [expiryDate, setExpiryDate] = useState(() => item.expiryDate !== null ? formatDate(item.expiryDate) : '');
   const [nameError, setNameError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [qtyDialogVisible, setQtyDialogVisible] = useState(false);

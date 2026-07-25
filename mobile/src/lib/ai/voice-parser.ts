@@ -4,6 +4,8 @@
  */
 import { Audio } from 'expo-av';
 
+import { formatDate } from '@/lib/region';
+
 export type ParsedVoiceItem = {
   name: string;
   quantity: number;
@@ -20,8 +22,12 @@ function getKey() {
   return key;
 }
 
-function todayGB(): string {
-  return new Date().toLocaleDateString('en-GB');
+/**
+ * Today's date in the active region's locale (DD/MM/YYYY in all supported
+ * regions) — given to the model so it can resolve relative dates.
+ */
+function todayLocal(): string {
+  return formatDate(new Date());
 }
 
 export async function startVoiceRecording(): Promise<Audio.Recording> {
@@ -81,7 +87,7 @@ export async function stopAndTranscribe(recording: Audio.Recording): Promise<str
 }
 
 export async function parseVoiceItem(transcript: string): Promise<ParsedVoiceItem> {
-  const systemPrompt = `You extract food inventory item details from spoken natural language. Today is ${todayGB()}.
+  const systemPrompt = `You extract food inventory item details from spoken natural language. Today is ${todayLocal()}.
 Return ONLY valid JSON with exactly these fields:
 - name: string — the food item name, capitalised (e.g. "Tin of Beans", "Semi-Skimmed Milk")
 - quantity: number — extract the actual number stated. "200g" means quantity 200, "2 packs" means quantity 2, "a dozen eggs" means quantity 12. Only default to 1 when no amount at all is mentioned
@@ -219,7 +225,7 @@ export async function parseExpiryFromImage(base64Image: string): Promise<ParsedE
           content: [
             {
               type: 'text',
-              text: `Look at this food product packaging and find any expiry date. Today is ${todayGB()}.
+              text: `Look at this food product packaging and find any expiry date. Today is ${todayLocal()}.
 Return ONLY JSON with:
 - expiryDate: string — the date in DD/MM/YY format (e.g. "31/12/25"), or "" if not found
 - expiryType: "use_by" if labelled "USE BY" or similar; "best_before" if "BEST BEFORE" or "BB"; "" if unclear

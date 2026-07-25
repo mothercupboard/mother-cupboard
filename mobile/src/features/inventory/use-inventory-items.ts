@@ -15,10 +15,14 @@ export function useInventoryItems(location?: 'fridge' | 'freezer' | 'cupboard') 
     if (location)
       conditions.push(Q.where('location', location));
 
+    // observeWithColumns (not plain observe()) so the list re-emits when a
+    // record's columns change — plain observe() only emits when items are
+    // added/removed from the result set, which made edits (e.g. a changed
+    // expiry date) invisible on the list until something else refreshed it.
     const subscription = db
       .get<InventoryItem>('inventory_items')
       .query(...conditions)
-      .observe()
+      .observeWithColumns(['name', 'quantity', 'unit', 'location', 'expiry_date', 'expiry_type'])
       .subscribe(setItems);
 
     return () => subscription.unsubscribe();

@@ -13,6 +13,8 @@ provider:
     AI_PROVIDER: ${env:AI_PROVIDER, 'anthropic'}
     ANTHROPIC_API_KEY: ${env:ANTHROPIC_API_KEY, ''}
     OPENAI_API_KEY: ${env:OPENAI_API_KEY, ''}
+    SUPABASE_URL: ${env:SUPABASE_URL, ''}
+    SUPABASE_SERVICE_ROLE_KEY: ${env:SUPABASE_SERVICE_ROLE_KEY, ''}
 
 functions:
   suggestMeals:
@@ -23,6 +25,14 @@ functions:
           path: /suggest-meals
           method: post
           cors: true
+
+  # Saver Cupboard: weekly supermarket offers fetch (Monday 05:00 UTC).
+  fetchOffers:
+    handler: functions/fetch-offers/handler.handler
+    timeout: 120
+    memorySize: 512
+    events:
+      - schedule: cron(0 5 ? * MON *)
 
 plugins:
   - serverless-esbuild
@@ -45,4 +55,5 @@ custom:
       - OPENAI_API_KEY
       - ANTHROPIC_API_KEY
       - SENTRY_DSN
-
+      - SUPABASE_URL
+      - SUPABASE_SERVICE_ROLE_KEY

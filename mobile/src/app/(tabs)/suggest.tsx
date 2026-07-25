@@ -1,4 +1,5 @@
 import type { AdventurousnessLevel, MealSuggestion, MoodFilter } from '../../../../shared/types/meal-suggestion.types';
+import type { CurrentOffer } from '@/features/saver/use-offers';
 
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useEffect, useState } from 'react';
@@ -11,6 +12,7 @@ import { useEntitlements } from '@/features/auth/entitlements';
 import { useInventoryItems } from '@/features/inventory/use-inventory-items';
 import { FeatureTip } from '@/features/onboarding/components/feature-tip';
 import { useOnboardingStore } from '@/features/onboarding/onboarding-store';
+import { OffersStrip } from '@/features/saver/components/offers-strip';
 import { FullRecipeSheet } from '@/features/suggest/components/full-recipe-sheet';
 import { MealHistorySheet } from '@/features/suggest/components/meal-history-sheet';
 import { MealSuggestionCard } from '@/features/suggest/components/meal-suggestion-card';
@@ -192,9 +194,10 @@ type ControlsPanelProps = {
   isPending: boolean;
   error: Error | null;
   onGenerate: () => void;
+  onCookIdeas: (offer: CurrentOffer) => void;
 };
 
-function ControlsPanel({ hasItems, isOffline, isPending, error, onGenerate }: ControlsPanelProps) {
+function ControlsPanel({ hasItems, isOffline, isPending, error, onGenerate, onCookIdeas }: ControlsPanelProps) {
   const suggestTipSeen = useOnboardingStore(s => s.suggestTipSeen);
   const dismissTip = useOnboardingStore(s => s.dismissTip);
   const adventurousness = useSuggestPreferences(s => s.adventurousness);
@@ -249,6 +252,8 @@ function ControlsPanel({ hasItems, isOffline, isPending, error, onGenerate }: Co
         <Text variant="labelLarge" style={styles.label}>Keen to use something?</Text>
         <FeaturedItemPicker />
       </View>
+
+      <OffersStrip onCookIdeas={onCookIdeas} />
 
       <View style={styles.veggieRow}>
         <Text variant="labelLarge" style={styles.label}>Vegetarian</Text>
@@ -367,7 +372,7 @@ export default function SuggestScreen() {
 }
 
 function SuggestScreenContent() {
-  const { data: suggestions, isPending, error, hasItems, generate, surpriseMe, rejectCurrent } = useSuggestActions();
+  const { data: suggestions, isPending, error, hasItems, generate, generateWithOffer, surpriseMe, rejectCurrent } = useSuggestActions();
   const savedCount = useSavedMealsStore(s => s.savedMeals.length);
   const [view, setView] = useState<'controls' | 'history' | 'recipe' | 'results' | 'saved'>('controls');
   const [activeRecipe, setActiveRecipe] = useState<MealSuggestion | null>(null);
@@ -377,6 +382,11 @@ function SuggestScreenContent() {
 
   function handleGenerate() {
     generate();
+    setView('results');
+  }
+
+  function handleCookIdeas(offer: CurrentOffer) {
+    generateWithOffer(offer);
     setView('results');
   }
 
@@ -439,7 +449,7 @@ function SuggestScreenContent() {
       <View style={styles.container}>
         <ScrollView contentContainerStyle={styles.scrollContent}>
           {isOffline && <OfflineBanner />}
-          <ControlsPanel hasItems={hasItems} isPending={isPending} error={error} onGenerate={handleGenerate} isOffline={isOffline} />
+          <ControlsPanel hasItems={hasItems} isPending={isPending} error={error} onGenerate={handleGenerate} onCookIdeas={handleCookIdeas} isOffline={isOffline} />
           <View style={styles.shortcutRow}>
             {savedCount > 0 && (
               <Button mode="text" icon="bookmark-outline" onPress={() => setView('saved')} labelStyle={styles.shortcutLabel} compact>

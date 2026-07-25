@@ -7,6 +7,7 @@ import { useDatabase } from '@/lib/database/provider';
 
 import { parseIngredient } from './ingredient-parser';
 import { isStaple, useStaplesStore } from './staples-store';
+import { canonicalizeName } from './vocab';
 
 export type CookResult = {
   /** Items fully depleted and soft-deleted. */
@@ -64,8 +65,10 @@ function fromBase(base: number, unit: string): number {
 // ─── Matching ─────────────────────────────────────────────────────────────────
 
 function matchesIngredient(itemName: string, ingredientName: string): boolean {
-  const item = itemName.toLowerCase().trim();
-  const ing = ingredientName.toLowerCase().trim();
+  // Canonicalise both sides so regional synonyms (e.g. recipe "capsicum" vs
+  // inventory "pepper") still match. canonicalizeName also lowercases and trims.
+  const item = canonicalizeName(itemName);
+  const ing = canonicalizeName(ingredientName);
   return item.includes(ing) || ing.includes(item);
 }
 

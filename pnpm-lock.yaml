@@ -57,8 +57,8 @@ importers:
         specifier: 2.4.0-beta.0
         version: 2.4.0-beta.0
       '@nozbe/watermelondb':
-        specifier: ^0.28.0
-        version: 0.28.0
+        specifier: 0.28.1-0
+        version: 0.28.1-0
       '@react-native-community/datetimepicker':
         specifier: ^8.4.4
         version: 8.4.4(expo@54.0.35)(react-native@0.81.5(@babel/core@7.29.0)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)
@@ -2266,8 +2266,8 @@ packages:
     resolution: {integrity: sha512-oGB+UxlgWcgQkgwo8GcEGwemoTFt3FIO9ababBmaGwXIoBKZ+GTy0pP185beGg7Llih/NSHSV2XAs1lnznocSg==}
     engines: {node: '>= 8'}
 
-  '@nozbe/lokijs@1.5.12-wmelon6':
-    resolution: {integrity: sha512-GXsaqY8qTJ6xdCrGyno2t+ON2aj6PrUDdvhbrkxK/0Fp12C4FGvDg1wS+voLU9BANYHEnr7KRWfItDZnQkjoAg==}
+  '@nozbe/lokijs@1.5.12-wmelon8':
+    resolution: {integrity: sha512-WnqtKrWDh48FvuxnFv2LKurxeSAp8Q3TtQ4akwKFC7CkBaZYgn2P7F3YuBXguj4AgXhSEogxJmJWN8xQq7zPRQ==}
 
   '@nozbe/simdjson@3.9.4':
     resolution: {integrity: sha512-/3oCP8GBpdyeiBMEnuI6S0yl0yekD6Qxfed67hZqU1GIVn3o/vZgE8qANm69THfw7JgHLS9zjx56F/dO3q+koA==}
@@ -2275,8 +2275,8 @@ packages:
   '@nozbe/sqlite@3.46.0':
     resolution: {integrity: sha512-ntt8eNp5hh+axX9+kFb5uwyVE0edyfhiYYr+zHDzzFleGC7Qm+a2wHDWDtmRr5nSfbgomhY1uh30kpsHEIR3Mw==}
 
-  '@nozbe/watermelondb@0.28.0':
-    resolution: {integrity: sha512-40ttcqPOLCTGnbfCQAXSEo8J4KlH/QQhwTfTb9E21CyX/driMEZueiJSI2rSkHICZrI2vnu52aRubNbI3UAzQQ==}
+  '@nozbe/watermelondb@0.28.1-0':
+    resolution: {integrity: sha512-PYlc3EO/EDh1yQdPiqmU73jANhyx1p10aw/cLUmM+F6Bdk5IVT++54SfP4W3ER1QIJ8ZhepyWliSFjCCBsyKtw==}
     engines: {node: '>=18'}
 
   '@ota-meshi/ast-token-store@0.3.0':
@@ -13428,19 +13428,19 @@ snapshots:
       '@nodelib/fs.scandir': 2.1.5
       fastq: 1.20.1
 
-  '@nozbe/lokijs@1.5.12-wmelon6': {}
+  '@nozbe/lokijs@1.5.12-wmelon8': {}
 
   '@nozbe/simdjson@3.9.4': {}
 
   '@nozbe/sqlite@3.46.0': {}
 
-  '@nozbe/watermelondb@0.28.0':
+  '@nozbe/watermelondb@0.28.1-0':
     dependencies:
       '@babel/runtime': 7.26.0
       '@nozbe/simdjson': 3.9.4
       '@nozbe/sqlite': 3.46.0
       hoist-non-react-statics: 3.3.2
-      lokijs: '@nozbe/lokijs@1.5.12-wmelon6'
+      lokijs: '@nozbe/lokijs@1.5.12-wmelon8'
       rxjs: 7.8.2
       sql-escape-string: 1.1.0
 

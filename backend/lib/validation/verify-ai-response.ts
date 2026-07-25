@@ -4,6 +4,8 @@ const MAX_TITLE_LENGTH = 120;
 const MAX_DESCRIPTION_LENGTH = 500;
 const MAX_INGREDIENT_LENGTH = 100;
 const MAX_INGREDIENTS = 30;
+const MAX_STEP_LENGTH = 500;
+const MAX_STEPS = 20;
 const MAX_SUGGESTIONS = 10;
 
 function isString(v: unknown): v is string {
@@ -72,6 +74,7 @@ function verifySuggestion(raw: unknown, index: number): MealSuggestion | null {
   // Arrays
   const ingredients = sanitiseStringList(obj.ingredients, MAX_INGREDIENT_LENGTH, MAX_INGREDIENTS);
   const missingIngredients = sanitiseStringList(obj.missingIngredients, MAX_INGREDIENT_LENGTH, MAX_INGREDIENTS);
+  const steps = sanitiseStringList(obj.steps, MAX_STEP_LENGTH, MAX_STEPS);
 
   // Must have at least a title to be useful
   return {
@@ -83,6 +86,7 @@ function verifySuggestion(raw: unknown, index: number): MealSuggestion | null {
     adventurousness,
     estimatedCookTime,
     usesExpiringItems,
+    steps,
   };
 }
 

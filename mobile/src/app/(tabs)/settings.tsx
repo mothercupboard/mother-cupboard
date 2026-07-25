@@ -12,6 +12,8 @@ import { useTrialStatus } from '@/features/auth/trial-store';
 import { HouseholdSection } from '@/features/household/components/household-section';
 import { useNotificationStore } from '@/features/notifications/notification-store';
 import { database } from '@/lib/database';
+import { PRIVACY_POLICY_URL, TERMS_URL } from '@/lib/legal';
+import { useRegion } from '@/lib/region';
 import { useRevenueCatStore } from '@/lib/revenuecat/store';
 import { storage } from '@/lib/storage';
 
@@ -268,6 +270,7 @@ export default function SettingsScreen() {
     catch {}
   }
   const email = derivedEmail;
+  const region = useRegion();
   const notificationsEnabled = useNotificationStatus();
   const [step, setStep] = useState<DialogStep>(null);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -319,6 +322,26 @@ export default function SettingsScreen() {
           right={props => <List.Icon {...props} icon="chevron-right" />}
           onPress={() => router.push('/settings/staples' as any)}
         />
+        <List.Item
+          title="My supermarkets"
+          description="Weekly offers from where you shop, woven into meal ideas"
+          left={props => <List.Icon {...props} icon="tag-outline" />}
+          right={props => <List.Icon {...props} icon="chevron-right" />}
+          onPress={() => router.push('/settings/supermarkets' as any)}
+        />
+      </List.Section>
+
+      <Divider />
+
+      <List.Section>
+        <List.Subheader style={styles.subheader}>Preferences</List.Subheader>
+        <List.Item
+          title="Region"
+          description={region.label}
+          left={props => <List.Icon {...props} icon="earth" />}
+          right={props => <List.Icon {...props} icon="chevron-right" />}
+          onPress={() => router.push('/settings/region' as any)}
+        />
       </List.Section>
 
       <Divider />
@@ -328,6 +351,28 @@ export default function SettingsScreen() {
       <Divider />
 
       <NotificationSection enabled={notificationsEnabled} />
+
+      <Divider />
+
+      <List.Section>
+        <List.Subheader style={styles.subheader}>About & legal</List.Subheader>
+        <List.Item
+          title="Privacy Policy"
+          description="How your data is used and protected"
+          left={props => <List.Icon {...props} icon="shield-lock-outline" />}
+          right={props => <List.Icon {...props} icon="open-in-new" />}
+          onPress={() => Linking.openURL(PRIVACY_POLICY_URL)}
+          accessibilityRole="link"
+        />
+        <List.Item
+          title="Terms of Use"
+          description="Licence agreement for the app"
+          left={props => <List.Icon {...props} icon="file-document-outline" />}
+          right={props => <List.Icon {...props} icon="open-in-new" />}
+          onPress={() => Linking.openURL(TERMS_URL)}
+          accessibilityRole="link"
+        />
+      </List.Section>
 
       <Divider />
 

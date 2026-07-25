@@ -8,11 +8,12 @@ import { SegmentedButtons, Text } from 'react-native-paper';
 
 import { WarmHearthColors } from '@/components/common/paper-theme';
 import { useSavedMealsStore } from '@/features/suggest/saved-meals-store';
+import { formatDate as formatRegionDate } from '@/lib/region';
 
 type Tab = 'history' | 'favourites';
 
 function formatDate(ms: number): string {
-  return new Date(ms).toLocaleDateString('en-GB', {
+  return formatRegionDate(ms, {
     day: 'numeric',
     month: 'short',
   });

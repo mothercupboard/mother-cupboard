@@ -53,3 +53,8 @@ coverage/
 
 # Sentry
 .sentryclirc
+
+*.aab
+aab.zip
+aab_extracted/
+.test-aldi.js

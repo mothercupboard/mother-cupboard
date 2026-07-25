@@ -1,3 +1,5 @@
+import { canonicalizeName } from './vocab';
+
 // Rough keyword check to spot when a "keen to use" item is meat or fish, so we
 // can gracefully resolve the conflict with the vegetarian toggle. Intentionally
 // simple — it only drives a friendly nudge and a hint tweak, not a hard rule.
@@ -49,6 +51,8 @@ const MEAT_KEYWORDS = [
 export function isLikelyMeat(name: string | null | undefined): boolean {
   if (!name)
     return false;
-  const n = name.toLowerCase();
+  // Canonicalise so regional terms (e.g. "shrimp") reconcile with the keyword
+  // list ("prawn") — receipts and photos will carry regional wording.
+  const n = canonicalizeName(name);
   return MEAT_KEYWORDS.some(k => n.includes(k));
 }

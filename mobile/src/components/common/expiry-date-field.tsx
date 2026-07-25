@@ -6,6 +6,7 @@ import { Button, Dialog, TextInput as PaperTextInput, Portal, Text } from 'react
 
 import { WarmHearthColors } from '@/components/common/paper-theme';
 import { parseDateGB } from '@/features/inventory/inventory.utils';
+import { useRegion } from '@/lib/region';
 
 type Props = {
   value: string;
@@ -40,6 +41,7 @@ function parseInitialDate(value: string): Date {
 export function ExpiryDateField({ value, onChangeText, errors = [], isTouched = false, label = 'Expiry date' }: Props) {
   const [pickerVisible, setPickerVisible] = useState(false);
   const [pickerDate, setPickerDate] = useState(() => parseInitialDate(value));
+  const region = useRegion();
 
   const hasError = isTouched && errors.length > 0;
 
@@ -111,7 +113,7 @@ export function ExpiryDateField({ value, onChangeText, errors = [], isTouched = 
                         setPickerDate(date);
                     }}
                     minimumDate={new Date()}
-                    locale="en-GB"
+                    locale={region.locale}
                     style={styles.picker}
                   />
                 </Dialog.Content>

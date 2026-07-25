@@ -1,9 +1,10 @@
 import { router } from 'expo-router';
-import { StyleSheet, View } from 'react-native';
+import { Linking, StyleSheet, View } from 'react-native';
 import { Button, Text } from 'react-native-paper';
 
 import { WarmHearthColors } from '@/components/common/paper-theme';
 import { useOnboardingStore } from '@/features/onboarding/onboarding-store';
+import { PRIVACY_POLICY_URL } from '@/lib/legal';
 
 export default function PrivacyDisclosureScreen() {
   const acceptPrivacyDisclosure = useOnboardingStore(s => s.acceptPrivacyDisclosure);
@@ -15,6 +16,10 @@ export default function PrivacyDisclosureScreen() {
 
   function handleBack() {
     router.back();
+  }
+
+  function handleOpenPolicy() {
+    Linking.openURL(PRIVACY_POLICY_URL);
   }
 
   return (
@@ -37,7 +42,20 @@ export default function PrivacyDisclosureScreen() {
         </View>
 
         <Text variant="bodySmall" style={styles.policyNote}>
-          You can read our full Privacy Policy at any time in Settings.
+          You can read our full
+          {' '}
+          <Text
+            variant="bodySmall"
+            style={[styles.policyNote, styles.policyLink]}
+            onPress={handleOpenPolicy}
+            accessibilityRole="link"
+            accessibilityLabel="Open the full Privacy Policy"
+            suppressHighlighting
+          >
+            Privacy Policy
+          </Text>
+          {' '}
+          here, or at any time in Settings.
         </Text>
 
         <View style={styles.buttons}>
@@ -104,6 +122,11 @@ const styles = StyleSheet.create({
     fontFamily: 'Nunito_400Regular',
     color: WarmHearthColors.textSecondary,
     fontStyle: 'italic',
+  },
+  policyLink: {
+    color: WarmHearthColors.primary,
+    textDecorationLine: 'underline',
+    fontFamily: 'Nunito_600SemiBold',
   },
   buttons: {
     gap: 8,

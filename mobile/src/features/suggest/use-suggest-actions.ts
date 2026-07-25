@@ -1,13 +1,16 @@
 import type { MealSuggestion } from '../../../../shared/types/meal-suggestion.types';
+import type { CurrentOffer } from '@/features/saver/use-offers';
 import type { LocalSuggestRequest } from '@/lib/ai/suggest-meals';
 
 import { useRef } from 'react';
 
 import { useInventoryItems } from '@/features/inventory/use-inventory-items';
+import { useCurrentOffers } from '@/features/saver/use-offers';
 import { isLikelyMeat } from '@/features/suggest/is-meat';
 import { useSavedMealsStore } from '@/features/suggest/saved-meals-store';
 import { useSuggestPreferences } from '@/features/suggest/suggest-preferences-store';
 import { useSuggestMeals } from '@/features/suggest/use-suggest-meals';
+import { useRegionStore } from '@/lib/region';
 
 /**
  * Encapsulates all suggestion generation logic — request building,
@@ -26,6 +29,8 @@ export function useSuggestActions() {
   const recordRejected = useSavedMealsStore(s => s.recordRejected);
   const cookedMeals = useSavedMealsStore(s => s.cookedMeals);
   const items = useInventoryItems();
+  const region = useRegionStore(s => s.region);
+  const { data: currentOffers } = useCurrentOffers();
   const mutation = useSuggestMeals();
   const rejectedRef = useRef<string[]>([]);
 
@@ -55,6 +60,20 @@ export function useSuggestActions() {
         }
       : undefined;
 
+    // Saver Cupboard: this week's offers at the user's chosen supermarket(s).
+    // Vegetarian on -> leave out meat/fish offers rather than tempt the model.
+    const offers = (currentOffers ?? [])
+      .filter(o => o.canonical_ingredient !== null)
+      .filter(o => !vegetarian || !['meat', 'fish'].includes(o.ingredient_category ?? ''))
+      .map(o => ({
+        ingredient: o.canonical_ingredient as string,
+        productName: o.product_name,
+        retailer: o.retailer_name,
+        pricePence: o.price_pence,
+        wasPricePence: o.was_price_pence,
+        packSize: o.pack_size,
+      }));
+
     return {
       items: items.map(i => ({
         name: i.name,
@@ -71,6 +90,8 @@ export function useSuggestActions() {
       likedMeals: likedMeals.length > 0 ? likedMeals : undefined,
       dislikedMeals: rejectedTitlesStore.length > 0 ? rejectedTitlesStore : undefined,
       cookHistory,
+      region,
+      offers: offers.length > 0 ? offers : undefined,
     };
   }
 
@@ -78,6 +99,26 @@ export function useSuggestActions() {
     rejectedRef.current = [];
     mutation.reset();
     mutation.mutate(buildRequest());
+  }
+
+  /**
+   * Saver Cupboard: build suggestions around a tapped offer — something the
+   * user could make with this week's bargain plus what they already have.
+   * The user hasn't bought it yet, so it belongs in missingIngredients.
+   */
+  function generateWithOffer(offer: CurrentOffer) {
+    const ingredient = offer.canonical_ingredient ?? offer.product_name;
+    const price = offer.price_pence < 100
+      ? `${offer.price_pence}p`
+      : `£${(offer.price_pence / 100).toFixed(2)}`;
+    rejectedRef.current = [];
+    mutation.reset();
+    mutation.mutate(buildRequest(
+      `The user spotted ${ingredient} (${offer.product_name}, ${price} at ${offer.retailer_name}) on offer this week and wants ideas for it. `
+      + `Every suggestion MUST be built around ${ingredient} together with what they already have, and return at least 3 genuinely different ideas. `
+      + `They have NOT bought it yet, so ${ingredient} belongs in missingIngredients. `
+      + `If it is an unusual cooking ingredient, be inventive but honest about it.`,
+    ));
   }
 
   function surpriseMe(currentSuggestions: MealSuggestion[]) {
@@ -97,6 +138,7 @@ export function useSuggestActions() {
     ...mutation,
     hasItems: items.length > 0,
     generate,
+    generateWithOffer,
     surpriseMe,
     rejectCurrent,
   };

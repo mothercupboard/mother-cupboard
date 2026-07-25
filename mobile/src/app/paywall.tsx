@@ -8,10 +8,8 @@ import { Button, Text } from 'react-native-paper';
 
 import { WarmHearthColors } from '@/components/common/paper-theme';
 import { useGuestStore } from '@/features/guest/guest-store';
+import { PRIVACY_POLICY_URL, TERMS_URL } from '@/lib/legal';
 import { useRevenueCatStore } from '@/lib/revenuecat/store';
-
-const PRIVACY_POLICY_URL = 'https://mothercupboard.github.io/mother-cupboard/legal/privacy-policy.html';
-const TERMS_URL = 'https://www.apple.com/legal/internet-services/itunes/dev/stdeula/';
 
 type FeatureRowProps = { icon: string; label: string };
 
@@ -32,6 +30,27 @@ const FEATURES: FeatureRowProps[] = [
   { icon: 'bell-ring-outline', label: 'Expiry reminder alerts' },
   { icon: 'cloud-sync-outline', label: 'Cloud sync and backup' },
 ];
+
+/**
+ * Computes the real annual-vs-monthly saving from the store's local prices,
+ * so the badge is true in every territory (Apple's derived tiers vary — e.g.
+ * Australia's saving differs from the UK's). Uses Math.floor so we never
+ * overstate. Returns undefined when the saving is too small to shout about
+ * or either package is missing.
+ */
+function annualSavingsBadge(packages: PurchasesPackage[]): string | undefined {
+  const monthly = packages.find(p => p.packageType === 'MONTHLY');
+  const annual = packages.find(p => p.packageType === 'ANNUAL');
+  if (!monthly || !annual)
+    return undefined;
+  const fullYearAtMonthly = monthly.product.price * 12;
+  if (fullYearAtMonthly <= 0 || annual.product.price >= fullYearAtMonthly)
+    return undefined;
+  const pct = Math.floor((1 - annual.product.price / fullYearAtMonthly) * 100);
+  if (pct < 5)
+    return undefined;
+  return `Save ${pct}%`;
+}
 
 function PackageCard({
   pkg,
@@ -140,6 +159,7 @@ export default function PaywallScreen() {
   }
 
   const packages = offering.availablePackages;
+  const savingsBadge = annualSavingsBadge(packages);
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
@@ -166,7 +186,7 @@ export default function PaywallScreen() {
               pkg={pkg}
               isSelected={selectedPkg?.identifier === pkg.identifier}
               onSelect={() => setSelectedPkg(pkg)}
-              badge={isAnnual ? 'Save over 35%' : undefined}
+              badge={isAnnual ? savingsBadge : undefined}
             />
           );
         })}

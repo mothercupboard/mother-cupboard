@@ -1,8 +1,19 @@
 import type { OffProduct } from '@/lib/barcode/off-database';
 
 import { lookupByBarcode } from '@/lib/barcode/off-database';
+import { getActiveRegion } from '@/lib/region';
 
-const OFF_API_BASE = 'https://world.openfoodfacts.org/api/v0/product';
+const OFF_WORLD_BASE = 'https://world.openfoodfacts.org/api/v0/product';
+
+/**
+ * Workstream B: query the active region's OFF country subdomain first so
+ * region-specific product entries (own-brand ranges, local variants) are
+ * preferred; fall back to the worldwide database when the regional lookup
+ * doesn't resolve.
+ */
+function regionalApiBase(): string {
+  return `https://${getActiveRegion().offSubdomain}.openfoodfacts.org/api/v0/product`;
+}
 
 // Compiled at module scope per e18e/prefer-static-regex
 const LANG_PREFIX_RE = /^[a-z]{2}:/;
@@ -76,9 +87,9 @@ function extractCategory(tags: string[] | undefined): string | null {
   return tag.replace(LANG_PREFIX_RE, '').replace(DASH_RE, ' ') || null;
 }
 
-async function fetchFromApi(barcode: string): Promise<OffProduct | null> {
+async function fetchFromEndpoint(base: string, barcode: string): Promise<OffProduct | null> {
   try {
-    const res = await fetch(`${OFF_API_BASE}/${barcode}.json`, {
+    const res = await fetch(`${base}/${barcode}.json`, {
       headers: { 'User-Agent': 'MotherCupboard/1.0 (https://mothercupboard.app)' },
     });
     if (!res.ok)
@@ -100,6 +111,13 @@ async function fetchFromApi(barcode: string): Promise<OffProduct | null> {
   catch {
     return null;
   }
+}
+
+async function fetchFromApi(barcode: string): Promise<OffProduct | null> {
+  const regional = await fetchFromEndpoint(regionalApiBase(), barcode);
+  if (regional)
+    return regional;
+  return fetchFromEndpoint(OFF_WORLD_BASE, barcode);
 }
 
 /**

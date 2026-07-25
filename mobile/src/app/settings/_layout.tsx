@@ -31,6 +31,8 @@ export default function SettingsLayout() {
       }}
     >
       <Stack.Screen name="staples" options={{ title: 'Kitchen Staples' }} />
+      <Stack.Screen name="region" options={{ title: 'Region' }} />
+      <Stack.Screen name="supermarkets" options={{ title: 'My Supermarkets' }} />
     </Stack>
   );
 }

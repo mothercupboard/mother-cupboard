@@ -1,3 +1,5 @@
+import type { RegionCode } from '@/lib/region';
+
 import Env from 'env';
 
 export type InventoryItemForAI = {
@@ -15,6 +17,19 @@ export type CookTrackRecord = {
   recentCooks: number;
 };
 
+/** A supermarket offer sent to the backend (Saver Cupboard). */
+export type OfferForAI = {
+  /** Canonical ingredient, e.g. "pork steaks". */
+  ingredient: string;
+  /** Retail product name, e.g. "Pork Sizzle Steaks Gochujang". */
+  productName: string;
+  /** Retailer display name, e.g. "Aldi". */
+  retailer: string;
+  pricePence: number;
+  wasPricePence: number | null;
+  packSize: string | null;
+};
+
 export type LocalSuggestRequest = {
   items: InventoryItemForAI[];
   adventurousness: number;
@@ -24,6 +39,9 @@ export type LocalSuggestRequest = {
   likedMeals?: string[];
   dislikedMeals?: string[];
   cookHistory?: CookTrackRecord;
+  region: RegionCode;
+  /** This week's offers at the user's chosen supermarket(s), if any. */
+  offers?: OfferForAI[];
 };
 
 const API_URL = Env.EXPO_PUBLIC_API_URL;

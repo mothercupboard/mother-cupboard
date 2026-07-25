@@ -29,6 +29,21 @@ interface CookTrackRecord {
   recentCooks: number;
 }
 
+type RegionCode = 'GB' | 'IE' | 'AU' | 'NZ';
+
+/** A supermarket offer relevant to this user (Saver Cupboard). */
+interface OfferForAI {
+  /** Canonical ingredient, e.g. "pork steaks". */
+  ingredient: string;
+  /** Retail product name, e.g. "Pork Sizzle Steaks Gochujang". */
+  productName: string;
+  /** Display name of the retailer, e.g. "Aldi". */
+  retailer: string;
+  pricePence: number;
+  wasPricePence: number | null;
+  packSize: string | null;
+}
+
 interface SuggestRequestV2 {
   items: InventoryItemForAI[];
   adventurousness: number;
@@ -38,15 +53,57 @@ interface SuggestRequestV2 {
   likedMeals?: string[];
   dislikedMeals?: string[];
   cookHistory?: CookTrackRecord;
+  region: RegionCode;
+  /** This week's offers at the user's chosen supermarket(s), if any. */
+  offers?: OfferForAI[];
+}
+
+// ── Region ──────────────────────────────────────────────────────────────
+
+/**
+ * Per-region vocabulary guidance. Keeps the main prompt region-neutral and
+ * carries the spelling / ingredient-naming / cooking-term differences here.
+ * All Phase 1 regions are metric and use "grill" (never the US "broil").
+ */
+const REGION_PROFILES: Record<RegionCode, { country: string; english: string; ingredients: string }> = {
+  GB: {
+    country: 'the United Kingdom',
+    english: 'UK English (colour, flavour, minimise, centre)',
+    ingredients: 'Use UK ingredient names: coriander (not cilantro), aubergine (not eggplant), courgette (not zucchini), rocket (not arugula), spring onion, mince, prawns (not shrimp). Say "grill", never "broil".',
+  },
+  IE: {
+    country: 'Ireland',
+    english: 'Irish English, which uses UK spelling (colour, flavour, centre)',
+    ingredients: 'Use UK/Irish ingredient names: coriander, aubergine, courgette, rocket, spring onion, mince, prawns. Say "grill", never "broil".',
+  },
+  AU: {
+    country: 'Australia',
+    english: 'Australian English (colour, flavour, minimise, centre)',
+    ingredients: 'Use Australian ingredient names: capsicum (not bell pepper), zucchini (not courgette), eggplant (not aubergine), rocket (not arugula), coriander (not cilantro), prawns (not shrimp), mince, snow peas. Say "grill", never "broil".',
+  },
+  NZ: {
+    country: 'New Zealand',
+    english: 'New Zealand English, which uses UK spelling (colour, flavour, centre)',
+    ingredients: 'Use New Zealand ingredient names: capsicum (not bell pepper), kūmara (for sweet potato), courgette or zucchini, aubergine or eggplant, rocket, coriander, prawns, mince. Say "grill", never "broil".',
+  },
+};
+
+function buildRegionDirective(region: RegionCode): string {
+  const p = REGION_PROFILES[region] ?? REGION_PROFILES.GB;
+  return (
+    `REGION: This cook is in ${p.country}. Write everything — description, reason and steps — in ${p.english}. `
+    + `${p.ingredients} `
+    + 'Use metric units (g, kg, ml, litres) and °C for oven temperatures.'
+  );
 }
 
 // ── Prompt ──────────────────────────────────────────────────────────────
 
 const SYSTEM_PROMPT = [
   // ── Who you are ──────────────────────────────────────────────────────────
-  'You are Mother Cupboard: the warm, thrifty heart of a British home kitchen, speaking directly to one home cook through a UK food-waste app. You help them make a proper meal from what they already have. You are on their side — resourceful, encouraging, and never pretentious.',
+  'You are Mother Cupboard: the warm, thrifty heart of a home kitchen, speaking directly to one home cook through a food-waste app. You help them make a proper meal from what they already have. You are on their side — resourceful, encouraging, and never pretentious.',
   // ── Voice ────────────────────────────────────────────────────────────────
-  'VOICE: Write in warm, plain-spoken UK English, like a capable home cook who genuinely cares. Be gently thrifty and quietly proud of using things up. Be encouraging, never preachy.',
+  'VOICE: Write in warm, plain-spoken English in the cook\'s regional variety (specified in the REGION note), like a capable home cook who genuinely cares. Be gently thrifty and quietly proud of using things up. Be encouraging, never preachy.',
   'NEVER sound cheffy or pretentious — avoid words like "elevate", "deconstruct", "restaurant-quality", "gourmet", "vibrant", "umami bomb". NEVER use AI-speak like "As an AI", "Certainly!", or "Here is a recipe". Do not pile on gushing adjectives or exclamation marks. Never lecture about health, diet or waste, and never shame a simple choice.',
   // ── Match energy to the adventurousness dial ──────────────────────────────
   'MATCH YOUR ENERGY TO THE ADVENTUROUSNESS LEVEL (1-5). At 1-2, keep it comforting, simple and reassuring. At 3, a steady step up. At 4-5, be genuinely pleased they are having a go: encouraging and a touch excited, championing the ambition and quietly flagging the trickiest step so they succeed. Never talk anyone out of an ambitious choice, never call it "too much faff", and at high levels do NOT fall back to cheap or plain cooking. Ambitious, yes — but still a home cook doing something special, not a chef showing off.',
@@ -57,8 +114,8 @@ const SYSTEM_PROMPT = [
   '- ONLY use ingredients from the provided inventory list in the "ingredients" field. Do NOT invent or assume ingredients the user has not listed.',
   '- Any ingredient NOT in the inventory MUST go in "missingIngredients" instead.',
   '- Prioritise items approaching their use-by or best-before dates.',
-  '- Are realistic for home cooking in the UK, scaled to the requested number of servings.',
-  '- Always use UK English spelling (e.g. colour, flavour, minimise, centre) and UK ingredient names (coriander, aubergine, courgette).',
+  '- Are realistic for everyday home cooking, scaled to the requested number of servings.',
+  '- Always use the spelling and ingredient names specified in the REGION note below — this matters, so follow it exactly.',
   'RESPECT HOW ITEMS ARE ALREADY PREPARED: read each item name carefully. If a product is already seasoned, marinated, breaded, spiced, or clearly sold ready-to-cook (e.g. "Moroccan chicken kebabs", "marinated tofu", "garlic bread", "breaded fish"), do NOT tell the user to marinate, season or coat it again — just cook it as-is. Never add preparation steps that duplicate work the product already comes with. Getting this wrong is frustrating, so err towards simplicity for ready-made items.',
   'FREEZER ITEMS ARE NOT URGENT: items tagged [freezer] are frozen and keep for a long time, so do NOT treat their expiry date as pressing or prioritise them the way you would fresh items about to go off. Only build a meal around a frozen item if the user specifically asks to use it. When a suggestion does use a frozen item, mention in the description or first step that it needs defrosting first (ideally overnight in the fridge, or taken out that morning).',
   'CRITICAL: The "ingredients" array must ONLY contain items that appear in the user\'s inventory. If a recipe needs chicken but the user has no chicken, it goes in "missingIngredients". Suggest meals that minimise missing ingredients.',
@@ -95,6 +152,32 @@ const MOOD_DESCRIPTIONS: Record<string, string> = {
   'kid-friendly': 'Kid-friendly meals the whole family will enjoy',
   favourite: "Suggest meals similar to the user's favourited meals — comfort picks they already love",
 };
+
+// ── Offers (Saver Cupboard) ─────────────────────────────────────────────
+
+function formatPrice(pence: number): string {
+  return pence < 100 ? `${pence}p` : `£${(pence / 100).toFixed(2)}`;
+}
+
+/**
+ * Extra system directive, only sent when the request includes offers.
+ * Additive by design: with no offers the prompt is byte-identical to before.
+ */
+function buildOffersDirective(offers: OfferForAI[]): string {
+  const lines = offers.map((o) => {
+    const was = o.wasPricePence != null ? ` (was ${formatPrice(o.wasPricePence)})` : '';
+    const size = o.packSize ? `, ${o.packSize}` : '';
+    return `- ${o.ingredient}: ${o.productName}${size} at ${formatPrice(o.pricePence)}${was} [${o.retailer}]`;
+  });
+  return (
+    'OFFERS THIS WEEK at the user\'s chosen supermarket(s):\n'
+    + lines.join('\n')
+    + '\nWhen choosing between otherwise good suggestions, prefer meals whose MISSING ingredients appear in this offers list — that makes the meal cheaper to complete. '
+    + 'When a suggestion does use an offer, you may mention it naturally and briefly in the description or reason (e.g. "pork steaks are £2.99 at Aldi this week") in Mother Cupboard\'s voice — thrifty, never salesy. '
+    + 'Never force an offer into a meal where it does not belong, never invent offers not in this list, and never mention offers for ingredients the meal does not use. '
+    + 'The offers list does NOT change the inventory rules: offers are things the user could buy, so they belong in "missingIngredients" unless also in the inventory.'
+  );
+}
 
 // ── Helpers ─────────────────────────────────────────────────────────────
 
@@ -145,6 +228,32 @@ function buildUserPrompt(body: SuggestRequestV2): string {
   return lines.join('\n');
 }
 
+function parseOffers(raw: unknown): OfferForAI[] | undefined {
+  if (!Array.isArray(raw) || raw.length === 0) return undefined;
+  const offers: OfferForAI[] = [];
+  for (const item of raw.slice(0, 100)) {
+    if (typeof item !== 'object' || item === null) continue;
+    const o = item as Record<string, unknown>;
+    const ingredient = typeof o.ingredient === 'string' ? o.ingredient.slice(0, 100).trim() : '';
+    const productName = typeof o.productName === 'string' ? o.productName.slice(0, 200).trim() : '';
+    const pricePence = typeof o.pricePence === 'number' && Number.isFinite(o.pricePence)
+      ? Math.max(0, Math.round(o.pricePence))
+      : null;
+    if (!ingredient || !productName || pricePence == null) continue;
+    offers.push({
+      ingredient,
+      productName,
+      retailer: typeof o.retailer === 'string' ? o.retailer.slice(0, 50).trim() : 'the supermarket',
+      pricePence,
+      wasPricePence: typeof o.wasPricePence === 'number' && Number.isFinite(o.wasPricePence)
+        ? Math.max(0, Math.round(o.wasPricePence))
+        : null,
+      packSize: typeof o.packSize === 'string' ? o.packSize.slice(0, 50) : null,
+    });
+  }
+  return offers.length > 0 ? offers : undefined;
+}
+
 function parseCookHistory(raw: unknown): CookTrackRecord | undefined {
   if (typeof raw !== 'object' || raw === null)
     return undefined;
@@ -179,6 +288,8 @@ function validateRequest(raw: unknown): { ok: true; data: SuggestRequestV2 } | {
 
   const adventurousness = Math.max(1, Math.min(5, Math.round(Number(body.adventurousness) || 3)));
   const servings = Math.max(1, Math.min(20, Math.round(Number(body.servings) || 2)));
+  const region: RegionCode
+    = body.region === 'IE' || body.region === 'AU' || body.region === 'NZ' ? body.region : 'GB';
 
   return {
     ok: true,
@@ -186,11 +297,13 @@ function validateRequest(raw: unknown): { ok: true; data: SuggestRequestV2 } | {
       items,
       adventurousness,
       servings,
+      region,
       moods: Array.isArray(body.moods) ? body.moods.filter((m: unknown) => typeof m === 'string').slice(0, 8) : undefined,
       hint: typeof body.hint === 'string' ? body.hint.slice(0, 500) : undefined,
       likedMeals: Array.isArray(body.likedMeals) ? body.likedMeals.filter((m: unknown) => typeof m === 'string').slice(0, 50) : undefined,
       dislikedMeals: Array.isArray(body.dislikedMeals) ? body.dislikedMeals.filter((m: unknown) => typeof m === 'string').slice(0, 50) : undefined,
       cookHistory: parseCookHistory(body.cookHistory),
+      offers: parseOffers(body.offers),
     },
   };
 }
@@ -236,11 +349,17 @@ export const handler = Sentry.AWSLambda.wrapHandler(
 
     try {
       const provider = getAIProvider();
+      const messages: Parameters<typeof provider.complete>[0]['messages'] = [
+        { role: 'system', content: SYSTEM_PROMPT },
+        { role: 'system', content: buildRegionDirective(body.region) },
+      ];
+      if (body.offers && body.offers.length > 0) {
+        messages.push({ role: 'system', content: buildOffersDirective(body.offers) });
+      }
+      messages.push({ role: 'user', content: buildUserPrompt(body) });
+
       const response = await provider.complete({
-        messages: [
-          { role: 'system', content: SYSTEM_PROMPT },
-          { role: 'user', content: buildUserPrompt(body) },
-        ],
+        messages,
         temperature: 0.7,
         maxTokens: 2048,
         responseFormat: 'json',

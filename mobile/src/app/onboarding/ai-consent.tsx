@@ -7,8 +7,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { WarmHearthColors } from '@/components/common/paper-theme';
 import { useAuthStore } from '@/features/auth/auth-store';
 import { useOnboardingStore } from '@/features/onboarding/onboarding-store';
-
-const PRIVACY_POLICY_URL = 'https://mothercupboard.app/privacy';
+import { PRIVACY_POLICY_URL } from '@/lib/legal';
 
 type AIFeatureRowProps = {
   icon: React.ComponentProps<typeof MaterialCommunityIcons>['name'];

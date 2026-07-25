@@ -13,6 +13,7 @@ import { Text } from 'react-native-paper';
 import { WarmHearthColors } from '@/components/common/paper-theme';
 import { getExpiryState } from '@/features/inventory/inventory.utils';
 import { useDatabase } from '@/lib/database/provider';
+import { formatDate } from '@/lib/region';
 
 const BADGE_BG: Record<NonNullable<ExpiryBadge>['urgency'], string> = {
   amber: WarmHearthColors.expiryWarning,
@@ -42,7 +43,7 @@ export function InventoryItemCard({ item, showLocation = false }: { item: Invent
   const swipeOpenRef = useRef(false);
   const badge = getExpiryState(item.expiryDate, item.expiryType);
   const expiryFormatted = item.expiryDate !== null
-    ? new Date(item.expiryDate).toLocaleDateString('en-GB')
+    ? formatDate(item.expiryDate)
     : null;
   const location = LOCATION_META[item.location];
 
