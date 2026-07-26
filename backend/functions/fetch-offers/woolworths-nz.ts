@@ -40,20 +40,44 @@ type WwsItem = {
   price?: { salePrice?: number; originalPrice?: number };
 };
 
+/**
+ * Fetch one page, retrying a couple of times on timeout / transient failure —
+ * the API occasionally drops the first hit of a run (seen 25 Jul: first
+ * attempt timed out, immediate retry returned 72 offers). For a weekly cron a
+ * single flaky request would otherwise blank NZ offers for the whole week.
+ */
+async function fetchPageWithRetry(page: number, attempts = 3): Promise<WwsItem[]> {
+  let lastErr: unknown;
+  for (let attempt = 1; attempt <= attempts; attempt++) {
+    try {
+      const res = await fetch(`${API}&page=${page}`, {
+        headers: HEADERS,
+        signal: AbortSignal.timeout(15_000),
+      });
+      if (!res.ok)
+        throw new Error(`Woolworths NZ API -> HTTP ${res.status} (page ${page})`);
+      const json = await res.json() as { products?: { items?: WwsItem[] } };
+      return json.products?.items ?? [];
+    }
+    catch (err) {
+      lastErr = err;
+      if (attempt < attempts)
+        await new Promise(r => setTimeout(r, 1000 * attempt)); // 1s, 2s backoff
+    }
+  }
+  throw lastErr instanceof Error
+    ? lastErr
+    : new Error(`Woolworths NZ page ${page} failed after ${attempts} attempts`);
+}
+
 export async function fetchWoolworthsNzOffers(): Promise<RawOffer[]> {
   const out: RawOffer[] = [];
   const seen = new Set<string>();
 
   for (let page = 1; page <= PAGES; page++) {
-    const res = await fetch(`${API}&page=${page}`, {
-      headers: HEADERS,
-      signal: AbortSignal.timeout(20_000),
-    });
-    if (!res.ok)
-      throw new Error(`Woolworths NZ API -> HTTP ${res.status} (page ${page})`);
-    const json = await res.json() as { products?: { items?: WwsItem[] } };
+    const items = await fetchPageWithRetry(page);
 
-    for (const item of json.products?.items ?? []) {
+    for (const item of items) {
       if (item.type !== 'Product' || !item.name || item.price?.salePrice == null)
         continue;
       const key = item.name.toLowerCase();

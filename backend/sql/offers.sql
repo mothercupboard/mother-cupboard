@@ -11,12 +11,14 @@ create table if not exists retailers (
 
 insert into retailers (id, display_name, source, enabled, country) values
   ('aldi',          'Aldi',        'scrape',       true,  'GB'),
+  ('aldi_ie',       'Aldi',        'scrape',       true,  'IE'),
   ('lidl',          'Lidl',        'leaflet_scan', false, 'GB'),
   ('tesco',         'Tesco',       'pepesto',      false, 'GB'),
   ('sainsburys',    'Sainsbury''s','pepesto',      false, 'GB'),
   ('asda',          'Asda',        'pepesto',      false, 'GB'),
   ('woolworths_nz', 'Woolworths',  'scrape',       true,  'NZ'),
-  ('paknsave',      'PAK''nSAVE',  'scrape',       true,  'NZ')
+  ('paknsave',      'PAK''nSAVE',  'scrape',       false, 'NZ'),  -- bot-blocked; needs headless
+  ('woolworths_au', 'Woolworths',  'scrape',       true,  'AU')
 on conflict (id) do nothing;
 
 create table if not exists offers (

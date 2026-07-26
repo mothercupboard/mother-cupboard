@@ -1,15 +1,18 @@
 /**
- * Ingredient mapping — one AI batch call per weekly offers run.
+ * Ingredient mapping — turn retail product names into canonical cooking
+ * ingredients so Suggest can match offers against recipes and the user's
+ * cupboard, e.g. "Pork Sizzle Steaks Gochujang, 0.44 KG" -> "pork steaks"
+ * (meat). Also filters non-food (Aldi's Price Drops has included a £79.99
+ * beer dispenser; supermarket specials include laundry capsules, razors...).
  *
- * Turns retail product names into canonical cooking ingredients so Suggest
- * can match offers against recipes and the user's cupboard, e.g.
- * "Pork Sizzle Steaks Gochujang, 0.44 KG" -> "pork steaks" (meat).
- * Also filters non-food (Aldi's Price Drops list has been known to include
- * a £79.99 beer dispenser).
+ * Runs in CHUNKS: with four countries live a weekly run is ~200+ products,
+ * which overflows a single model response (truncated -> invalid JSON). Each
+ * chunk is a separate AI call, so responses stay well within the token
+ * budget and the run scales as more retailers are added. A chunk that fails
+ * to parse is skipped (its offers keep is_food = null and are simply not
+ * surfaced) rather than failing the whole weekly run.
  *
- * Uses the shared provider layer, so it runs on whichever AI_PROVIDER the
- * stage is configured with. A weekly batch of ~20-50 items is a few
- * thousand tokens — negligible cost on any provider.
+ * Uses the shared provider layer (whichever AI_PROVIDER the stage sets).
  */
 
 import { getAIProvider } from '../../lib/ai';
@@ -25,6 +28,9 @@ const SYSTEM_PROMPT = [
   'Respond with ONLY a valid JSON object: {"items":[{"product_name":"...","is_food":true,"canonical_ingredient":"...","ingredient_category":"..."}]}',
 ].join('\n');
 
+// ~40 products/call keeps each response comfortably under the token limit.
+const CHUNK_SIZE = 40;
+
 interface MappingItem {
   product_name: string;
   is_food: boolean;
@@ -36,14 +42,16 @@ const CATEGORIES = new Set([
   'meat', 'fish', 'fruit', 'veg', 'dairy', 'bakery', 'pantry', 'frozen', 'drinks', 'ready',
 ]);
 
-export async function mapIngredients(offers: RawOffer[]): Promise<MappedOffer[]> {
-  const provider = getAIProvider();
+function chunk<T>(arr: T[], size: number): T[][] {
+  const out: T[][] = [];
+  for (let i = 0; i < arr.length; i += size)
+    out.push(arr.slice(i, i + size));
+  return out;
+}
 
-  const input = offers.map((o) => ({
-    product_name: o.product_name,
-    brand: o.brand,
-    pack_size: o.pack_size,
-  }));
+async function mapChunk(offers: RawOffer[]): Promise<MappingItem[]> {
+  const provider = getAIProvider();
+  const input = offers.map(o => ({ product_name: o.product_name, brand: o.brand, pack_size: o.pack_size }));
 
   const response = await provider.complete({
     messages: [
@@ -55,16 +63,27 @@ export async function mapIngredients(offers: RawOffer[]): Promise<MappedOffer[]>
     responseFormat: 'json',
   });
 
-  let items: MappingItem[];
-  try {
-    const parsed = JSON.parse(response.content);
-    items = Array.isArray(parsed) ? parsed : parsed?.items;
-    if (!Array.isArray(items)) throw new Error('no items array');
-  } catch {
-    throw new Error('Ingredient mapping returned invalid JSON');
-  }
+  const parsed = JSON.parse(response.content);
+  const items = Array.isArray(parsed) ? parsed : parsed?.items;
+  if (!Array.isArray(items))
+    throw new Error('mapping response had no items array');
+  return items as MappingItem[];
+}
 
-  const byName = new Map(items.map((m) => [m.product_name, m]));
+export async function mapIngredients(offers: RawOffer[]): Promise<MappedOffer[]> {
+  const byName = new Map<string, MappingItem>();
+
+  for (const group of chunk(offers, CHUNK_SIZE)) {
+    try {
+      for (const m of await mapChunk(group))
+        byName.set(m.product_name, m);
+    }
+    catch (err) {
+      // Skip this chunk rather than failing the whole weekly run — its
+      // offers stay unmapped (is_food null) and are just not surfaced.
+      console.error(`[fetch-offers] ingredient mapping chunk failed (${group.length} items):`, err);
+    }
+  }
 
   return offers.map((o) => {
     const m = byName.get(o.product_name);

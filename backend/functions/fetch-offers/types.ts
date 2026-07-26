@@ -4,12 +4,14 @@
 
 export type RetailerId =
   | 'aldi'
+  | 'aldi_ie'
   | 'lidl'
   | 'tesco'
   | 'sainsburys'
   | 'asda'
   | 'woolworths_nz'
-  | 'paknsave';
+  | 'paknsave'
+  | 'woolworths_au';
 
 export type OfferType = 'weekly_offer' | 'price_drop' | 'multibuy' | 'loyalty';
 

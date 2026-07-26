@@ -58,3 +58,5 @@ coverage/
 aab.zip
 aab_extracted/
 .test-aldi.js
+
+backend/.esbuild/

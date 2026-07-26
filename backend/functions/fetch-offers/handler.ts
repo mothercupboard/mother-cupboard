@@ -17,11 +17,14 @@
 
 import type { ScheduledEvent } from 'aws-lambda';
 import * as Sentry from '@sentry/serverless';
+import { createClient } from '@supabase/supabase-js';
 import { fetchAldiOffers } from './aldi';
+import { fetchAldiIeOffers } from './aldi-ie';
 import { mapIngredients } from './map-ingredients';
 import { fetchPaknsaveOffers } from './paknsave';
 import { saveOffers } from './supabase-offers';
 import type { RawOffer, RetailerId } from './types';
+import { fetchWoolworthsAuOffers } from './woolworths-au';
 import { fetchWoolworthsNzOffers } from './woolworths-nz';
 
 Sentry.AWSLambda.init({
@@ -32,8 +35,10 @@ Sentry.AWSLambda.init({
 
 const FETCHERS: Partial<Record<RetailerId, () => Promise<RawOffer[]>>> = {
   aldi: fetchAldiOffers,
+  aldi_ie: fetchAldiIeOffers,
   woolworths_nz: fetchWoolworthsNzOffers,
   paknsave: fetchPaknsaveOffers,
+  woolworths_au: fetchWoolworthsAuOffers,
 };
 
 interface RunSummary {
@@ -43,14 +48,40 @@ interface RunSummary {
   food_items?: number;
 }
 
+/**
+ * Which retailers to actually fetch this run: the intersection of retailers
+ * marked enabled in the DB and those we have a fetcher for. Reading the DB
+ * means the `enabled` flag is the single source of truth — disabling a
+ * retailer (e.g. bot-blocked PAK'nSAVE) stops the weekly fetch too, and we
+ * never produce offers for a retailer_id that has no row (which would fail
+ * the whole upsert on the foreign key).
+ */
+async function enabledRetailerIds(): Promise<RetailerId[]> {
+  const supabase = createClient(
+    process.env.SUPABASE_URL as string,
+    process.env.SUPABASE_SERVICE_ROLE_KEY as string,
+  );
+  const { data, error } = await supabase
+    .from('retailers')
+    .select('id')
+    .eq('enabled', true);
+  if (error)
+    throw new Error(`Could not read retailers: ${error.message}`);
+  return (data ?? []).map(r => r.id as RetailerId);
+}
+
 export const handler = Sentry.AWSLambda.wrapHandler(
   async (_event: ScheduledEvent): Promise<RunSummary> => {
     const summary: RunSummary = { retailers: {} };
     const allOffers: RawOffer[] = [];
 
-    for (const [retailerId, fetcher] of Object.entries(FETCHERS)) {
+    const enabled = await enabledRetailerIds();
+    // Only run fetchers for retailers that are enabled AND implemented.
+    const toRun = enabled.filter((id): id is RetailerId => FETCHERS[id] != null);
+
+    for (const retailerId of toRun) {
       try {
-        const offers = await fetcher();
+        const offers = await FETCHERS[retailerId]!();
         allOffers.push(...offers);
         summary.retailers[retailerId] = { fetched: offers.length };
       } catch (err) {
