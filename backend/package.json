@@ -11,7 +11,8 @@
     "@sentry/serverless": "^7.0.0",
     "@supabase/supabase-js": "^2.45.0",
     "cheerio": "^1.0.0",
-    "openai": "^6.33.0"
+    "openai": "^6.33.0",
+    "undici": "^6.28.0"
   },
   "devDependencies": {
     "@types/aws-lambda": "^8.10.0",

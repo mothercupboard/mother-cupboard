@@ -21,7 +21,13 @@
  * empty/blocked, this needs the headless-browser route like PAK'nSAVE.
  */
 
+import { scraperDispatcher } from './proxy';
 import type { RawOffer } from './types';
+
+// One sticky proxy session per run so the cookie bootstrap and the POST calls
+// share the same residential exit IP (Woolworths ties the session to the IP).
+const SESSION = String(Math.floor(Date.now() / 1000));
+const auDispatcher = () => scraperDispatcher({ country: 'au', session: SESSION });
 
 const BASE = 'https://www.woolworths.com.au';
 const HALF_PRICE_URL = `${BASE}/shop/browse/specials/half-price`;
@@ -48,8 +54,9 @@ type WoolAuBundle = { Products?: WoolAuProduct[] };
 async function bootstrapCookies(): Promise<string> {
   const res = await fetch(HALF_PRICE_URL, {
     headers: { ...BROWSER_HEADERS, accept: 'text/html' },
-    signal: AbortSignal.timeout(20_000),
-  });
+    signal: AbortSignal.timeout(45_000), // proxied requests are slower
+    dispatcher: auDispatcher(),
+  } as RequestInit);
   // Node 20+ exposes getSetCookie(); fall back to the folded header.
   const raw: string[] = typeof (res.headers as any).getSetCookie === 'function'
     ? (res.headers as any).getSetCookie()
@@ -87,8 +94,9 @@ async function fetchPage(page: number, cookie: string): Promise<WoolAuBundle[]> 
       groupEdmVariants: true,
       categoryVersion: 'v2',
     }),
-    signal: AbortSignal.timeout(20_000),
-  });
+    signal: AbortSignal.timeout(45_000), // proxied requests are slower
+    dispatcher: auDispatcher(),
+  } as RequestInit);
   if (!res.ok)
     throw new Error(`Woolworths AU browse -> HTTP ${res.status} (page ${page})`);
   const json = await res.json() as { Bundles?: WoolAuBundle[] };

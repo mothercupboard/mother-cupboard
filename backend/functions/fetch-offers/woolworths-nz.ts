@@ -16,6 +16,7 @@
  * adapter throws loudly and we revisit (page-HTML fallback or headless).
  */
 
+import { scraperDispatcher } from './proxy';
 import type { RawOffer } from './types';
 
 const API = 'https://www.woolworths.co.nz/api/v1/products?target=specials&useRankedSpecials=true';
@@ -52,8 +53,9 @@ async function fetchPageWithRetry(page: number, attempts = 3): Promise<WwsItem[]
     try {
       const res = await fetch(`${API}&page=${page}`, {
         headers: HEADERS,
-        signal: AbortSignal.timeout(15_000),
-      });
+        signal: AbortSignal.timeout(45_000), // proxied requests are slower
+        dispatcher: scraperDispatcher({ country: 'nz' }),
+      } as RequestInit);
       if (!res.ok)
         throw new Error(`Woolworths NZ API -> HTTP ${res.status} (page ${page})`);
       const json = await res.json() as { products?: { items?: WwsItem[] } };

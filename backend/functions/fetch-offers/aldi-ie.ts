@@ -20,6 +20,7 @@
  */
 
 import * as cheerio from 'cheerio';
+import { scraperDispatcher } from './proxy';
 import type { RawOffer } from './types';
 
 const BASE = 'https://www.aldi.ie';
@@ -44,8 +45,9 @@ function toCents(str: string | undefined | null): number | null {
 export async function fetchAldiIeOffers(): Promise<RawOffer[]> {
   const res = await fetch(SAVERS_URL, {
     headers: HEADERS,
-    signal: AbortSignal.timeout(20_000),
-  });
+    signal: AbortSignal.timeout(45_000), // proxied requests are slower
+    dispatcher: scraperDispatcher({ country: 'eu' }),
+  } as RequestInit);
   if (!res.ok)
     throw new Error(`Aldi IE fetch -> HTTP ${res.status}`);
   const $ = cheerio.load(await res.text());

@@ -88,7 +88,15 @@ export const handler = Sentry.AWSLambda.wrapHandler(
         // Loud but isolated: report it, carry on with the other retailers.
         Sentry.captureException(err);
         console.error(`[fetch-offers] ${retailerId} failed:`, err);
-        summary.retailers[retailerId] = { error: err instanceof Error ? err.message : String(err) };
+        // Surface the underlying cause — undici wraps the real reason (407,
+        // ECONNREFUSED, TLS, etc.) as `fetch failed` with the detail on .cause.
+        const cause = (err as { cause?: unknown })?.cause;
+        const causeStr = cause
+          ? ` | cause: ${(cause as { code?: string })?.code ?? ''} ${(cause as Error)?.message ?? String(cause)}`.trim()
+          : '';
+        summary.retailers[retailerId] = {
+          error: (err instanceof Error ? err.message : String(err)) + causeStr,
+        };
       }
     }
 
