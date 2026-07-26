@@ -2,7 +2,14 @@
  * Shared types for the Saver Cupboard offers pipeline.
  */
 
-export type RetailerId = 'aldi' | 'lidl' | 'tesco' | 'sainsburys' | 'asda';
+export type RetailerId =
+  | 'aldi'
+  | 'lidl'
+  | 'tesco'
+  | 'sainsburys'
+  | 'asda'
+  | 'woolworths_nz'
+  | 'paknsave';
 
 export type OfferType = 'weekly_offer' | 'price_drop' | 'multibuy' | 'loyalty';
 

@@ -2,18 +2,21 @@
 -- Run in the Supabase SQL editor.
 
 create table if not exists retailers (
-  id text primary key,             -- 'aldi', 'lidl', 'tesco', 'sainsburys', 'asda'
+  id text primary key,             -- 'aldi', 'lidl', 'tesco', 'woolworths_nz', ...
   display_name text not null,
   source text not null check (source in ('scrape', 'pepesto', 'leaflet_scan', 'manual')),
-  enabled boolean not null default true
+  enabled boolean not null default true,
+  country text not null default 'GB'  -- which region's users see it (GB/IE/AU/NZ)
 );
 
-insert into retailers (id, display_name, source, enabled) values
-  ('aldi',       'Aldi',        'scrape',  true),
-  ('lidl',       'Lidl',        'leaflet_scan', false),
-  ('tesco',      'Tesco',       'pepesto', false),
-  ('sainsburys', 'Sainsbury''s','pepesto', false),
-  ('asda',       'Asda',        'pepesto', false)
+insert into retailers (id, display_name, source, enabled, country) values
+  ('aldi',          'Aldi',        'scrape',       true,  'GB'),
+  ('lidl',          'Lidl',        'leaflet_scan', false, 'GB'),
+  ('tesco',         'Tesco',       'pepesto',      false, 'GB'),
+  ('sainsburys',    'Sainsbury''s','pepesto',      false, 'GB'),
+  ('asda',          'Asda',        'pepesto',      false, 'GB'),
+  ('woolworths_nz', 'Woolworths',  'scrape',       true,  'NZ'),
+  ('paknsave',      'PAK''nSAVE',  'scrape',       true,  'NZ')
 on conflict (id) do nothing;
 
 create table if not exists offers (

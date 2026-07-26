@@ -155,25 +155,30 @@ const MOOD_DESCRIPTIONS: Record<string, string> = {
 
 // ── Offers (Saver Cupboard) ─────────────────────────────────────────────
 
-function formatPrice(pence: number): string {
-  return pence < 100 ? `${pence}p` : `£${(pence / 100).toFixed(2)}`;
+/** Currency symbol per region; offer prices are integer minor units. */
+const CURRENCY_SYMBOLS: Record<RegionCode, string> = { GB: '£', IE: '€', AU: '$', NZ: '$' };
+
+function formatPrice(minorUnits: number, region: RegionCode): string {
+  if (region === 'GB' && minorUnits < 100)
+    return `${minorUnits}p`;
+  return `${CURRENCY_SYMBOLS[region]}${(minorUnits / 100).toFixed(2)}`;
 }
 
 /**
  * Extra system directive, only sent when the request includes offers.
  * Additive by design: with no offers the prompt is byte-identical to before.
  */
-function buildOffersDirective(offers: OfferForAI[]): string {
+function buildOffersDirective(offers: OfferForAI[], region: RegionCode): string {
   const lines = offers.map((o) => {
-    const was = o.wasPricePence != null ? ` (was ${formatPrice(o.wasPricePence)})` : '';
+    const was = o.wasPricePence != null ? ` (was ${formatPrice(o.wasPricePence, region)})` : '';
     const size = o.packSize ? `, ${o.packSize}` : '';
-    return `- ${o.ingredient}: ${o.productName}${size} at ${formatPrice(o.pricePence)}${was} [${o.retailer}]`;
+    return `- ${o.ingredient}: ${o.productName}${size} at ${formatPrice(o.pricePence, region)}${was} [${o.retailer}]`;
   });
   return (
     'OFFERS THIS WEEK at the user\'s chosen supermarket(s):\n'
     + lines.join('\n')
     + '\nWhen choosing between otherwise good suggestions, prefer meals whose MISSING ingredients appear in this offers list — that makes the meal cheaper to complete. '
-    + 'When a suggestion does use an offer, you may mention it naturally and briefly in the description or reason (e.g. "pork steaks are £2.99 at Aldi this week") in Mother Cupboard\'s voice — thrifty, never salesy. '
+    + 'When a suggestion does use an offer, you may mention it naturally and briefly in the description or reason, quoting the price exactly as written in the list above, in Mother Cupboard\'s voice — thrifty, never salesy. '
     + 'Never force an offer into a meal where it does not belong, never invent offers not in this list, and never mention offers for ingredients the meal does not use. '
     + 'The offers list does NOT change the inventory rules: offers are things the user could buy, so they belong in "missingIngredients" unless also in the inventory.'
   );
@@ -354,7 +359,7 @@ export const handler = Sentry.AWSLambda.wrapHandler(
         { role: 'system', content: buildRegionDirective(body.region) },
       ];
       if (body.offers && body.offers.length > 0) {
-        messages.push({ role: 'system', content: buildOffersDirective(body.offers) });
+        messages.push({ role: 'system', content: buildOffersDirective(body.offers, body.region) });
       }
       messages.push({ role: 'user', content: buildUserPrompt(body) });
 

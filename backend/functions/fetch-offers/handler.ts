@@ -19,8 +19,10 @@ import type { ScheduledEvent } from 'aws-lambda';
 import * as Sentry from '@sentry/serverless';
 import { fetchAldiOffers } from './aldi';
 import { mapIngredients } from './map-ingredients';
+import { fetchPaknsaveOffers } from './paknsave';
 import { saveOffers } from './supabase-offers';
 import type { RawOffer, RetailerId } from './types';
+import { fetchWoolworthsNzOffers } from './woolworths-nz';
 
 Sentry.AWSLambda.init({
   dsn: process.env.SENTRY_DSN,
@@ -30,6 +32,8 @@ Sentry.AWSLambda.init({
 
 const FETCHERS: Partial<Record<RetailerId, () => Promise<RawOffer[]>>> = {
   aldi: fetchAldiOffers,
+  woolworths_nz: fetchWoolworthsNzOffers,
+  paknsave: fetchPaknsaveOffers,
 };
 
 interface RunSummary {

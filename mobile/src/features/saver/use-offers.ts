@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 
 import { useSaverStore } from '@/features/saver/saver-store';
+import { getActiveRegion, useRegionStore } from '@/lib/region';
 import { supabase } from '@/lib/supabase/client';
 
 /** A row from the Supabase `retailers` table. */
@@ -8,6 +9,7 @@ export type Retailer = {
   id: string;
   display_name: string;
   enabled: boolean;
+  country: string;
 };
 
 /** One of this week's food offers, with the retailer name resolved. */
@@ -40,18 +42,21 @@ export function isoWeekKey(date: Date = new Date()): string {
 }
 
 /**
- * Retailers Saver Cupboard currently has offer data for.
+ * Retailers Saver Cupboard currently has offer data for IN THE USER'S REGION —
+ * an NZ user sees Woolworths and PAK'nSAVE, a UK user sees Aldi, never a mix.
  * Driven by the backend `retailers` table so new supermarkets appear in the
  * picker without an app release.
  */
 export function useRetailers() {
+  const region = useRegionStore(s => s.region);
   return useQuery<Retailer[], Error>({
-    queryKey: ['saver', 'retailers'],
+    queryKey: ['saver', 'retailers', region],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('retailers')
-        .select('id, display_name, enabled')
+        .select('id, display_name, enabled, country')
         .eq('enabled', true)
+        .eq('country', region)
         .order('display_name');
       if (error)
         throw new Error(error.message);
@@ -71,16 +76,22 @@ export function useCurrentOffers() {
   const retailerIds = useSaverStore(s => s.retailerIds);
   const { data: retailers } = useRetailers();
 
+  // Only fetch offers for chosen retailers that exist in the user's current
+  // region — a leftover Aldi tick shouldn't surface UK offers after switching
+  // the app to New Zealand.
+  const regionIds = retailers ? new Set(retailers.map(r => r.id)) : null;
+  const activeIds = regionIds ? retailerIds.filter(id => regionIds.has(id)) : retailerIds;
+
   const query = useQuery<Omit<CurrentOffer, 'retailer_name'>[], Error>({
-    queryKey: ['saver', 'current-offers', isoWeekKey(), [...retailerIds].sort()],
-    enabled: retailerIds.length > 0,
+    queryKey: ['saver', 'current-offers', isoWeekKey(), [...activeIds].sort()],
+    enabled: activeIds.length > 0,
     queryFn: async () => {
       const { data, error } = await supabase
         .from('offers')
         .select('id, retailer_id, product_name, brand, price_pence, was_price_pence, pack_size, canonical_ingredient, ingredient_category, source_url')
         .eq('week_key', isoWeekKey())
         .eq('is_food', true)
-        .in('retailer_id', retailerIds)
+        .in('retailer_id', activeIds)
         .order('price_pence');
       if (error)
         throw new Error(error.message);
@@ -99,7 +110,21 @@ export function useCurrentOffers() {
   return { ...query, data };
 }
 
-/** Format pence for chips: 65 -> "65p", 299 -> "£2.99". */
-export function formatOfferPrice(pence: number): string {
-  return pence < 100 ? `${pence}p` : `£${(pence / 100).toFixed(2)}`;
+/**
+ * Format an offer price (integer minor units) in the active region's currency:
+ * GB 65 -> "65p", GB 299 -> "£2.99", NZ 1199 -> "$11.99".
+ */
+export function formatOfferPrice(minorUnits: number): string {
+  const region = getActiveRegion();
+  if (region.currency === 'GBP' && minorUnits < 100)
+    return `${minorUnits}p`;
+  try {
+    return new Intl.NumberFormat(region.locale, {
+      style: 'currency',
+      currency: region.currency,
+    }).format(minorUnits / 100);
+  }
+  catch {
+    return `${(minorUnits / 100).toFixed(2)}`;
+  }
 }

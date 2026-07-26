@@ -16,11 +16,11 @@ import { getAIProvider } from '../../lib/ai';
 import type { MappedOffer, RawOffer } from './types';
 
 const SYSTEM_PROMPT = [
-  'You map UK supermarket offer products to canonical cooking ingredients.',
+  'You map supermarket offer products (from UK, Irish, Australian or New Zealand supermarkets) to canonical cooking ingredients.',
   'For each product in the input array return an object with:',
   '- product_name: copied exactly from the input',
   '- is_food: false for non-food, alcohol, pet food and vitamins; true otherwise',
-  '- canonical_ingredient: the generic UK cooking ingredient a recipe would list, lowercase ("pork steaks", "turkey mince", "cherries", "crumbly white cheese"). For ready-to-eat items use the dish name ("garlic pizza bread"). null when is_food is false.',
+  '- canonical_ingredient: the generic cooking ingredient a recipe would list, lowercase, in the vocabulary of the product\'s own country ("pork steaks", "turkey mince", "cherries", "crumbly white cheese"). For ready-to-eat items use the dish name ("garlic pizza bread"). null when is_food is false.',
   '- ingredient_category: one of meat, fish, fruit, veg, dairy, bakery, pantry, frozen, drinks, ready. null when is_food is false.',
   'Respond with ONLY a valid JSON object: {"items":[{"product_name":"...","is_food":true,"canonical_ingredient":"...","ingredient_category":"..."}]}',
 ].join('\n');
