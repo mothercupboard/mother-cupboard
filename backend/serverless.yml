@@ -33,7 +33,10 @@ functions:
     timeout: 600
     memorySize: 512
     events:
-      - schedule: cron(0 5 ? * MON *)
+      # Runs on the preview (production) stage only — see custom.cronEnabled.
+      - schedule:
+          rate: cron(0 5 ? * MON *)
+          enabled: ${self:custom.cronEnabled.${self:provider.stage}, false}
 
 plugins:
   - serverless-esbuild
@@ -59,3 +62,9 @@ custom:
       - SUPABASE_URL
       - SUPABASE_SERVICE_ROLE_KEY
       - SCRAPERAPI_KEY
+  # Weekly offers cron fires on preview (production) only. Both stages
+  # share one Supabase offers table, so running it on development too just
+  # duplicates the work and doubles ScraperAPI credit spend.
+  cronEnabled:
+    preview: true
+    development: false
