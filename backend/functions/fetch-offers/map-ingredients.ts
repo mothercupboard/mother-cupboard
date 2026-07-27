@@ -23,9 +23,10 @@ const SYSTEM_PROMPT = [
   'For each product in the input array return an object with:',
   '- product_name: copied exactly from the input',
   '- is_food: false for non-food, alcohol, pet food and vitamins; true otherwise',
+  '- is_ingredient: true ONLY if the product would plausibly appear on a home recipe\'s ingredient list — meat, fish, fruit, vegetables, dairy, eggs, bread, pasta, rice, tinned goods, cooking oils, herbs/spices, baking supplies, frozen ingredients. false for things people eat or drink but never cook WITH: crisps, biscuits, confectionery, chocolate bars (baking chocolate is true), cereals, tea bags, coffee, soft drinks, juice, ready meals, pizzas, snack pots. false whenever is_food is false.',
   '- canonical_ingredient: the generic cooking ingredient a recipe would list, lowercase, in the vocabulary of the product\'s own country ("pork steaks", "turkey mince", "cherries", "crumbly white cheese"). For ready-to-eat items use the dish name ("garlic pizza bread"). null when is_food is false.',
   '- ingredient_category: one of meat, fish, fruit, veg, dairy, bakery, pantry, frozen, drinks, ready. null when is_food is false.',
-  'Respond with ONLY a valid JSON object: {"items":[{"product_name":"...","is_food":true,"canonical_ingredient":"...","ingredient_category":"..."}]}',
+  'Respond with ONLY a valid JSON object: {"items":[{"product_name":"...","is_food":true,"is_ingredient":true,"canonical_ingredient":"...","ingredient_category":"..."}]}',
 ].join('\n');
 
 // ~40 products/call keeps each response comfortably under the token limit.
@@ -34,6 +35,7 @@ const CHUNK_SIZE = 40;
 interface MappingItem {
   product_name: string;
   is_food: boolean;
+  is_ingredient: boolean;
   canonical_ingredient: string | null;
   ingredient_category: string | null;
 }
@@ -94,6 +96,7 @@ export async function mapIngredients(offers: RawOffer[]): Promise<MappedOffer[]>
     return {
       ...o,
       is_food: typeof m?.is_food === 'boolean' ? m.is_food : null,
+      is_ingredient: typeof m?.is_ingredient === 'boolean' ? m.is_ingredient : null,
       canonical_ingredient: m?.canonical_ingredient ?? null,
       ingredient_category: category,
     };

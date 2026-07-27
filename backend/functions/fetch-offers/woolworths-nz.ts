@@ -53,7 +53,7 @@ async function fetchPageWithRetry(page: number, attempts = 3): Promise<WwsItem[]
     try {
       const res = await fetch(`${API}&page=${page}`, {
         headers: HEADERS,
-        signal: AbortSignal.timeout(45_000), // proxied requests are slower
+        signal: AbortSignal.timeout(70_000), // ScraperAPI residential can be slow under load; their docs suggest ~70s
         dispatcher: scraperDispatcher({ country: 'nz' }),
       } as RequestInit);
       if (!res.ok)
@@ -77,7 +77,20 @@ export async function fetchWoolworthsNzOffers(): Promise<RawOffer[]> {
   const seen = new Set<string>();
 
   for (let page = 1; page <= PAGES; page++) {
-    const items = await fetchPageWithRetry(page);
+    let items: WwsItem[];
+    try {
+      items = await fetchPageWithRetry(page);
+    }
+    catch (err) {
+      // A later page failing shouldn't blank pages we already have — two
+      // pages of specials beats zero (seen 27 Jul: page 3 got HTTP 500 after
+      // retries while pages 1–2 were fine). Page 1 failing still throws.
+      if (out.length > 0) {
+        console.error(`[fetch-offers] woolworths_nz page ${page} failed, keeping ${out.length} offers:`, err);
+        break;
+      }
+      throw err;
+    }
 
     for (const item of items) {
       if (item.type !== 'Product' || !item.name || item.price?.salePrice == null)

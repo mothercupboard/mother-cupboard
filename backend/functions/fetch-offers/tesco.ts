@@ -28,7 +28,7 @@
  */
 
 import * as cheerio from 'cheerio';
-import { scraperDispatcher } from './proxy';
+import { scraperDispatcher, withRetry } from './proxy';
 import type { RawOffer } from './types';
 
 const BASE = 'https://www.tesco.com';
@@ -62,7 +62,7 @@ function packFromName(name: string): string | null {
 async function fetchPage(url: string): Promise<string> {
   const res = await fetch(url, {
     headers: HEADERS,
-    signal: AbortSignal.timeout(45_000), // proxied requests are slower
+    signal: AbortSignal.timeout(70_000), // ScraperAPI residential can be slow under load; their docs suggest ~70s
     dispatcher: scraperDispatcher({ country: 'uk' }),
   } as RequestInit);
   if (!res.ok) throw new Error(`Tesco fetch ${url} -> HTTP ${res.status}`);
@@ -135,7 +135,7 @@ export async function fetchTescoOffers(): Promise<RawOffer[]> {
   for (const slug of BUYLISTS) {
     const url = buylistUrl(slug);
     try {
-      const html = await fetchPage(url);
+      const html = await withRetry(() => fetchPage(url));
       const $ = cheerio.load(html);
       let items = parseTiles($, url);
       if (items.length === 0) items = parseFallback($, url);

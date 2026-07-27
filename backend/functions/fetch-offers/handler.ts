@@ -9,12 +9,14 @@
  * Retailers fail independently — one broken adapter never blanks the others.
  *
  * Retailer status (27 Jul 2026):
- *   aldi  — live, direct scrape (verified selectors, see ./aldi.ts)
- *   tesco — live, Clubcard Prices buylists via ScraperAPI proxy (see ./tesco.ts)
- *   lidl  — no scrapeable web data (offers are Lidl Plus app-only);
- *           planned route is in-app leaflet scanning, not this Lambda
- *   sainsburys / asda — parked; Nectar Prices / Rollback pages are scrapeable,
- *           same pattern as tesco when demand shows
+ *   GB: aldi (direct), tesco / sainsburys / morrisons (proxied APIs+SSR),
+ *       asda (direct via public Algolia index — no proxy needed)
+ *   IE: aldi_ie, tesco_ie, supervalu (proxied, EUR cents)
+ *   AU: woolworths_au (proxied)  ·  NZ: woolworths_nz (proxied)
+ *   lidl — no scrapeable web data (offers are Lidl Plus app-only);
+ *          planned route is in-app leaflet scanning, not this Lambda
+ *   paknsave / newworld (NZ), coles (AU) — parked: Kasada/Incapsula bot
+ *          walls need a headless browser (ScraperAPI render mode, someday)
  */
 
 import type { ScheduledEvent } from 'aws-lambda';
@@ -22,10 +24,15 @@ import * as Sentry from '@sentry/serverless';
 import { createClient } from '@supabase/supabase-js';
 import { fetchAldiOffers } from './aldi';
 import { fetchAldiIeOffers } from './aldi-ie';
+import { fetchAsdaOffers } from './asda';
 import { mapIngredients } from './map-ingredients';
+import { fetchMorrisonsOffers } from './morrisons';
 import { fetchPaknsaveOffers } from './paknsave';
+import { fetchSainsburysOffers } from './sainsburys';
+import { fetchSupervaluOffers } from './supervalu';
 import { saveOffers } from './supabase-offers';
 import { fetchTescoOffers } from './tesco';
+import { fetchTescoIeOffers } from './tesco-ie';
 import type { RawOffer, RetailerId } from './types';
 import { fetchWoolworthsAuOffers } from './woolworths-au';
 import { fetchWoolworthsNzOffers } from './woolworths-nz';
@@ -38,8 +45,13 @@ Sentry.AWSLambda.init({
 
 const FETCHERS: Partial<Record<RetailerId, () => Promise<RawOffer[]>>> = {
   aldi: fetchAldiOffers,
-  aldi_ie: fetchAldiIeOffers,
   tesco: fetchTescoOffers,
+  sainsburys: fetchSainsburysOffers,
+  morrisons: fetchMorrisonsOffers,
+  asda: fetchAsdaOffers,
+  aldi_ie: fetchAldiIeOffers,
+  tesco_ie: fetchTescoIeOffers,
+  supervalu: fetchSupervaluOffers,
   woolworths_nz: fetchWoolworthsNzOffers,
   paknsave: fetchPaknsaveOffers,
   woolworths_au: fetchWoolworthsAuOffers,

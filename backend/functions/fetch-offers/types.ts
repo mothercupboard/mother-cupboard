@@ -7,8 +7,11 @@ export type RetailerId =
   | 'aldi_ie'
   | 'lidl'
   | 'tesco'
+  | 'tesco_ie'
   | 'sainsburys'
+  | 'morrisons'
   | 'asda'
+  | 'supervalu'
   | 'woolworths_nz'
   | 'paknsave'
   | 'woolworths_au';
@@ -43,6 +46,14 @@ export interface RawOffer {
 export interface MappedOffer extends RawOffer {
   /** null = the mapping pass missed this item; review manually. */
   is_food: boolean | null;
+  /**
+   * Would this plausibly appear on a home recipe's ingredient list?
+   * Distinguishes cooking ingredients (chicken, peppers, pasta, tinned
+   * tomatoes) from snacks/drinks that are food but never cooked with
+   * (crisps, biscuits, tea bags, chocolate bars). The app surfaces
+   * ingredients first. null = mapping missed it.
+   */
+  is_ingredient: boolean | null;
   canonical_ingredient: string | null;
   ingredient_category: IngredientCategory | null;
 }

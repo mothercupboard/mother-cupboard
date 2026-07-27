@@ -21,7 +21,7 @@
  * empty/blocked, this needs the headless-browser route like PAK'nSAVE.
  */
 
-import { scraperDispatcher } from './proxy';
+import { scraperDispatcher, withRetry } from './proxy';
 import type { RawOffer } from './types';
 
 // One sticky proxy session per run so the cookie bootstrap and the POST calls
@@ -54,7 +54,7 @@ type WoolAuBundle = { Products?: WoolAuProduct[] };
 async function bootstrapCookies(): Promise<string> {
   const res = await fetch(HALF_PRICE_URL, {
     headers: { ...BROWSER_HEADERS, accept: 'text/html' },
-    signal: AbortSignal.timeout(45_000), // proxied requests are slower
+    signal: AbortSignal.timeout(70_000), // ScraperAPI residential can be slow under load; their docs suggest ~70s
     dispatcher: auDispatcher(),
   } as RequestInit);
   // Node 20+ exposes getSetCookie(); fall back to the folded header.
@@ -94,7 +94,7 @@ async function fetchPage(page: number, cookie: string): Promise<WoolAuBundle[]> 
       groupEdmVariants: true,
       categoryVersion: 'v2',
     }),
-    signal: AbortSignal.timeout(45_000), // proxied requests are slower
+    signal: AbortSignal.timeout(70_000), // ScraperAPI residential can be slow under load; their docs suggest ~70s
     dispatcher: auDispatcher(),
   } as RequestInit);
   if (!res.ok)
@@ -116,7 +116,7 @@ export async function fetchWoolworthsAuOffers(): Promise<RawOffer[]> {
   const seen = new Set<string>();
 
   for (let page = 1; page <= PAGES; page++) {
-    const bundles = await fetchPage(page, cookie);
+    const bundles = await withRetry(() => fetchPage(page, cookie));
     for (const bundle of bundles) {
       const p = bundle.Products?.[0];
       if (!p?.DisplayName || p.Price == null)

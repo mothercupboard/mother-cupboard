@@ -67,10 +67,19 @@ export function useRetailers() {
 }
 
 /**
- * This week's food offers at the user's chosen supermarket(s), straight from
- * the `offers` table (filtered to this ISO week and is_food). Returns an
- * empty list (and never fetches) when no supermarket is chosen, so
- * everything downstream degrades gracefully to pre-Saver behaviour.
+ * This week's COOKABLE offers at the user's chosen supermarket(s), straight
+ * from the `offers` table: this ISO week, is_food, and is_ingredient — i.e.
+ * things that plausibly appear on a recipe's ingredient list. Snacks,
+ * biscuits, tea bags etc. stay in the table but aren't surfaced (they'd
+ * never make a dish). Rows with is_ingredient null (mapped before the flag
+ * existed) are still included so old weeks keep working.
+ *
+ * Ordered by BIGGEST SAVING first — "was £5.15, now £4" is what draws the
+ * user in — with offers that have no was-price after those, cheapest first.
+ * Savings are computed client-side (PostgREST can't order by an expression),
+ * so the query pulls a generous sample and the strip keeps the top 80.
+ * Returns an empty list (and never fetches) when no supermarket is chosen,
+ * so everything downstream degrades gracefully to pre-Saver behaviour.
  */
 export function useCurrentOffers() {
   const retailerIds = useSaverStore(s => s.retailerIds);
@@ -91,11 +100,19 @@ export function useCurrentOffers() {
         .select('id, retailer_id, product_name, brand, price_pence, was_price_pence, pack_size, canonical_ingredient, ingredient_category, source_url')
         .eq('week_key', isoWeekKey())
         .eq('is_food', true)
+        // Cookable items only; null = pre-flag rows, kept for compatibility.
+        .or('is_ingredient.is.null,is_ingredient.eq.true')
         .in('retailer_id', activeIds)
-        .order('price_pence');
+        .order('price_pence')
+        .limit(250);
       if (error)
         throw new Error(error.message);
-      return data ?? [];
+      // Biggest saving first; no-was-price offers after, cheapest first.
+      const saving = (o: Omit<CurrentOffer, 'retailer_name'>) =>
+        o.was_price_pence != null ? o.was_price_pence - o.price_pence : -1;
+      return (data ?? [])
+        .sort((a, b) => (saving(b) - saving(a)) || (a.price_pence - b.price_pence))
+        .slice(0, 80);
     },
     staleTime: 60 * 60 * 1000, // offers change weekly; an hour is plenty fresh
   });

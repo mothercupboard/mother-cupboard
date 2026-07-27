@@ -48,3 +48,25 @@ export function scraperDispatcher(
     requestTls: { rejectUnauthorized: false },
   });
 }
+
+/**
+ * Retry helper for proxied fetches. ScraperAPI's residential pools are
+ * occasionally slow or return 500 ("failed after internal retries") under
+ * load — seen live 27 Jul: NZ/AU timed out and Tesco IE got three 500s on a
+ * run that succeeded end-to-end 20 minutes earlier. A second attempt on a
+ * fresh proxy connection usually lands. 1s/2s backoff between attempts.
+ */
+export async function withRetry<T>(fn: () => Promise<T>, attempts = 3): Promise<T> {
+  let lastErr: unknown;
+  for (let attempt = 1; attempt <= attempts; attempt++) {
+    try {
+      return await fn();
+    }
+    catch (err) {
+      lastErr = err;
+      if (attempt < attempts)
+        await new Promise(r => setTimeout(r, 1000 * attempt));
+    }
+  }
+  throw lastErr;
+}
