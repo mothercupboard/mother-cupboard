@@ -8,11 +8,13 @@
  *
  * Retailers fail independently — one broken adapter never blanks the others.
  *
- * Retailer status (25 Jul 2026):
+ * Retailer status (27 Jul 2026):
  *   aldi  — live, direct scrape (verified selectors, see ./aldi.ts)
+ *   tesco — live, Clubcard Prices buylists via ScraperAPI proxy (see ./tesco.ts)
  *   lidl  — no scrapeable web data (offers are Lidl Plus app-only);
  *           planned route is in-app leaflet scanning, not this Lambda
- *   tesco / sainsburys / asda — parked; Pepesto data API when demand shows
+ *   sainsburys / asda — parked; Nectar Prices / Rollback pages are scrapeable,
+ *           same pattern as tesco when demand shows
  */
 
 import type { ScheduledEvent } from 'aws-lambda';
@@ -23,6 +25,7 @@ import { fetchAldiIeOffers } from './aldi-ie';
 import { mapIngredients } from './map-ingredients';
 import { fetchPaknsaveOffers } from './paknsave';
 import { saveOffers } from './supabase-offers';
+import { fetchTescoOffers } from './tesco';
 import type { RawOffer, RetailerId } from './types';
 import { fetchWoolworthsAuOffers } from './woolworths-au';
 import { fetchWoolworthsNzOffers } from './woolworths-nz';
@@ -36,6 +39,7 @@ Sentry.AWSLambda.init({
 const FETCHERS: Partial<Record<RetailerId, () => Promise<RawOffer[]>>> = {
   aldi: fetchAldiOffers,
   aldi_ie: fetchAldiIeOffers,
+  tesco: fetchTescoOffers,
   woolworths_nz: fetchWoolworthsNzOffers,
   paknsave: fetchPaknsaveOffers,
   woolworths_au: fetchWoolworthsAuOffers,
