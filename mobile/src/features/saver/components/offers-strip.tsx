@@ -16,6 +16,14 @@ type OffersStripProps = {
 };
 
 /**
+ * Retailers whose offer link goes to a listing/offers page rather than the
+ * specific product — their data doesn't expose a per-product URL. The dialog
+ * labels these honestly ("See all … offers") so a tap sets the right
+ * expectation; Add-to-list and recipe ideas still work per offer.
+ */
+const LISTING_ONLY_RETAILERS = new Set(['asda']);
+
+/**
  * Saver Cupboard strip on the Suggest screen.
  *
  * No supermarket chosen -> a single quiet chip inviting the user to pick one.
@@ -76,7 +84,8 @@ export function OffersStrip({ onCookIdeas }: OffersStripProps) {
     // Don't stack duplicates if it's already been added.
     const already = useShoppingListStore
       .getState()
-      .items.some(i => i.name.toLowerCase() === name.toLowerCase());
+      .items
+      .some(i => i.name.toLowerCase() === name.toLowerCase());
     if (!already)
       addToShoppingList(name, selected.pack_size ?? undefined);
     setSnack(already ? `${name} is already on your list` : 'Added to your shopping list');
@@ -121,7 +130,11 @@ export function OffersStrip({ onCookIdeas }: OffersStripProps) {
             </Button>
             {!!selected?.source_url && (
               <Button icon="open-in-new" onPress={handleViewProduct}>
-                {selected ? `View at ${selected.retailer_name}` : 'View'}
+                {selected
+                  ? (LISTING_ONLY_RETAILERS.has(selected.retailer_id)
+                      ? `See all ${selected.retailer_name} offers`
+                      : `View at ${selected.retailer_name}`)
+                  : 'View'}
               </Button>
             )}
             <Button mode="contained" icon="silverware-fork-knife" onPress={handleCookIdeas}>

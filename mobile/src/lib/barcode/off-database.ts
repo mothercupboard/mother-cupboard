@@ -8,6 +8,26 @@ export type OffProduct = {
   productQuantity: string | null;
 };
 
+/**
+ * Picks the best raw quantity string from an OFF API product object.
+ *
+ * OFF's `quantity` field is the display string WITH a unit ("250 g",
+ * "6 x 330 ml") — prefer it. `product_quantity` alone is a bare number
+ * (often a JSON number) with no unit, so it's only usable when
+ * `product_quantity_unit` is also present.
+ */
+export function pickOffQuantity(p: {
+  product_quantity?: string | number;
+  product_quantity_unit?: string;
+  quantity?: string;
+}): string | null {
+  if (typeof p.quantity === 'string' && p.quantity.trim())
+    return p.quantity.trim();
+  if (p.product_quantity != null && p.product_quantity !== '' && p.product_quantity_unit)
+    return `${p.product_quantity} ${p.product_quantity_unit}`;
+  return null;
+}
+
 // ─── Local SQLite cache ───────────────────────────────────────────────────
 
 let _db: SQLite.SQLiteDatabase | null = null;
@@ -32,10 +52,19 @@ async function openDb(): Promise<SQLite.SQLiteDatabase> {
   catch {
     // Column already exists — safe to ignore
   }
+  // Purge entries cached before the quantity/name-preference fixes (28 July
+  // 2026): they hold a bare numeric product_quantity (unparseable) and
+  // possibly a non-English product name. Deleting them makes the next scan
+  // re-fetch with the corrected mapping.
+  await _db.runAsync('DELETE FROM off_cache WHERE cached_at < ?', [QUANTITY_FIX_CUTOFF_MS]);
   return _db;
 }
 
-async function cacheProducts(db: SQLite.SQLiteDatabase, products: OffProduct[]): Promise<void> {
+/** Epoch ms of the latest cache-shape fix (category specificity) — 28 July 2026. */
+const QUANTITY_FIX_CUTOFF_MS = 1785235530486;
+
+export async function cacheProducts(products: OffProduct[]): Promise<void> {
+  const db = await openDb();
   const now = Date.now();
   for (const p of products) {
     await db.runAsync(
@@ -47,41 +76,20 @@ async function cacheProducts(db: SQLite.SQLiteDatabase, products: OffProduct[]):
 
 // ─── Barcode lookup (used by barcode scanner) ─────────────────────────────
 
+/**
+ * Cache-only lookup. Network fetching lives in off-lookup.ts (resolveBarcode),
+ * which queries the region's OFF subdomain first and prefers English names —
+ * fetching here as well would bypass that logic (it did, until 28 July 2026:
+ * the world-DB fetch in this function returned raw `product_name`, which is
+ * how a German "Linsen" name reached the UK add-item form).
+ */
 export async function lookupByBarcode(barcode: string): Promise<OffProduct | null> {
   const db = await openDb();
-
-  // 1. Check local cache first
   const cached = await db.getFirstAsync<OffProduct>(
     'SELECT barcode, name, category, product_quantity AS productQuantity FROM off_cache WHERE barcode = ?',
     [barcode],
   );
-  if (cached)
-    return cached;
-
-  // 2. Fetch from Open Food Facts
-  try {
-    const res = await fetch(
-      `https://world.openfoodfacts.org/api/v0/product/${barcode}.json`,
-      { headers: { 'User-Agent': 'MotherCupboard/1.0' } },
-    );
-    if (!res.ok)
-      return null;
-    const data = await res.json() as { status: number; product?: { product_name?: string; categories_tags?: string[] } };
-    if (data.status !== 1 || !data.product?.product_name)
-      return null;
-
-    const product: OffProduct = {
-      barcode,
-      name: data.product.product_name,
-      category: cleanCategory(data.product.categories_tags?.[0] ?? null),
-      productQuantity: (data.product as any).product_quantity ?? null,
-    };
-    await cacheProducts(db, [product]);
-    return product;
-  }
-  catch {
-    return null;
-  }
+  return cached ?? null;
 }
 
 // ─── Name search (used by Search by Name screen) ──────────────────────────
@@ -103,22 +111,23 @@ export async function searchByName(query: string): Promise<OffProduct[]> {
   // 2. Fallback: search Open Food Facts API
   try {
     const res = await fetch(
-      `https://world.openfoodfacts.org/cgi/search.pl?search_terms=${encodeURIComponent(query)}&search_simple=1&action=process&json=1&page_size=15&fields=code,product_name,categories_tags`,
+      `https://world.openfoodfacts.org/cgi/search.pl?search_terms=${encodeURIComponent(query)}&search_simple=1&action=process&json=1&page_size=15&fields=code,product_name,product_name_en,categories_tags,quantity,product_quantity,product_quantity_unit`,
       { signal: (() => { const ac = new AbortController(); setTimeout(() => ac.abort(), 5000); return ac.signal; })() },
     );
     if (!res.ok)
       return cached;
     const data = await res.json();
     const products: OffProduct[] = (data.products ?? [])
-      .filter((p: any) => p.product_name && p.code)
+      .filter((p: any) => (p.product_name_en || p.product_name) && p.code)
       .map((p: any) => ({
         barcode: p.code,
-        name: p.product_name,
-        category: p.categories_tags?.[0]?.replace('en:', '') ?? null,
-        productQuantity: p.product_quantity ?? null,
+        name: (p.product_name_en || p.product_name).trim(),
+        // Last tag = most specific (see extractCategory in off-lookup.ts)
+        category: p.categories_tags?.at(-1)?.replace('en:', '') ?? null,
+        productQuantity: pickOffQuantity(p),
       }));
     if (products.length > 0)
-      await cacheProducts(db, products);
+      await cacheProducts(products);
     // Merge cached + online, deduplicate by barcode
     const merged = new Map<string, OffProduct>();
     for (const p of [...cached, ...products]) merged.set(p.barcode, p);
@@ -127,16 +136,4 @@ export async function searchByName(query: string): Promise<OffProduct[]> {
   catch {
     return cached;
   }
-}
-
-// ─── Helpers ─────────────────────────────────────────────────────────────
-
-function cleanCategory(raw: string | null): string | null {
-  if (!raw)
-    return null;
-  // OFF tags look like "en:dairy-products" → "Dairy products"
-  return raw
-    .replace(/^[a-z]{2}:/, '')
-    .replace(/-/g, ' ')
-    .replace(/^./, c => c.toUpperCase());
 }

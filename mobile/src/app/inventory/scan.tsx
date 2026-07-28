@@ -14,7 +14,7 @@ export default function ScanScreen() {
     try {
       const product = await resolveBarcode(barcode);
       if (product) {
-        const parsed = parseOffQuantity(product.productQuantity);
+        const parsed = parseOffQuantity(product.productQuantity, product.category);
         router.replace({
           pathname: '/inventory/add-item',
           params: {
