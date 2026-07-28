@@ -14,9 +14,12 @@ type OnboardingStore = {
   ageGateAccepted: boolean;
   privacyDisclosureAccepted: boolean;
   aiConsentAccepted: boolean;
+  /** User has explicitly confirmed their region (vs. the auto-detected seed). */
+  regionConfirmed: boolean;
   acceptAgeGate: () => void;
   acceptPrivacyDisclosure: () => void;
   acceptAIConsent: () => void;
+  confirmRegion: () => void;
 
   // Post-auth progressive tips (shown once per feature, then dismissed)
   welcomeSeen: boolean;
@@ -24,9 +27,10 @@ type OnboardingStore = {
   suggestTipSeen: boolean;
   shoppingTipSeen: boolean;
   snapTipSeen: boolean;
+  /** The "what you can do" card on the home screen (see HomeGuideCard). */
   homeGuideDismissed: boolean;
   dismissWelcome: () => void;
-  dismissTip: (tip: 'homeGuideDismissed' | 'inventoryTipSeen' | 'shoppingTipSeen' | 'snapTipSeen' | 'suggestTipSeen') => void;
+  dismissTip: (tip: 'homeGuideDismissed' | 'inventoryTipSeen' | 'shoppingTipSeen' | 'suggestTipSeen' | 'snapTipSeen') => void;
 };
 
 export const useOnboardingStore = create<OnboardingStore>()(
@@ -35,9 +39,11 @@ export const useOnboardingStore = create<OnboardingStore>()(
       ageGateAccepted: false,
       privacyDisclosureAccepted: false,
       aiConsentAccepted: false,
+      regionConfirmed: false,
       acceptAgeGate: () => set({ ageGateAccepted: true }),
       acceptPrivacyDisclosure: () => set({ privacyDisclosureAccepted: true }),
       acceptAIConsent: () => set({ aiConsentAccepted: true }),
+      confirmRegion: () => set({ regionConfirmed: true }),
 
       welcomeSeen: false,
       inventoryTipSeen: false,

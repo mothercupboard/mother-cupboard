@@ -8,6 +8,7 @@ import { WarmHearthColors } from '@/components/common/paper-theme';
 import { useAuthStore } from '@/features/auth/auth-store';
 import { useOnboardingStore } from '@/features/onboarding/onboarding-store';
 import { PRIVACY_POLICY_URL } from '@/lib/legal';
+import { isDeviceRegionConfident } from '@/lib/region';
 
 type AIFeatureRowProps = {
   icon: React.ComponentProps<typeof MaterialCommunityIcons>['name'];
@@ -36,17 +37,24 @@ function AIFeatureRow({ icon, iconColor, title, detail, provider }: AIFeatureRow
 
 export default function AIConsentScreen() {
   const acceptAIConsent = useOnboardingStore(s => s.acceptAIConsent);
+  const confirmRegion = useOnboardingStore(s => s.confirmRegion);
   const session = useAuthStore(s => s.session);
   const insets = useSafeAreaInsets();
 
   function handleAccept() {
     acceptAIConsent();
-    if (session) {
+    // Only ask the user to pick a region when the phone wasn't sure. When it
+    // clearly reports one of our markets, trust the auto-detected region and
+    // go straight in — no needless confirm screen.
+    if (!isDeviceRegionConfident()) {
+      router.replace('/onboarding/region');
+      return;
+    }
+    confirmRegion();
+    if (session)
       router.replace('/(tabs)/inventory');
-    }
-    else {
+    else
       router.replace('/(auth)/login');
-    }
   }
 
   function handlePrivacyPolicy() {

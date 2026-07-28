@@ -23,6 +23,7 @@ import { isGuestExpired, useGuestStore } from '@/features/guest/guest-store';
 import { useOnboardingStore } from '@/features/onboarding/onboarding-store';
 import { APIProvider } from '@/lib/api/provider';
 import { DatabaseProvider } from '@/lib/database/provider';
+import { isDeviceRegionConfident } from '@/lib/region';
 import { configureRevenueCat, identifyUser } from '@/lib/revenuecat/client';
 import { useRevenueCatStore } from '@/lib/revenuecat/store';
 import { supabase } from '@/lib/supabase/client';
@@ -52,6 +53,7 @@ export default function RootLayout() {
   const ageGateAccepted = useOnboardingStore(s => s.ageGateAccepted);
   const privacyDisclosureAccepted = useOnboardingStore(s => s.privacyDisclosureAccepted);
   const aiConsentAccepted = useOnboardingStore(s => s.aiConsentAccepted);
+  const regionConfirmed = useOnboardingStore(s => s.regionConfirmed);
   const isGuest = useGuestStore(s => s.isGuest);
   const guestStartedAt = useGuestStore(s => s.guestStartedAt);
   const session = useAuthStore(s => s.session);
@@ -147,6 +149,19 @@ export default function RootLayout() {
       router.replace('/onboarding/ai-consent');
       return;
     }
+    // Region drives supermarkets, currency and offers. Only interrupt when the
+    // phone couldn't confidently detect one of our markets; otherwise trust the
+    // auto-detected region and mark it confirmed silently (still editable in
+    // Settings). This keeps onboarding frictionless for the confident majority.
+    if (!regionConfirmed) {
+      if (isDeviceRegionConfident()) {
+        useOnboardingStore.getState().confirmRegion();
+      }
+      else {
+        router.replace('/onboarding/region');
+        return;
+      }
+    }
     if (session)
       return; // Authenticated â€” default route (tabs) renders
     // Guest with active trial — allow through to tabs (local-only mode)
@@ -159,7 +174,7 @@ export default function RootLayout() {
       return;
     }
     router.replace('/(auth)/login');
-  }, [fontsLoaded, fontError, sessionChecked, urlChecked, session, ageGateAccepted, privacyDisclosureAccepted, aiConsentAccepted, isGuest, guestStartedAt, router]);
+  }, [fontsLoaded, fontError, sessionChecked, urlChecked, session, ageGateAccepted, privacyDisclosureAccepted, aiConsentAccepted, regionConfirmed, isGuest, guestStartedAt, router]);
 
   // Navigate to inventory when user taps an expiry-alert notification
   useEffect(() => {

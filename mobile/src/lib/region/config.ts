@@ -53,3 +53,14 @@ export function detectDeviceRegion(): RegionCode {
     return code as RegionCode;
   return DEFAULT_REGION;
 }
+
+/**
+ * Whether the device unambiguously reports one of our four markets. When true
+ * we trust the auto-detected region and skip the onboarding region step; when
+ * false (the phone reports the US, somewhere unsupported, or nothing) we fell
+ * back to DEFAULT_REGION as a guess, so we ask the user to confirm.
+ */
+export function isDeviceRegionConfident(): boolean {
+  const code = getLocales()[0]?.regionCode;
+  return !!code && code in REGIONS;
+}
