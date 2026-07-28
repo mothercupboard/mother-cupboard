@@ -38,8 +38,24 @@ type WwsItem = {
   name?: string;
   brand?: string;
   unit?: string;
+  sku?: string;
+  slug?: string;
   price?: { salePrice?: number; originalPrice?: number };
 };
+
+const SPECIALS_URL = 'https://www.woolworths.co.nz/shop/specials';
+
+/**
+ * Deep link to the product page. Woolworths NZ uses query-based product URLs:
+ * /shop/productdetails?stockcode=<sku>&name=<slug>. Both come straight from
+ * the API. Falls back to the specials listing when the sku is missing.
+ */
+function productUrl(item: WwsItem): string {
+  if (!item.sku)
+    return SPECIALS_URL;
+  const name = item.slug ?? '';
+  return `https://www.woolworths.co.nz/shop/productdetails?stockcode=${item.sku}&name=${encodeURIComponent(name)}`;
+}
 
 /**
  * Fetch one page, retrying a couple of times on timeout / transient failure —
@@ -111,7 +127,7 @@ export async function fetchWoolworthsNzOffers(): Promise<RawOffer[]> {
         was_price_pence: original && original > sale ? original : null,
         pack_size: item.unit ?? null,
         offer_type: 'price_drop',
-        source_url: 'https://www.woolworths.co.nz/shop/specials',
+        source_url: productUrl(item),
       });
     }
   }

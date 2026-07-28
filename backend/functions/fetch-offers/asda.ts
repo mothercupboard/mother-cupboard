@@ -15,6 +15,11 @@
  * NO PROXY NEEDED: Algolia is a neutral search CDN with no datacenter-IP
  * blocking — this is the cheapest adapter in the fleet (zero ScraperAPI
  * credits). If the key rotates, re-grab it from any asda.com page source.
+ *
+ * NO PER-PRODUCT DEEP LINK: the search index doesn't expose Asda's canonical
+ * URL slug, and Asda's product URLs 404 without it. So every Asda offer links
+ * to the all-offers page and the app labels the button "See all Asda offers"
+ * to set expectations — Add-to-list and recipe ideas still work per offer.
  */
 
 import type { RawOffer } from './types';
@@ -22,6 +27,7 @@ import type { RawOffer } from './types';
 const ALGOLIA_URL = 'https://8i6wskccnv-dsn.algolia.net/1/indexes/ASDA_PRODUCTS/query';
 const APP_ID = '8I6WSKCCNV';
 const SEARCH_KEY = '03e4272048dd17f771da37b57ff8a75e'; // public search-only key
+const OFFERS_PAGE = 'https://www.asda.com/groceries/special-offers/all-offers';
 
 const HITS = 100; // top Rollback items; index orders by Asda's own relevance
 
@@ -68,7 +74,7 @@ export async function fetchAsdaOffers(): Promise<RawOffer[]> {
       was_price_pence: null, // not present in the search index
       pack_size: h.PACK_SIZE || null,
       offer_type: 'price_drop',
-      source_url: `https://www.asda.com/groceries/search/${encodeURIComponent(h.NAME)}`,
+      source_url: OFFERS_PAGE, // no per-product URL available (see header note)
     });
   }
 

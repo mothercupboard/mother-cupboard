@@ -63,7 +63,9 @@ async function fetchPage(url: string): Promise<string> {
   const res = await fetch(url, {
     headers: HEADERS,
     signal: AbortSignal.timeout(70_000), // ScraperAPI residential can be slow under load; their docs suggest ~70s
-    dispatcher: scraperDispatcher({ country: 'eu' }),
+    // via 'scraperapi': all three pages 403 through a plain residential proxy
+    // even on Irish IPs — see the note on scraperDispatcher in proxy.ts.
+    dispatcher: scraperDispatcher({ country: 'eu', via: 'scraperapi' }),
   } as RequestInit);
   if (!res.ok) throw new Error(`Tesco IE fetch ${url} -> HTTP ${res.status}`);
   return res.text();

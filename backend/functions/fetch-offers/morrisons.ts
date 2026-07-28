@@ -39,11 +39,29 @@ type MorrisonsProduct = {
   name?: string;
   brand?: string;
   packSizeDescription?: string;
+  retailerProductId?: string;
   price?: { amount?: number };
   promoPrice?: { amount?: number } | number | null;
   promotions?: Array<{ description?: string }>;
 };
 type ProductGroup = { decoratedProducts?: MorrisonsProduct[] };
+
+/** "Mighty Big 3 Rolls" -> "mighty-big-3-rolls" for the product-page URL slug. */
+function slugify(name: string): string {
+  return name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+}
+
+/**
+ * Deep link to the product page. Morrisons resolves /products/<slug>/<id>
+ * (and even id-only) with a redirect, so the slug is cosmetic and the
+ * retailerProductId is what matters. Falls back to the promotions listing
+ * when the id is missing.
+ */
+function productUrl(p: MorrisonsProduct): string {
+  if (!p.retailerProductId || !p.name)
+    return PROMOS_PAGE;
+  return `${BASE}/products/${slugify(p.name)}/${p.retailerProductId}`;
+}
 
 async function bootstrapCookies(): Promise<string> {
   const res = await fetch(PROMOS_PAGE, {
@@ -112,7 +130,7 @@ export async function fetchMorrisonsOffers(): Promise<RawOffer[]> {
       was_price_pence: was > price ? was : null,
       pack_size: p.packSizeDescription || null,
       offer_type: 'price_drop',
-      source_url: PROMOS_PAGE,
+      source_url: productUrl(p),
     });
   }
 

@@ -47,8 +47,22 @@ type WoolAuProduct = {
   Price?: number;
   WasPrice?: number;
   PackageSize?: string;
+  Stockcode?: number;
+  UrlFriendlyName?: string;
 };
 type WoolAuBundle = { Products?: WoolAuProduct[] };
+
+/**
+ * Deep link to the product page: /shop/productdetails/<Stockcode>/<slug>.
+ * Woolworths supplies UrlFriendlyName as the canonical slug. Falls back to the
+ * half-price listing when the stockcode is missing.
+ */
+function productUrl(p: WoolAuProduct): string {
+  if (p.Stockcode == null)
+    return HALF_PRICE_URL;
+  const slug = p.UrlFriendlyName || 'product';
+  return `${BASE}/shop/productdetails/${p.Stockcode}/${slug}`;
+}
 
 /** GET the specials page and return a Cookie header built from its Set-Cookie. */
 async function bootstrapCookies(): Promise<string> {
@@ -135,7 +149,7 @@ export async function fetchWoolworthsAuOffers(): Promise<RawOffer[]> {
         was_price_pence: was && was > price ? was : null,
         pack_size: p.PackageSize || null,
         offer_type: 'price_drop',
-        source_url: HALF_PRICE_URL,
+        source_url: productUrl(p),
       });
     }
   }

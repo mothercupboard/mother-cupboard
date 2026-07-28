@@ -16,6 +16,16 @@ provider:
     SUPABASE_URL: ${env:SUPABASE_URL, ''}
     SUPABASE_SERVICE_ROLE_KEY: ${env:SUPABASE_SERVICE_ROLE_KEY, ''}
     SCRAPERAPI_KEY: ${env:SCRAPERAPI_KEY, ''}
+    # Residential proxy (pay-per-GB). When PROXY_HOST is set these take
+    # precedence over SCRAPERAPI_KEY — see functions/fetch-offers/proxy.ts.
+    # The two *_FLAG vars only need setting if the provider's username
+    # syntax differs from the DataImpulse-style default.
+    PROXY_HOST: ${env:PROXY_HOST, ''}
+    PROXY_PORT: ${env:PROXY_PORT, ''}
+    PROXY_USERNAME: ${env:PROXY_USERNAME, ''}
+    PROXY_PASSWORD: ${env:PROXY_PASSWORD, ''}
+    PROXY_COUNTRY_FLAG: ${env:PROXY_COUNTRY_FLAG, ''}
+    PROXY_SESSION_FLAG: ${env:PROXY_SESSION_FLAG, ''}
 
 functions:
   suggestMeals:
@@ -30,7 +40,9 @@ functions:
   # Saver Cupboard: weekly supermarket offers fetch (Monday 05:00 UTC).
   fetchOffers:
     handler: functions/fetch-offers/handler.handler
-    timeout: 600
+    # 15 min (Lambda's maximum) — the fetch is ~2½ min and the mapping pass
+    # scales with the number of retailers; headroom is free (billed per ms).
+    timeout: 900
     memorySize: 512
     events:
       # Runs on the preview (production) stage only — see custom.cronEnabled.
@@ -62,6 +74,12 @@ custom:
       - SUPABASE_URL
       - SUPABASE_SERVICE_ROLE_KEY
       - SCRAPERAPI_KEY
+      - PROXY_HOST
+      - PROXY_PORT
+      - PROXY_USERNAME
+      - PROXY_PASSWORD
+      - PROXY_COUNTRY_FLAG
+      - PROXY_SESSION_FLAG
   # Weekly offers cron fires on preview (production) only. Both stages
   # share one Supabase offers table, so running it on development too just
   # duplicates the work and doubles ScraperAPI credit spend.

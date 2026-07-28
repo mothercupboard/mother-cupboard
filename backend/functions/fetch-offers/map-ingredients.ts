@@ -32,6 +32,15 @@ const SYSTEM_PROMPT = [
 // ~40 products/call keeps each response comfortably under the token limit.
 const CHUNK_SIZE = 40;
 
+/**
+ * How many chunks are mapped at once. Sequential mapping of a 4-country run
+ * (~800 products, 20 chunks) took ~30 minutes and would blow the Lambda's
+ * timeout; the calls are pure network waits, so running several at once cuts
+ * wall-clock roughly by this factor. Kept modest to stay clear of the
+ * provider's per-minute rate limits.
+ */
+const CONCURRENCY = 5;
+
 interface MappingItem {
   product_name: string;
   is_food: boolean;
@@ -43,6 +52,16 @@ interface MappingItem {
 const CATEGORIES = new Set([
   'meat', 'fish', 'fruit', 'veg', 'dairy', 'bakery', 'pantry', 'frozen', 'drinks', 'ready',
 ]);
+
+/**
+ * Key used to match a model response back to its input product. The model
+ * is asked to copy product_name verbatim but occasionally tidies whitespace,
+ * case or punctuation, which silently dropped those items (seen 28 Jul 2026:
+ * 7 of 795 never matched). Normalising both sides makes the join forgiving.
+ */
+function nameKey(name: string): string {
+  return name.toLowerCase().replace(/\s+/g, ' ').trim();
+}
 
 function chunk<T>(arr: T[], size: number): T[][] {
   const out: T[][] = [];
@@ -63,6 +82,9 @@ async function mapChunk(offers: RawOffer[]): Promise<MappingItem[]> {
     temperature: 0,
     maxTokens: 4096,
     responseFormat: 'json',
+    // Bucketing products into categories is mechanical work — the small
+    // model does it as well as the large one, far faster and far cheaper.
+    tier: 'fast',
   });
 
   const parsed = JSON.parse(response.content);
@@ -74,21 +96,26 @@ async function mapChunk(offers: RawOffer[]): Promise<MappingItem[]> {
 
 export async function mapIngredients(offers: RawOffer[]): Promise<MappedOffer[]> {
   const byName = new Map<string, MappingItem>();
+  const groups = chunk(offers, CHUNK_SIZE);
 
-  for (const group of chunk(offers, CHUNK_SIZE)) {
-    try {
-      for (const m of await mapChunk(group))
-        byName.set(m.product_name, m);
-    }
-    catch (err) {
-      // Skip this chunk rather than failing the whole weekly run — its
-      // offers stay unmapped (is_food null) and are just not surfaced.
-      console.error(`[fetch-offers] ingredient mapping chunk failed (${group.length} items):`, err);
-    }
+  // Run chunks CONCURRENCY at a time — these are network-bound calls, so
+  // waiting for them one by one wastes almost all of the wall clock.
+  for (const wave of chunk(groups, CONCURRENCY)) {
+    await Promise.all(wave.map(async (group) => {
+      try {
+        for (const m of await mapChunk(group))
+          byName.set(nameKey(m.product_name), m);
+      }
+      catch (err) {
+        // Skip this chunk rather than failing the whole weekly run — its
+        // offers stay unmapped (is_food null) and are just not surfaced.
+        console.error(`[fetch-offers] ingredient mapping chunk failed (${group.length} items):`, err);
+      }
+    }));
   }
 
   return offers.map((o) => {
-    const m = byName.get(o.product_name);
+    const m = byName.get(nameKey(o.product_name));
     const category =
       m?.ingredient_category && CATEGORIES.has(m.ingredient_category)
         ? (m.ingredient_category as MappedOffer['ingredient_category'])

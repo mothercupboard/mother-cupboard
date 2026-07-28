@@ -25,7 +25,10 @@ import { scraperDispatcher, withRetry } from './proxy';
 import type { RawOffer } from './types';
 
 const SESSION = String(Math.floor(Date.now() / 1000) + 7); // distinct from other adapters' sessions
-const ukDispatcher = () => scraperDispatcher({ country: 'uk', session: SESSION });
+// via 'scraperapi': Sainsbury's filter-by API 403s through a plain residential
+// proxy regardless of exit IP — its bot protection reads the TLS/browser
+// fingerprint too. See the note on scraperDispatcher in proxy.ts.
+const ukDispatcher = () => scraperDispatcher({ country: 'uk', session: SESSION, via: 'scraperapi' });
 
 const BASE = 'https://www.sainsburys.co.uk';
 const OFFERS_PAGE = `${BASE}/gol-ui/offers/half-price`;

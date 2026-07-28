@@ -4,6 +4,18 @@ import type { AIProvider, CompletionRequest, CompletionResponse } from './types'
 const DEFAULT_MODEL = 'claude-sonnet-4-6';
 const DEFAULT_MAX_TOKENS = 1024;
 
+/**
+ * Model used for `tier: 'fast'` requests (mechanical classification work).
+ * Set ANTHROPIC_FAST_MODEL to a Haiku-class model to get the cheap/quick
+ * path; unset, fast requests simply use the default model, so nothing
+ * breaks if the name isn't configured.
+ */
+function modelFor(tier: 'default' | 'fast' | undefined): string {
+  if (tier === 'fast')
+    return process.env.ANTHROPIC_FAST_MODEL || DEFAULT_MODEL;
+  return DEFAULT_MODEL;
+}
+
 export function createAnthropicProvider(apiKey: string): AIProvider {
   const client = new Anthropic({ apiKey });
 
@@ -18,7 +30,7 @@ export function createAnthropicProvider(apiKey: string): AIProvider {
       const systemText = systemMessages.map(m => m.content).join('\n\n') || undefined;
 
       const response = await client.messages.create({
-        model: DEFAULT_MODEL,
+        model: modelFor(request.tier),
         max_tokens: request.maxTokens ?? DEFAULT_MAX_TOKENS,
         temperature: request.temperature,
         system: systemText,

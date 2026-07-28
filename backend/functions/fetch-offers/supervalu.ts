@@ -50,6 +50,21 @@ function splitPack(raw: string): { name: string; pack: string | null } {
   return m ? { name: m[1].trim(), pack: m[2].trim() } : { name: raw, pack: null };
 }
 
+/**
+ * Deep link to the product page:
+ *   /sm/delivery/rsid/5550/product/<slug>-id-<sku>
+ * The slug is the FULL display name (incl. pack) slugified — verified to match
+ * SuperValu's own links, e.g. "SuperValu Strawberries (350 g)" ->
+ * "supervalu-strawberries-350-g". Falls back to the promotions listing when
+ * the sku is missing.
+ */
+function productUrl(rawName: string, sku: string | undefined): string {
+  if (!sku)
+    return OFFERS_PAGE;
+  const slug = rawName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+  return `https://shop.supervalu.ie/sm/delivery/rsid/${STORE}/product/${slug}-id-${sku}`;
+}
+
 function promoText(p: SuperValuProduct): string {
   const bits: string[] = [];
   for (const pr of p.promotions ?? [])
@@ -102,7 +117,7 @@ export async function fetchSupervaluOffers(): Promise<RawOffer[]> {
       was_price_pence: null, // gateway exposes deal text, not a was-price
       pack_size: pack,
       offer_type: isMultibuy ? 'multibuy' : 'price_drop',
-      source_url: OFFERS_PAGE,
+      source_url: productUrl(p.name, p.sku),
     });
   }
 

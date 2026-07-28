@@ -33,6 +33,20 @@ export interface CompletionRequest {
    * should append the schema to the system prompt as guidance.
    */
   responseFormat?: 'json';
+  /**
+   * Which class of model to use. Provider-agnostic on purpose: each adapter
+   * maps the tier to its own model name.
+   *
+   *  - `'default'` — the capable model, for judgement-heavy work (recipe
+   *    suggestions, anything user-facing and creative).
+   *  - `'fast'` — the small, cheap, quick model, for mechanical work like
+   *    classification and extraction. Roughly an order of magnitude cheaper
+   *    and several times faster, with no meaningful accuracy loss on tasks
+   *    that amount to sorting things into buckets.
+   *
+   * Defaults to `'default'` when unset, so existing callers are unaffected.
+   */
+  tier?: 'default' | 'fast';
 }
 
 export interface CompletionResponse {

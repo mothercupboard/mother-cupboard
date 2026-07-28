@@ -46,7 +46,9 @@ export async function fetchAldiIeOffers(): Promise<RawOffer[]> {
   const res = await fetch(SAVERS_URL, {
     headers: HEADERS,
     signal: AbortSignal.timeout(45_000), // proxied requests are slower
-    dispatcher: scraperDispatcher({ country: 'eu' }),
+    // via 'scraperapi': 403s through a plain residential proxy even on Irish
+    // IPs (SuperValu, same country and headers, works) — see proxy.ts.
+    dispatcher: scraperDispatcher({ country: 'eu', via: 'scraperapi' }),
   } as RequestInit);
   if (!res.ok)
     throw new Error(`Aldi IE fetch -> HTTP ${res.status}`);

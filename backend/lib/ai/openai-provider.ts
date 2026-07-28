@@ -2,6 +2,8 @@ import OpenAI from 'openai';
 import type { AIProvider, CompletionRequest, CompletionResponse } from './types';
 
 const DEFAULT_MODEL = 'gpt-4o';
+/** Small/cheap model for mechanical work — see CompletionRequest.tier. */
+const FAST_MODEL = 'gpt-4o-mini';
 const DEFAULT_MAX_TOKENS = 1024;
 
 export function createOpenAIProvider(apiKey: string): AIProvider {
@@ -12,7 +14,7 @@ export function createOpenAIProvider(apiKey: string): AIProvider {
 
     async complete(request: CompletionRequest): Promise<CompletionResponse> {
       const response = await client.chat.completions.create({
-        model: DEFAULT_MODEL,
+        model: request.tier === 'fast' ? FAST_MODEL : DEFAULT_MODEL,
         max_tokens: request.maxTokens ?? DEFAULT_MAX_TOKENS,
         temperature: request.temperature,
         messages: request.messages.map(m => ({
