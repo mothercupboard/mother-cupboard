@@ -23,6 +23,7 @@ import { isGuestExpired, useGuestStore } from '@/features/guest/guest-store';
 import { useOnboardingStore } from '@/features/onboarding/onboarding-store';
 import { APIProvider } from '@/lib/api/provider';
 import { DatabaseProvider } from '@/lib/database/provider';
+import { configureMetaTracking } from '@/lib/meta';
 import { isDeviceRegionConfident } from '@/lib/region';
 import { configureRevenueCat, identifyUser } from '@/lib/revenuecat/client';
 import { useRevenueCatStore } from '@/lib/revenuecat/store';
@@ -120,6 +121,17 @@ export default function RootLayout() {
       console.warn('[RevenueCat] init failed:', err?.message);
     });
   }, [sessionChecked, session?.user?.id]);
+
+  // Meta ads attribution: ask for iOS tracking permission only once the user
+  // has been through the privacy and AI disclosures, so the prompt has context.
+  useEffect(() => {
+    if (!sessionChecked || !privacyDisclosureAccepted || !aiConsentAccepted)
+      return;
+    const timer = setTimeout(() => {
+      configureMetaTracking();
+    }, 1500);
+    return () => clearTimeout(timer);
+  }, [sessionChecked, privacyDisclosureAccepted, aiConsentAccepted]);
 
   // Route guard â€” runs once when fonts + session + URL checks all complete
   useEffect(() => {
